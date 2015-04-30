@@ -3,7 +3,7 @@ using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
 
-public class ColliderToFit : MonoBehaviour {
+public class PopFitCollider : MonoBehaviour {
 	
 	[MenuItem("NewChromantics/Collider/Fit collider to Children")]
 	static void FitColliderToChildren() {

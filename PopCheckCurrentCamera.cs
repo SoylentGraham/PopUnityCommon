@@ -7,7 +7,7 @@ using System.Collections;
 	Possibly due to specific texture types...
 	Call this beforehand.
 */
-public class CheckCurrentCamera : MonoBehaviour {
+public class PopCheckCurrentCamera : MonoBehaviour {
 
 	static public bool CheckCurrentCamera()
 	{
