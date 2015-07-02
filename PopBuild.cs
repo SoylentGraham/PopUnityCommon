@@ -10,8 +10,11 @@ public class PopBuild : MonoBehaviour {
 
 	public static string[]	Levels = {};
 	private static string	BuildPathArg = "-BuildPath=";
+	//private static string 	PathSuffixIos = "/";
+	private static string 	PathSuffixIos = null;
+	private static string 	PathSuffixAndroid = ".apk";
 
-	public static string	GetCommandLineBuildPath()
+	public static string	GetCommandLineBuildPath(string RequiredSuffix)
 	{
 		string[] Args = Environment.GetCommandLineArgs ();
 		try
@@ -22,8 +25,11 @@ public class PopBuild : MonoBehaviour {
 			BuildPath = BuildPath.Replace("\"", "" );
 			BuildPath = BuildPath.Trim();
 			Debug.Log("Build path found as: " + BuildPath );
-			if ( !BuildPath.EndsWith(".apk") )
-				return null;
+
+			if ( RequiredSuffix != null )
+				if ( !BuildPath.EndsWith(RequiredSuffix) )
+					return null;
+
 			return BuildPath;
 		}
 		catch(System.Exception e)
@@ -33,16 +39,26 @@ public class PopBuild : MonoBehaviour {
 		}
 	}
 
-	public static void BuildAndroid()
+
+	public static void Build(BuildTarget Target,string RequiredBuildPathSuffix)
 	{
-		string Path = GetCommandLineBuildPath ();
+		string Path = GetCommandLineBuildPath (RequiredBuildPathSuffix);
 		if ( Path==null )
 		{
-			string Error = "No path (ending in .apk) supplied on commandline. use " + BuildPathArg + "\"yourpath/filename.apk\"";
+			string Error = "No path (ending in "+RequiredBuildPathSuffix+") supplied on commandline. use " + BuildPathArg + "\"yourpath/filename" + RequiredBuildPathSuffix + "\"";
 			throw new UnityException(Error);
 		}
+		BuildPipeline.BuildPlayer (Levels, Path, Target, BuildOptions.None);
+	}
 
-		BuildPipeline.BuildPlayer (Levels, Path, BuildTarget.Android, BuildOptions.None);
+	public static void BuildAndroid()
+	{
+		Build (BuildTarget.Android, PathSuffixAndroid);
+	}
+
+	public static void BuildIos()
+	{
+		Build (BuildTarget.iOS, PathSuffixIos);
 	}
 
 }
