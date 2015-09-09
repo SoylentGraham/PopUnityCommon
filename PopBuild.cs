@@ -8,11 +8,15 @@ using System;
 
 public class PopBuild : MonoBehaviour {
 
-	public static string[]	Levels = {};
 	private static string	BuildPathArg = "-BuildPath=";
 	//private static string 	PathSuffixIos = "/";
 	private static string 	PathSuffixIos = null;
 	private static string 	PathSuffixAndroid = ".apk";
+
+	private static string[] GetLevels()
+	{
+		return (from scene in EditorBuildSettings.scenes where scene.enabled select scene.path).ToArray();
+	}
 
 	public static string	GetCommandLineBuildPath(string RequiredSuffix)
 	{
@@ -48,7 +52,7 @@ public class PopBuild : MonoBehaviour {
 			string Error = "No path (ending in "+RequiredBuildPathSuffix+") supplied on commandline. use " + BuildPathArg + "\"yourpath/filename" + RequiredBuildPathSuffix + "\"";
 			throw new UnityException(Error);
 		}
-		BuildPipeline.BuildPlayer (Levels, Path, Target, BuildOptions.None);
+		BuildPipeline.BuildPlayer (GetLevels(), Path, Target, BuildOptions.None);
 	}
 
 	public static void BuildAndroid()
