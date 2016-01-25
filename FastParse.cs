@@ -10,7 +10,13 @@ public class FastParse : MonoBehaviour {
 		float Major = 0;
 		float Minor = 0;
 		int Pos = 0;
-		
+		float Modifier = 1.0f;
+
+		if (FloatStr [0] == '-') {
+			Modifier = -1.0f;
+			Pos++;
+		}
+
 		//	parse major
 		while (Pos < FloatStr.Length) {
 			if (FloatStr [Pos] == '.')
@@ -36,6 +42,6 @@ public class FastParse : MonoBehaviour {
 			Pos++;
 		}
 		
-		return Major + Minor;
+		return Modifier * (Major + Minor);
 	}
 }
