@@ -162,5 +162,17 @@ bool Approximately(float a,float b)
 	return abs(a-b)<= 0.001f;
 }
 
+float3 LatLonToView(float2 LatLon)
+{
+	//	http://en.wikipedia.org/wiki/N-vector#Converting_latitude.2Flongitude_to_n-vector
+	float latitude = LatLon.x;
+	float longitude = LatLon.y;
+	float las = sin(latitude);
+	float lac = cos(latitude);
+	float los = sin(longitude);
+	float loc = cos(longitude);
+
+	return float3( los * lac, las, loc * lac );
+}
 
 
