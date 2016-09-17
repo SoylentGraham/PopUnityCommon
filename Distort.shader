@@ -54,7 +54,7 @@ SubShader
 			}
 			
   			//	http://stackoverflow.com/questions/21615298/opencv-distort-back
-			float2 DistortPixel(float2 point)
+			float2 DistortPixel(float2 Point)
 			{
 				float Inverse = Invert?-1:1;
 				float cx = LensOffsetX;
@@ -66,8 +66,8 @@ SubShader
 				float k3 = K5Distortion * Inverse;
 		
 		
-			    float x = point.x - cx;
-    			float y = point.y - cy;
+			    float x = Point.x - cx;
+    			float y = Point.y - cy;
 			    float r2 = x*x + y*y;
 
 			    // Radial distorsion

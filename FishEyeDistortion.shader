@@ -48,11 +48,11 @@
 				return o;
 			}
 			
-			float2 DistortPixel(float2 point)
+			float2 DistortPixel(float2 Point)
 			{
 				float2 fragCoord;
-				fragCoord.x = (point.x+1.0f)/2.0f;
-				fragCoord.y = (point.y+1.0f)/2.0f;
+				fragCoord.x = (Point.x+1.0f)/2.0f;
+				fragCoord.y = (Point.y+1.0f)/2.0f;
 				float2 p = fragCoord.xy;//normalized coords with some cheat
 				//(assume 1:1 prop)
 				float2 m = float2(0.5, 0.5);//center coords
