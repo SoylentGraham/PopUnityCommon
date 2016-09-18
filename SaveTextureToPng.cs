@@ -1,13 +1,29 @@
-﻿#if UNITY_EDITOR
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
-using UnityEditor;
 using System.IO;
-
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 public class SaveTextureToPng : MonoBehaviour {
 
-	[MenuItem("Assets/Texture/Save Texture to Png")]
+	#if UNITY_EDITOR
+	[MenuItem("Assets/Texture/Save Texture to Png No Alpha")]
 	static void _SaveTextureToPng()
+	{
+		_SaveTextureToPng(false);
+	}
+	#endif
+
+	#if UNITY_EDITOR
+	[MenuItem("Assets/Texture/Save Texture to Png With Alpha")]
+	static void _SaveTextureToPngWithAlpha()
+	{
+		_SaveTextureToPng(true);
+	}
+	#endif
+
+	#if UNITY_EDITOR
+	static void _SaveTextureToPng(bool Alpha)
 	{
 		//	get selected textures
 		string[] AssetGuids = Selection.assetGUIDs;
@@ -18,16 +34,28 @@ public class SaveTextureToPng : MonoBehaviour {
 			if ( !Tex )
 				continue;
 
-			DoSaveTextureToPng( Tex, Path, Guid );
+			DoSaveTextureToPng( Tex, Path, Guid, Alpha );
 		}
 	}
+	#endif
 
-	static bool DoSaveTextureToPng(Texture Tex,string AssetPath,string AssetGuid)
+	#if UNITY_EDITOR
+	static public bool DoSaveTextureToPng(Texture Tex,string AssetPath,string AssetGuid,bool Alpha)
+	{
+		string Filename = EditorUtility.SaveFilePanel("save " + AssetPath, "", AssetGuid, "png");
+		if ( Filename.Length == 0 )
+			return false;
+
+		return DoSaveTextureToPng( Tex, Filename, Alpha );
+	}
+	#endif
+
+	static public bool DoSaveTextureToPng(Texture Tex,string Filename,bool Alpha)
 	{
 		//	copy to render texture
 		RenderTexture rt = RenderTexture.GetTemporary( Tex.width, Tex.height, 0, RenderTextureFormat.ARGB32 );
 		Graphics.Blit( Tex, rt );
-		Texture2D Temp = new Texture2D( rt.width, rt.height, TextureFormat.RGB24, false );
+		Texture2D Temp = new Texture2D( rt.width, rt.height, Alpha ? TextureFormat.ARGB32 : TextureFormat.RGB24, false );
 		RenderTexture.active = rt;
 		Temp.ReadPixels( new Rect(0,0,rt.width,rt.height), 0, 0 );
 		Temp.Apply();
@@ -35,13 +63,7 @@ public class SaveTextureToPng : MonoBehaviour {
 		RenderTexture.ReleaseTemporary( rt );
 
 		byte[] Bytes = Temp.EncodeToPNG();
-		string Filename = EditorUtility.SaveFilePanel("save " + AssetPath, "", AssetGuid, "png");
-		if ( Filename.Length == 0 )
-			return false;
-
 		File.WriteAllBytes( Filename, Bytes );
 		return true;
 	}
 }
-
-#endif
