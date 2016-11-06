@@ -1,2 +1,3 @@
 # just in case unity meta files sneak in
-*.meta
+# gr: we want consistent meta files now I'm using this as a submodule more
+#*.meta
