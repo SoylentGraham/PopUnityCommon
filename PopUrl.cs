@@ -7,6 +7,10 @@ using System;
 
 public class PopUrl  {
 
+	public static string	FileProtocol = "file://";
+	public static string	StreamingAssetsProtocol = "streamingassets:";
+	public static string	PersistentDataProtocol = "persistentdata:";
+	public static string	SDCardProtocol = "sdcard:";
 
 
 	#if UNITY_ANDROID &&  !UNITY_EDITOR
@@ -63,7 +67,7 @@ public class PopUrl  {
 	//	works as clarifier - returns true if file:
 	static public bool			ResolveFileUrl(ref string Url)
 	{
-		if (!Url.ToLower ().StartsWith ("file://"))
+		if (!Url.ToLower ().StartsWith ( FileProtocol ))
 			return false;
 		return true;
 	}
@@ -71,7 +75,7 @@ public class PopUrl  {
 	public static string		MakeFileUrl(string FilePath)
 	{
 		//	gr: windows requires 3 slashes?
-		return "file://" + FilePath;
+		return FileProtocol + FilePath;
 	}
 
 	static bool					ReplacePathUrl(ref string Url,string Prefix,string Path)
@@ -91,7 +95,7 @@ public class PopUrl  {
 			if (NewPath == null)
 				return false;
 
-			return ReplacePathUrl( ref Url, "sdcard:", NewPath );
+			return ReplacePathUrl( ref Url, SDCardProtocol, NewPath );
 		#else
 			//	no sdcard
 			return false;
@@ -100,12 +104,12 @@ public class PopUrl  {
 
 	static public bool			ResolveStreamingAssetsUrl(ref string Url)
 	{
-		return ReplacePathUrl( ref Url, "streamingassets:", Application.streamingAssetsPath + "/" );
+		return ReplacePathUrl( ref Url, StreamingAssetsProtocol, Application.streamingAssetsPath + "/" );
 	}
 
 	static public bool			ResolvePersistentDataUrl(ref string Url)
 	{
-		return ReplacePathUrl( ref Url, "persistentdata:", Application.persistentDataPath + "/" );
+		return ReplacePathUrl( ref Url, PersistentDataProtocol, Application.persistentDataPath + "/" );
 	}
 
 
