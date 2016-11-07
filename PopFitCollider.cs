@@ -1,10 +1,14 @@
 ﻿using UnityEngine;
-using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 public class PopFitCollider : MonoBehaviour {
-	
+
+	#if UNITY_EDITOR
 	[MenuItem("NewChromantics/Collider/Fit collider to Children")]
 	static void FitColliderToChildren() {
 		foreach (GameObject rootGameObject in Selection.gameObjects) {
@@ -52,5 +56,6 @@ public class PopFitCollider : MonoBehaviour {
 
 		}
 	}
+	#endif
 
 }

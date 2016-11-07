@@ -1,8 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
-using UnityEditor;
 using System.Collections.Generic;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
+
+#if UNITY_EDITOR
 public class CameraPreviewWindow : UnityEditor.EditorWindow
 {
 	public Camera mCamera;
@@ -102,4 +107,4 @@ public class CameraPreviewWindow : UnityEditor.EditorWindow
 		}
 	}
 }
-
+#endif
