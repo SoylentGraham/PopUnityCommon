@@ -24,8 +24,14 @@ public class FastParse : MonoBehaviour {
 				Pos++;
 				break;
 			}
+
+			//	throw if non-number
+			var CharNumber = FloatStr [Pos] - '0';
+			if (CharNumber < 0 || CharNumber > 9)
+				throw new System.Exception ("Nan string");
+
 			Major *= 10;
-			Major += FloatStr [Pos] - '0';
+			Major += CharNumber;
 			Pos++;
 		}
 		
@@ -37,7 +43,13 @@ public class FastParse : MonoBehaviour {
 				Pos++;
 				continue;
 			}
-			Minor += (FloatStr [Pos] - '0') * MinorScale;
+
+			//	throw if non-number
+			var CharNumber = FloatStr [Pos] - '0';
+			if (CharNumber < 0 || CharNumber > 9)
+				throw new System.Exception ("Nan string");
+			
+			Minor += CharNumber * MinorScale;
 			MinorScale /= 10.0f;
 			Pos++;
 		}
