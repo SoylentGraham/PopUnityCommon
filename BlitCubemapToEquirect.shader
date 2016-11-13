@@ -8,6 +8,7 @@
 		CubemapBack ("CubemapBack", 2D) = "white" {}
 		CubemapTop ("CubemapTop", 2D) = "white" {}
 		CubemapBottom ("CubemapBottom", 2D) = "white" {}
+		Cubemap("Cubemap", CUBE ) = "white" {}
 	}
 	SubShader
 	{
@@ -22,6 +23,9 @@
 			
 			#include "UnityCG.cginc"
 			#include "PopCommon.cginc"
+
+			//	if neither keyword set, first is used
+			#pragma multi_compile USE_MULTIFACES USE_CUBEMAP
 
 			struct appdata
 			{
@@ -41,6 +45,7 @@
 			sampler2D CubemapBack;
 			sampler2D CubemapTop;
 			sampler2D CubemapBottom;
+			samplerCUBE Cubemap;
 			
 			v2f vert (appdata v)
 			{
@@ -152,12 +157,35 @@
 			{
 				//	rotate uv (??)
 				float2 uv = i.uv.yx;
+
+				#if !defined(USE_CUBEMAP)
 				uv.y = 1 - uv.y;
+				#endif
+
 				float2 LatLon;
+
+
+				//#if defined(USE_CUBEMAP)
+				uv.y *= 2;
+				//#endif
+
 				LatLon.x = lerp( -UNITY_PI/2, UNITY_PI/2, uv.x );
-				LatLon.y = lerp( -UNITY_PI, UNITY_PI, uv.y );
+				LatLon.y = lerp( -UNITY_PI/2, UNITY_PI/2, uv.y );
 				float3 View = LatLonToView( LatLon );
-				return SampleTexCube( View );
+
+
+
+
+				#if defined(USE_CUBEMAP)
+				return float4( View, 1 );
+					float4 Rgba = texCUBE( Cubemap, View );
+					Rgba.a = 1;
+					return Rgba;
+				#elif USE_MULTIFACES
+					
+					return SampleTexCube( View );
+				#endif
+				return float4(1,0,0,1);
 			}
 			ENDCG
 		}
