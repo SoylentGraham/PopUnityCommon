@@ -101,13 +101,11 @@ float sign (float2 p1, float2 p2, float2 p3)
     return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
 }
 
-bool PointInTriangle (float2 pt, float2 v1, float2 v2, float2 v3)
+bool PointInTriangle_Direct(float2 pt, float2 v1, float2 v2, float2 v3)
 {
-    bool b1, b2, b3;
-
-    b1 = sign(pt, v1, v2) < 0.0f;
-    b2 = sign(pt, v2, v3) < 0.0f;
-    b3 = sign(pt, v3, v1) < 0.0f;
+	bool b1 = sign(pt, v1, v2) < 0.0f;
+	bool b2 = sign(pt, v2, v3) < 0.0f;
+	bool b3 = sign(pt, v3, v1) < 0.0f;
 
     return ((b1 == b2) && (b2 == b3));
 }
@@ -117,37 +115,57 @@ bool PointInTriangle (float2 pt, float2 v1, float2 v2, float2 v3)
 //	rewrite GetTriangleBarycentric to not use cross at all to simplify code
 float2 Cross2(float2 a2,float2 b2)
 {
-	float3 a3 = float3( a2.x, a2.x, 0 );
-	float3 b3 = float3( b2.x, b2.x, 0 );
+	float3 a3 = float3( a2.x, a2.y, 0 );
+	float3 b3 = float3( b2.x, b2.y, 0 );
 
 	float3 c3 = cross( a3, b3 );
 	return c3.xy;
 }
 
-float2 GetTriangleBarycentric(float2 Point,float2 p1,float2 p2,float2 p3,float2 uv1,float2 uv2,float2 uv3)
+//	http://gamedev.stackexchange.com/a/23745
+float3 GetTriangleBarycentric(float2 Point,float2 p1,float2 p2,float2 p3)
 {
-	float2 f = Point;
-	
-	// calculate vectors from point f to vertices p1, p2 and p3:
-	float2 f1 = p1-f;
-	float2 f2 = p2-f;
-	float2 f3 = p3-f;
-	
+	float2 a = p1;
+	float2 b = p2;
+	float2 c = p3;
+	float2 p = Point;
+	float2 v0 = b - a;
+	float2 v1 = c - a;
+	float2 v2 = p - a;
+	float d00 = dot(v0, v0);
+	float d01 = dot(v0, v1);
+	float d11 = dot(v1, v1);
+	float d20 = dot(v2, v0);
+	float d21 = dot(v2, v1);
+	float denom = d00 * d11 - d01 * d01;
+	float v = (d11 * d20 - d01 * d21) / denom;
+	float w = (d00 * d21 - d01 * d20) / denom;
+	float u = 1.0 - v - w;
+	return float3(u,v,w);
+}
 
-	// calculate the areas and factors (order of parameters doesn't matter):
-	float a = length(Cross2(p1-p2, p1-p3)); // main triangle area a
-	float a1 = length(Cross2(f2, f3)) / a; // p1's triangle area / a
-	float a2 = length(Cross2(f3, f1)) / a; // p2's triangle area / a 
-	float a3 = length(Cross2(f1, f2)) / a; // p3's triangle area / a
-	// find the uv corresponding to point f (uv1/uv2/uv3 are associated to p1/p2/p3):
-	float uv = uv1 * a1 + uv2 * a2 + uv3 * a3;
-	return uv;
+float2 GetTriangleBarycentric2(float2 Point,float2 p1,float2 p2,float2 p3,float2 a,float2 b,float2 c)
+{
+	float3 Bary = GetTriangleBarycentric( Point, p1, p2, p3 );
+	return (a * Bary.x) + (b * Bary.y) + (c * Bary.z);
+}
+
+float3 GetTriangleBarycentric3(float2 Point,float2 p1,float2 p2,float2 p3,float3 a,float3 b,float3 c)
+{
+	float3 Bary = GetTriangleBarycentric( Point, p1, p2, p3 );
+	return (a * Bary.x) + (b * Bary.y) + (c * Bary.z);
+}
+
+float4 GetTriangleBarycentric3(float2 Point,float2 p1,float2 p2,float2 p3,float4 a,float4 b,float4 c)
+{
+	float3 Bary = GetTriangleBarycentric( Point, p1, p2, p3 );
+	return (a * Bary.x) + (b * Bary.y) + (c * Bary.z);
 }
 
 bool PointInsideTriangle(float2 p,float2 t0,float2 t1,float2 t2)
 {
-	return PointInTriangle(p,t0,t1,t2);
-	float2 uv = GetTriangleBarycentric( p, t0, t1, t2, float2(0,0), float2(1,0), float2(1,1) );
+	return PointInTriangle_Direct(p,t0,t1,t2);
+	float2 uv = GetTriangleBarycentric2( p, t0, t1, t2, float2(0,0), float2(1,0), float2(1,1) );
 
 	//	Just evaluate s, t and 1-s-t. The point p is inside the triangle if and only if they are all positive.
 	
