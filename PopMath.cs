@@ -42,5 +42,14 @@ public class PopMath {
 		return new Rect (ViewRect.x, Tex.height-ViewRect.yMax, ViewRect.width, ViewRect.height);
 	}
 
+	public static float GetTrianlgeArea(Vector2 t0,Vector2 t1,Vector2 t2)
+	{
+		var a = Vector2.Distance(t0,t1);
+		var b = Vector2.Distance(t1,t2);
+		var c = Vector2.Distance(t2,t0);
+		var s = (a + b + c) / 2;
+		return Mathf.Sqrt(s * (s-a) * (s-b) * (s-c));
+	}
+
 }
 
