@@ -7,6 +7,7 @@ using System.Collections;
 public class ShaderBlit : MonoBehaviour {
 
 	public bool					Dirty = true;
+	public bool					AlwaysDirtyInEditor = true;
 	public Texture				Input;
 	public Shader				BlitShader;
 	public Material				BlitMaterial;
@@ -20,6 +21,9 @@ public class ShaderBlit : MonoBehaviour {
 
 	void Update ()
 	{
+		if ( Application.isEditor && !Application.isPlaying && AlwaysDirtyInEditor )
+			Dirty = true;
+
 		if ( !Dirty )
 			return;
 
