@@ -194,3 +194,69 @@ float3 LatLonToView(float2 LatLon)
 }
 
 
+float2 ViewToEquirect(float3 View3)
+{
+	View3 = normalize(View3);
+	float2 longlat = float2(atan2(View3.x, View3.z) + UNITY_PI, acos(-View3.y));
+
+	//longlat.x += lerp( 0, UNITY_PI*2, Range( 0, 360, LatitudeOffset ) );
+	//longlat.y += lerp( 0, UNITY_PI*2, Range( 0, 360, LongitudeOffset ) );
+
+	float2 uv = longlat / float2(2.0 * UNITY_PI, UNITY_PI);
+
+	return uv;
+}
+
+
+float2 NormalizeUv(float2 uv)
+{
+	//	0..1 -> -1..1
+	uv *= 2;
+	uv -= 1;
+	return uv;
+}
+
+float3 CubeUvToView(float2 uv,float3x3 Transform)
+{
+	uv = NormalizeUv(uv);
+	return mul( Transform, float3(uv,1) );
+}
+
+//	https://github.com/SoylentGraham/panopo.ly/blob/master/site_upload/cubemap.php#L286
+//	gr: replace these with a matrix!
+float3 CubeLeftToView(float2 uv)
+{
+	uv = NormalizeUv(uv);
+	return float3( -1, uv.y, uv.x );
+}
+
+float3 CubeRightToView(float2 uv)
+{
+	uv = NormalizeUv(uv);
+	return float3( 1, uv.y, -uv.x );
+}
+
+float3 CubeUpToView(float2 uv)
+{
+	uv = NormalizeUv(uv);
+	return float3( -uv.x, 1, uv.y );
+}
+
+float3 CubeDownToView(float2 uv)
+{
+	uv = NormalizeUv(uv);
+	return float3( -uv.x, -1, -uv.y );
+}
+
+float3 CubeForwardToView(float2 uv)
+{
+	uv = NormalizeUv(uv);
+	return float3( uv.x, uv.y, 1 );
+}
+
+float3 CubeBackwardToView(float2 uv)
+{
+	uv = NormalizeUv(uv);
+	return float3( -uv.x, uv.y, -1 );
+}
+
