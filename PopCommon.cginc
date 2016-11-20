@@ -260,3 +260,40 @@ float3 CubeBackwardToView(float2 uv)
 	return float3( -uv.x, uv.y, -1 );
 }
 
+
+
+float2 NearestToLine2(float2 Position,float2 Start,float2 End)
+{
+	float2 Direction = End - Start;
+	float DirectionLength = length(Direction);
+	float Projection = dot( Position - Start, Direction) / (DirectionLength*DirectionLength);
+
+	//	past start
+	Projection = max( 0, Projection );
+	//	past end
+	Projection = min( 1, Projection );
+
+	//	is using lerp faster than 
+	//	Near = Start + (Direction * Projection);
+	float2 Near = lerp( Start, End, Projection );
+	return Near;
+}
+
+
+float DistanceToRay2(float2 Position,float2 Start,float2 End)
+{
+	//	get length of cross product
+	float2 LineDir = End - Start;
+	float2 PerpDir = float2( LineDir.y, -LineDir.x);
+	float2 dirToPt1 = Start - Position;
+	return abs( dot( normalize(PerpDir), dirToPt1 ) );
+}
+
+
+float DistanceToLine2(float2 Position,float2 Start,float2 End)
+{
+	float2 Near = NearestToLine2( Position, Start, End );
+	return length( Near - Position );
+}
+
+
