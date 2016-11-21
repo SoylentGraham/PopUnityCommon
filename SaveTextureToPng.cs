@@ -48,19 +48,34 @@ public class SaveTextureToPng : MonoBehaviour {
 
 		return DoSaveTextureToPng( Tex, Filename, Alpha );
 	}
-	#endif
+#endif
 
-	static public bool DoSaveTextureToPng(Texture Tex,string Filename,bool Alpha)
-	{
-		//	copy to render texture
-		RenderTexture rt = RenderTexture.GetTemporary( Tex.width, Tex.height, 0, RenderTextureFormat.ARGB32 );
+	static public Texture2D GetTexture2D(Texture Tex,bool Alpha)
+	{ 
+		return GetTexture2D( Tex, Alpha ? TextureFormat.ARGB32 : TextureFormat.RGB24 );
+	}
+
+	static public Texture2D GetTexture2D(Texture Tex,TextureFormat Format)
+	{ 
+		if ( Tex is Texture2D )
+			return Tex as Texture2D;
+	
+		//	copy to render texture and read
+		RenderTexture rt = RenderTexture.GetTemporary( Tex.width, Tex.height, 0, RenderTextureFormat.ARGBFloat );
 		Graphics.Blit( Tex, rt );
-		Texture2D Temp = new Texture2D( rt.width, rt.height, Alpha ? TextureFormat.ARGB32 : TextureFormat.RGB24, false );
+		Texture2D Temp = new Texture2D( rt.width, rt.height, Format, false );
 		RenderTexture.active = rt;
 		Temp.ReadPixels( new Rect(0,0,rt.width,rt.height), 0, 0 );
 		Temp.Apply();
 		RenderTexture.active = null;
 		RenderTexture.ReleaseTemporary( rt );
+
+		return Temp;
+	}
+
+	static public bool DoSaveTextureToPng(Texture Tex,string Filename,bool Alpha)
+	{
+		var Temp = GetTexture2D( Tex, Alpha );
 
 		byte[] Bytes = Temp.EncodeToPNG();
 		File.WriteAllBytes( Filename, Bytes );
