@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class PopMath {
 
@@ -44,3 +45,17 @@ public class PopMath {
 
 }
 
+//	gr: this should be somewhere else
+public class Pop
+{ 
+	public static int sizeofElement<T>(T[] Array)
+	{
+		return System.Runtime.InteropServices.Marshal.SizeOf(typeof(T));
+	}
+
+	public static int sizeofElement<T>(List<T> Array)
+	{
+		return System.Runtime.InteropServices.Marshal.SizeOf(typeof(T));
+	}
+
+}
