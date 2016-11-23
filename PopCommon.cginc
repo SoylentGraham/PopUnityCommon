@@ -9,6 +9,24 @@ float min3(float a,float b,float c)
 	return min( a, min( b,c ) );
 }
 
+float Range(float Min,float Max,float Time)
+{
+	return (Time-Min) / (Max-Min);
+}
+
+//	0 = red, 1=green
+float3 NormalToRedGreen(float Value)
+{
+	Value = clamp( 0.0, 1.0, Value );
+	if ( Value < 0.5 )
+	{
+		float Yellow = Range( 0.0, 0.5, Value );
+		return float3( 1.0, Yellow, 0.0 );
+	}
+	float Yellow = Range( 1.0, 0.5, Value );
+	return float3( Yellow, 1.0, 0.0 );
+}
+
 float3 RgbToHsl(float3 rgb)
 {
 	float r = rgb.x;
