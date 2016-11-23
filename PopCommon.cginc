@@ -1,4 +1,6 @@
-﻿
+﻿#define hypotenuse(o,a)	sqrt( (a*a)+(o*o) )
+
+
 float max3(float a,float b,float c)
 {
 	return max( a, max( b,c ) );
@@ -280,11 +282,19 @@ float3 CubeBackwardToView(float2 uv)
 
 
 
-float2 NearestToLine2(float2 Position,float2 Start,float2 End)
+float TimeAlongLine2(float2 Position,float2 Start,float2 End)
 {
 	float2 Direction = End - Start;
 	float DirectionLength = length(Direction);
 	float Projection = dot( Position - Start, Direction) / (DirectionLength*DirectionLength);
+
+	return Projection;
+}
+
+
+float2 NearestToLine2(float2 Position,float2 Start,float2 End)
+{
+	float Projection = TimeAlongLine2( Position, Start, End );
 
 	//	past start
 	Projection = max( 0, Projection );
