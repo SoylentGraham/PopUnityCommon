@@ -264,7 +264,7 @@ static const float3x3 CubemapUvTransform[CUBEMAP_FACECOUNT] =
 	CUBEMAP_DOWN_UVTRANSFORM		
 };
 
-
+//	gr: be careful, current use of this I believe is 0..1 and not -1...1 but ViewToEquirect corrects for lat/lon
 float3 CubeUvToView(float2 uv,float3x3 Transform)
 {
 	uv = NormalizeUv(uv);
