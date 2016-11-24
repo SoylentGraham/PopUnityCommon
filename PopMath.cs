@@ -5,10 +5,10 @@ using System.Collections.Generic;
 
 public struct Line3
 {
-	public Vector2	Start;
-	public Vector2	End;
+	public Vector3	Start;
+	public Vector3	End;
 
-	public Line3(Vector2 _Start, Vector2 _End)
+	public Line3(Vector3 _Start, Vector3 _End)
 	{ 
 		Start = _Start;
 		End = _End;
@@ -17,7 +17,7 @@ public struct Line3
 };
 
 [System.Serializable]
-public class UnityEvent_Line3 : UnityEngine.Events.UnityEvent <Line3> {}
+public class UnityEvent_ListOfLine3 : UnityEngine.Events.UnityEvent <List<Line3>> {}
 
 
 public class PopMath {
@@ -63,6 +63,7 @@ public class PopMath {
 
 
 	//	to match PopCommon.cginc
+	//	gr: replace with UnityEngine.CubemapFace for c# purposes
 	public enum CubemapFaceIndex
 	{
 		CUBEMAP_UP			= 0,
@@ -74,21 +75,18 @@ public class PopMath {
 		CUBEMAP_FACECOUNT	= 6,
 	};
 
-	static void	MakeMatrix(ref Matrix4x4 Mtx,float m00,float m10,float m20,float m01,float m11,float m21,float m02,float m12,float m22)
+	static void	MakeMatrix3x3(ref Matrix4x4 Mtx,float m00,float m10,float m20,float m01,float m11,float m21,float m02,float m12,float m22)
 	{
-		if ( Mtx == null )
-		{
-			Mtx = new Matrix4x4();
-			Mtx.m00 = m00;
-			Mtx.m10 = m10;
-			Mtx.m20 = m20;
-			Mtx.m01 = m01;
-			Mtx.m11 = m11;
-			Mtx.m21 = m21;
-			Mtx.m02 = m02;
-			Mtx.m12 = m12;
-			Mtx.m22 = m22;
-		}
+		Mtx = new Matrix4x4();
+		Mtx.m00 = m00;
+		Mtx.m10 = m10;
+		Mtx.m20 = m20;
+		Mtx.m01 = m01;
+		Mtx.m11 = m11;
+		Mtx.m21 = m21;
+		Mtx.m02 = m02;
+		Mtx.m12 = m12;
+		Mtx.m22 = m22;
 	}
 
 	static Matrix4x4[]			_CUBEMAP_UVTRANSFORMS = null;
@@ -101,17 +99,28 @@ public class PopMath {
 				//	https://github.com/SoylentGraham/panopo.ly/blob/master/site_upload/cubemap.php#L286
 				//	& Cubemap.cginc
 				_CUBEMAP_UVTRANSFORMS = new Matrix4x4[(int)CubemapFaceIndex.CUBEMAP_FACECOUNT];
-				MakeMatrix( ref CUBEMAP_UVTRANSFORMS[(int)CubemapFaceIndex.CUBEMAP_UP],			-1,0,0,	0,0,1,	0,1,0 );
-				MakeMatrix( ref CUBEMAP_UVTRANSFORMS[(int)CubemapFaceIndex.CUBEMAP_DOWN],		-1,0,0,	0,0,-1,	0,-1,0 );
-				MakeMatrix( ref CUBEMAP_UVTRANSFORMS[(int)CubemapFaceIndex.CUBEMAP_FORWARD],	1,0,0,	0,1,0,	0,0,1 );
-				MakeMatrix( ref CUBEMAP_UVTRANSFORMS[(int)CubemapFaceIndex.CUBEMAP_BACKWARD],	-1,0,0,	0,1,0,	0,0,-1 );
-				MakeMatrix( ref CUBEMAP_UVTRANSFORMS[(int)CubemapFaceIndex.CUBEMAP_LEFT],		0,0,-1,	0,1,0,	1,0,0 );
-				MakeMatrix( ref CUBEMAP_UVTRANSFORMS[(int)CubemapFaceIndex.CUBEMAP_RIGHT],		0,0,1,	0,1,0,	-1,0,0 );
+				MakeMatrix3x3( ref CUBEMAP_UVTRANSFORMS[(int)CubemapFaceIndex.CUBEMAP_UP],			-1,0,0,	0,0,1,	0,1,0 );
+				MakeMatrix3x3( ref CUBEMAP_UVTRANSFORMS[(int)CubemapFaceIndex.CUBEMAP_DOWN],		-1,0,0,	0,0,-1,	0,-1,0 );
+				MakeMatrix3x3( ref CUBEMAP_UVTRANSFORMS[(int)CubemapFaceIndex.CUBEMAP_FORWARD],		1,0,0,	0,1,0,	0,0,1 );
+				MakeMatrix3x3( ref CUBEMAP_UVTRANSFORMS[(int)CubemapFaceIndex.CUBEMAP_BACKWARD],	-1,0,0,	0,1,0,	0,0,-1 );
+				MakeMatrix3x3( ref CUBEMAP_UVTRANSFORMS[(int)CubemapFaceIndex.CUBEMAP_LEFT],		0,0,-1,	0,1,0,	1,0,0 );
+				MakeMatrix3x3( ref CUBEMAP_UVTRANSFORMS[(int)CubemapFaceIndex.CUBEMAP_RIGHT],		0,0,1,	0,1,0,	-1,0,0 );
 			}
 			return _CUBEMAP_UVTRANSFORMS;
 		}
 	}
-	
+
+	public static Vector3 CubemapUvToView(Vector2 Uv, CubemapFaceIndex CubemapFace)
+	{
+		Uv.x -= 0.5f;
+		Uv.x *= 2.0f;
+		Uv.y -= 0.5f;
+		Uv.y *= 2.0f;
+		Vector3 Uvw = new Vector3(Uv.x, Uv.y, 1.0f );
+		var Mtx = CUBEMAP_UVTRANSFORMS[(int)CubemapFace];
+		return Mtx.MultiplyPoint3x4( Uvw );
+	}
+
 	
 
 }
