@@ -236,48 +236,69 @@ float2 NormalizeUv(float2 uv)
 	return uv;
 }
 
+
+#define CUBEMAP_UP			0
+#define CUBEMAP_FORWARD		1
+#define CUBEMAP_LEFT		2
+#define CUBEMAP_BACKWARD	3
+#define CUBEMAP_RIGHT		4
+#define CUBEMAP_DOWN		5
+#define CUBEMAP_FACECOUNT	6
+
+//	https://github.com/SoylentGraham/panopo.ly/blob/master/site_upload/cubemap.php#L286
+#define CUBEMAP_UP_UVTRANSFORM			float3x3( -1,0,0,	0,0,1,	0,1,0 )		//	float3( -uv.x, 1, uv.y );
+#define CUBEMAP_DOWN_UVTRANSFORM		float3x3( -1,0,0,	0,0,-1,	0,-1,0 )	//	float3( -uv.x, -1, -uv.y );
+#define CUBEMAP_FORWARD_UVTRANSFORM		float3x3( 1,0,0,	0,1,0,	0,0,1 )		//	float3( uv.x, uv.y, 1 );
+#define CUBEMAP_BACKWARD_UVTRANSFORM	float3x3( -1,0,0,	0,1,0,	0,0,-1 )	//	float3( -uv.x, uv.y, -1 );
+#define CUBEMAP_LEFT_UVTRANSFORM		float3x3( 0,0,-1,	0,1,0,	1,0,0 )	//	float3( -1, uv.y, -uv.x );
+#define CUBEMAP_RIGHT_UVTRANSFORM		float3x3( 0,0,1,	0,1,0,	-1,0,0 )	//	float3( 1, uv.y, -uv.x );
+
+//	must match CUBEMAP_XX order
+static const float3x3 CubemapUvTransform[CUBEMAP_FACECOUNT] = 
+{
+	CUBEMAP_UP_UVTRANSFORM,	
+	CUBEMAP_FORWARD_UVTRANSFORM,
+	CUBEMAP_LEFT_UVTRANSFORM,
+	CUBEMAP_BACKWARD_UVTRANSFORM,
+	CUBEMAP_RIGHT_UVTRANSFORM,
+	CUBEMAP_DOWN_UVTRANSFORM		
+};
+
+
 float3 CubeUvToView(float2 uv,float3x3 Transform)
 {
 	uv = NormalizeUv(uv);
 	return mul( Transform, float3(uv,1) );
 }
 
-//	https://github.com/SoylentGraham/panopo.ly/blob/master/site_upload/cubemap.php#L286
-//	gr: replace these with a matrix!
 float3 CubeLeftToView(float2 uv)
 {
-	uv = NormalizeUv(uv);
-	return float3( -1, uv.y, uv.x );
+	return CubeUvToView( uv, CUBEMAP_LEFT_UVTRANSFORM );
 }
 
 float3 CubeRightToView(float2 uv)
 {
-	uv = NormalizeUv(uv);
-	return float3( 1, uv.y, -uv.x );
+	return CubeUvToView( uv, CUBEMAP_RIGHT_UVTRANSFORM );
 }
 
 float3 CubeUpToView(float2 uv)
 {
-	uv = NormalizeUv(uv);
-	return float3( -uv.x, 1, uv.y );
+	return CubeUvToView( uv, CUBEMAP_UP_UVTRANSFORM );
 }
 
 float3 CubeDownToView(float2 uv)
 {
-	uv = NormalizeUv(uv);
-	return float3( -uv.x, -1, -uv.y );
+	return CubeUvToView( uv, CUBEMAP_DOWN_UVTRANSFORM );
 }
 
 float3 CubeForwardToView(float2 uv)
 {
-	uv = NormalizeUv(uv);
-	return float3( uv.x, uv.y, 1 );
+	return CubeUvToView( uv, CUBEMAP_FORWARD_UVTRANSFORM );
 }
 
 float3 CubeBackwardToView(float2 uv)
 {
-	uv = NormalizeUv(uv);
-	return float3( -uv.x, uv.y, -1 );
+	return CubeUvToView( uv, CUBEMAP_BACKWARD_UVTRANSFORM );
 }
 
 
