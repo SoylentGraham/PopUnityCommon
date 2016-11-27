@@ -1,4 +1,6 @@
-﻿Shader "NewChromantics/WorldSpaceLaserGrid"
+﻿// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+
+Shader "NewChromantics/WorldSpaceLaserGrid"
 {
 	Properties
 	{
@@ -43,7 +45,7 @@
 			{
 				v2f o;
 				o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
-				o.WorldSpace = mul(_Object2World,v.vertex);
+				o.WorldSpace = mul(unity_ObjectToWorld,v.vertex);
 				return o;
 			}
 			
