@@ -157,6 +157,7 @@ public class PopUrl  {
 			BaseUrl = BaseUrl.Substring (0, EndIndex);
 		}
 
+#if !UNITY_WSA
 		//	file:// on windows needs \\ slashes
 		if (BaseUrl.ToLower().StartsWith("file:") )
 		{
@@ -167,7 +168,7 @@ public class PopUrl  {
 			//	urls need forward slashes
 			BaseUrl += "/" + Filename;
 		}
-
+#endif
 		return BaseUrl;
 	}
 }
