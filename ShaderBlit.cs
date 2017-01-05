@@ -28,10 +28,13 @@ public class ShaderBlit : MonoBehaviour {
 				BlitMaterial = new Material( BlitShader );
 		}
 
-		if ( BlitMaterial == null )
-			return;
+		//if ( BlitMaterial == null )
+		//	return;
 
-		Graphics.Blit( Input, Output, BlitMaterial );
+		if ( BlitMaterial == null )
+			Graphics.Blit( Input, Output );
+		else
+			Graphics.Blit( Input, Output, BlitMaterial );
 
 	}
 
