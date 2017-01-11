@@ -121,7 +121,38 @@ public class PopMath {
 		return Mtx.MultiplyPoint3x4( Uvw );
 	}
 
-	
+
+
+	public static Vector3[] GetBoundsCorners(Bounds Box)
+	{
+		var Corners = new Vector3[8];
+		Corners[0] = Box.center + new Vector3 (Box.min.x, Box.min.y, Box.min.z);
+		Corners[1] = Box.center + new Vector3 (Box.min.x, Box.min.y, Box.max.z);
+		Corners[2] = Box.center + new Vector3 (Box.min.x, Box.max.y, Box.min.z);
+		Corners[3] = Box.center + new Vector3 (Box.min.x, Box.max.y, Box.max.z);
+		Corners[4] = Box.center + new Vector3 (Box.max.x, Box.min.y, Box.min.z);
+		Corners[5] = Box.center + new Vector3 (Box.max.x, Box.min.y, Box.max.z);
+		Corners[6] = Box.center + new Vector3 (Box.max.x, Box.max.y, Box.min.z);
+		Corners[7] = Box.center + new Vector3 (Box.max.x, Box.max.y, Box.max.z);
+		return Corners;
+	}
+
+	public static bool IsBoundsNeighbours(Bounds a,Bounds b,float MaxDistance=0.001f)
+	{
+		//	hacky, probably not that accurate... especially if corners are not near. probably needs a plane/plane distance test
+		var Corners = GetBoundsCorners(b);
+		var MinDistance = 99999.0f;
+		foreach (var Corner in Corners) {
+			var Distance = a.SqrDistance (Corner);
+			MinDistance = Mathf.Min (Distance, MinDistance);
+		}
+
+		MinDistance = Mathf.Sqrt (MinDistance);
+
+		//	swap magic number for say... 0.001f * volume/largest extent
+		return MinDistance < MaxDistance;
+	}
+
 
 }
 
