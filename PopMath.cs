@@ -153,6 +153,12 @@ public class PopMath {
 		return MinDistance < MaxDistance;
 	}
 
+	public static float Vector3_DistanceSquared(Vector3 a,Vector3 b)
+	{
+		a -= b;
+		return a.sqrMagnitude;
+	}
+
 
 }
 
@@ -167,6 +173,12 @@ public class Pop
 	public static int sizeofElement<T>(List<T> Array)
 	{
 		return System.Runtime.InteropServices.Marshal.SizeOf(typeof(T));
+	}
+
+
+	public static Mesh	GetPrimitiveMesh(PrimitiveType type)
+	{
+		return GameObject.CreatePrimitive( type ).GetComponent<MeshFilter>().sharedMesh;
 	}
 
 }
