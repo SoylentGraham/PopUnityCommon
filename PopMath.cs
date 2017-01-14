@@ -181,4 +181,13 @@ public class Pop
 		return GameObject.CreatePrimitive( type ).GetComponent<MeshFilter>().sharedMesh;
 	}
 
+
+	public static void AllocIfNull<T>(ref T Object) where T : new()
+	{
+		if ( Object != null )
+			return;
+
+		Object = new T();
+	}
+
 }
