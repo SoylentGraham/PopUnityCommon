@@ -213,6 +213,11 @@ public class ScopedComputeBuffer
 		Buffer = new ComputeBuffer( Count, Stride );
 	}
 
+	public ScopedComputeBuffer(int Count,int Stride,ComputeBufferType type)
+	{
+		Buffer = new ComputeBuffer( Count, Stride, type );
+	}
+
 	public void SetData(System.Array Data)
 	{
 		Buffer.SetData( Data );
@@ -221,6 +226,11 @@ public class ScopedComputeBuffer
 	public void GetData(System.Array Data)
 	{
 		Buffer.GetData( Data );
+	}
+
+	public void SetCounterValue(uint counterValue)
+	{
+		Buffer.SetCounterValue( counterValue );
 	}
 }
 
