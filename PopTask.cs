@@ -26,6 +26,9 @@ public abstract class PopTaskManager : MonoBehaviour {
 	protected List<TTask>		Tasks;
 
 	abstract protected void		PopulateTasks();
+	virtual protected void		OnTaskException(System.Exception e)
+	{
+	}
 
 	IEnumerator RunTasks()
 	{
@@ -47,6 +50,7 @@ public abstract class PopTaskManager : MonoBehaviour {
 			}
 			catch (System.Exception e)
 			{
+				OnTaskException(e);
 				Debug.LogException(e);
 				if ( Progress )
 					Progress.FinishProgress(false);
