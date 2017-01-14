@@ -191,3 +191,37 @@ public class Pop
 	}
 
 }
+
+
+public class ScopedComputeBuffer
+{
+	public ComputeBuffer	Buffer;
+
+	~ScopedComputeBuffer()
+	{
+		Buffer.Release();
+	} 
+
+	public static implicit operator ComputeBuffer(ScopedComputeBuffer scb)
+	{
+		return scb.Buffer;
+    }
+	
+	//	mapping
+	public ScopedComputeBuffer(int Count,int Stride)
+	{
+		Buffer = new ComputeBuffer( Count, Stride );
+	}
+
+	public void SetData(System.Array Data)
+	{
+		Buffer.SetData( Data );
+	}
+
+	public void GetData(System.Array Data)
+	{
+		Buffer.GetData( Data );
+	}
+}
+
+
