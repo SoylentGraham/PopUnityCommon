@@ -6,6 +6,7 @@ public class PopMouseLook : MonoBehaviour {
 
 	public bool				UseGyroOnMobile = true;
 	private Quaternion?		mInitialGyro = null;
+	public bool				UseLateUpdate = false;
 	
 	public enum RotationAxes { MouseXAndY = 0, MouseX = 1, MouseY = 2 }
 	public RotationAxes axes = RotationAxes.MouseXAndY;
@@ -41,8 +42,19 @@ public class PopMouseLook : MonoBehaviour {
 		return true;
 	}
 
+	void Update()
+	{
+		if (!UseLateUpdate)
+			UpdateLook ();
+	}
 
-	void Update ()
+	void LateUpdate()
+	{
+		if (UseLateUpdate)
+			UpdateLook ();
+	}
+
+	void UpdateLook ()
 	{
 		//	in VR mode, no mouse/gyro at all!
 		if (UsingVr() )
