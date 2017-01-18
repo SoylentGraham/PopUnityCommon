@@ -346,3 +346,54 @@ float DistanceToLine2(float2 Position,float2 Start,float2 End)
 }
 
 
+//	gr: from the tootle engine :) https://github.com/TootleGames/Tootle/blob/master/Code/TootleMaths/TLine.cpp
+float3 NearestToRay3(float3 Position,float3 Start,float3 Direction)
+{
+	float3 LineDir = Direction;
+	float LineDirDotProduct = dot( LineDir, LineDir );
+
+	//	avoid div by zero
+	//	gr: this means the line has no length.... for shaders maybe we can fudge/allow this
+	if ( LineDirDotProduct == 0 )
+		return Start;
+
+	float3 Dist = Position - Start;
+
+	float LineDirDotProductDist = dot( LineDir, Dist );
+
+	float TimeAlongLine = LineDirDotProductDist / LineDirDotProduct;
+
+	//	gr: for line segment
+	/*
+	if ( TimeAlongLine <= 0.f )
+		return Start;
+
+	if ( TimeAlongLine >= 1.f )
+		return GetEnd();
+	*/
+	//	gr: lerp this for gpu speedup
+	return Start + LineDir * TimeAlongLine;
+}
+
+float DistanceToRay3(float3 Position,float3 Start,float3 Direction)
+{
+	float3 Nearest = NearestToRay3( Position, Start, Direction );
+
+	return length( Position - Nearest );
+}
+
+//	possibly faster than above if whatever shader compiler replaces length() with a sqrt formula
+float DistanceSqToRay3(float3 Position,float3 Start,float3 Direction)
+{
+	float3 Nearest = NearestToRay3( Position, Start, Direction );
+
+	float3 Delta = Position - Nearest;
+
+	// Use pythaguras to work out distance between the two points
+	//	gr: err isn't this dot prod/magnitude?
+	//float DistSq = (Delta.x * Delta.x) + (Delta.y * Delta.y) + (Delta.z * Delta.z); 
+	float DistSq = dot( Delta, Delta );
+
+	return DistSq;
+}
+
