@@ -397,3 +397,10 @@ float DistanceSqToRay3(float3 Position,float3 Start,float3 Direction)
 	return DistSq;
 }
 
+//	vector from Pos to nearest point on ray
+float DeltaToRay3(float3 Position,float3 Start,float3 Direction)
+{
+	float3 Nearest = NearestToRay3( Position, Start, Direction );
+
+	return Position - Nearest;
+}
