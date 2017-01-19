@@ -5,6 +5,7 @@ using UnityEngine;
 public class SetMaterialValue : MonoBehaviour {
 
 	public Material	material;
+	public bool		GlobalUniform = false;
 	public string	Uniform;
 
 	[Header("If two-part value, this is the 2nd uniform. Dir in Ray")]
@@ -18,19 +19,41 @@ public class SetMaterialValue : MonoBehaviour {
 
 	public void SetMatrix(Matrix4x4 Value)
 	{
-		if (material == null)
-			return;
-		
-		material.SetMatrix (Uniform, Value);
+		if (GlobalUniform) 
+		{
+			Shader.SetGlobalMatrix (Uniform, Value);
+		}
+		else if ( material )
+		{
+			material.SetMatrix (Uniform, Value);
+		}
 	}
-		
+
+
+	public void SetTexture(Texture Value)
+	{
+		if (GlobalUniform)
+		{
+			Shader.SetGlobalTexture (Uniform, Value);
+		}
+		else if ( material )
+		{
+			material.SetTexture (Uniform, Value);
+		}
+	}
+
 	public void SetRay2(Ray Value)
 	{
-		if (material == null)
-			return;
-
-		material.SetVector (Uniform, Value.origin);
-		material.SetVector (Uniform2, Value.direction);
+		if (GlobalUniform) 
+		{
+			Shader.SetGlobalVector (Uniform, Value.origin);
+			Shader.SetGlobalVector (Uniform2, Value.direction);
+		} 
+		else if ( material )
+		{
+			material.SetVector (Uniform, Value.origin);
+			material.SetVector (Uniform2, Value.direction);
+		}
 	}			
 		
 
