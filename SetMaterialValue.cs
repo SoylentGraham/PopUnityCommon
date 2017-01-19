@@ -4,7 +4,24 @@ using UnityEngine;
 
 public class SetMaterialValue : MonoBehaviour {
 
-	public Material	material;
+	public Material	_material;
+
+	public Material material
+	{
+		get
+		{
+			if ( !_material )
+			{
+				var mr = GetComponent<MeshRenderer> ();
+				if ( mr )
+				{
+					_material = mr.sharedMaterial;
+				}
+			}
+			return _material;
+		}
+	}
+
 	public bool		GlobalUniform = false;
 	public string	Uniform;
 
@@ -13,8 +30,6 @@ public class SetMaterialValue : MonoBehaviour {
 
 	void Start()
 	{
-		if (!material)
-			material = GetComponent<MeshRenderer> ().sharedMaterial;
 	}
 
 	public void SetMatrix(Matrix4x4 Value)
@@ -56,5 +71,17 @@ public class SetMaterialValue : MonoBehaviour {
 		}
 	}			
 		
+	public void SetVector4(Vector4 Value)
+	{
+		if (GlobalUniform) 
+		{
+			Shader.SetGlobalVector (Uniform, Value);
+		}
+		else if ( material )
+		{
+			material.SetVector (Uniform, Value);
+		}
+	}
+
 
 }
