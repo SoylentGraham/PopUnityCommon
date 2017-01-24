@@ -160,7 +160,11 @@ public class PopMath {
 
 	public static float Vector3_DistanceSquared(Vector3 a,Vector3 b)
 	{
-		a -= b;
+		//	gr: this causes a constructor! not an alloc, but still more expensive :/
+		//a -= b;
+		a.x -= b.x;
+		a.y -= b.y;
+		a.z -= b.z;
 		return a.sqrMagnitude;
 	}
 
