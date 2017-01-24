@@ -38,6 +38,11 @@ public class PopMath {
 		return RectNorm;
 	}
 
+	public static float Range(float Min,float Max,float Value)
+	{
+		Value -= Min;
+		return Value / ( Max - Min);
+	}
 
 	public static Rect GetTextureRect(Texture Tex)
 	{
