@@ -84,4 +84,16 @@ public class SetMaterialValue : MonoBehaviour {
 	}
 
 
+	public void SetFloat(float Value)
+	{
+		if (GlobalUniform) 
+		{
+			Shader.SetGlobalFloat (Uniform, Value);
+		}
+		else if ( material )
+		{
+			material.SetFloat (Uniform, Value);
+		}
+	}
+
 }
