@@ -4,6 +4,16 @@ using UnityEngine;
 
 public class AssetWriter : MonoBehaviour {
 
+
+	#if UNITY_EDITOR
+	public static void DeleteAsset(string Name)
+	{
+		var Path = "Assets/" + Name + ".asset";
+		UnityEditor.AssetDatabase.DeleteAsset (Path);
+	}
+	#endif
+		
+
 	#if UNITY_EDITOR
 	public static T WriteAsset<T>(string Name,T Asset) where T : Object
 	{
