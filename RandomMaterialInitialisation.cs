@@ -41,7 +41,7 @@ public class RandomMaterialInitialisation : MonoBehaviour {
 		}
 		Debug.Log ("uniform " + Uniform + " in " + Shader.name + " = " + PropertyIndex);
 
-		float Default = UnityEditor.ShaderUtil.GetRangeLimits (Shader, PropertyIndex, 0);
+		//float Default = UnityEditor.ShaderUtil.GetRangeLimits (Shader, PropertyIndex, 0);
 		float Min = UnityEditor.ShaderUtil.GetRangeLimits (Shader, PropertyIndex, 1);
 		float Max = UnityEditor.ShaderUtil.GetRangeLimits (Shader, PropertyIndex, 2);
 
