@@ -1,4 +1,4 @@
-﻿#define hypotenuse(o,a)	sqrt( (a*a)+(o*o) )
+#define hypotenuse(o,a)	sqrt( (a*a)+(o*o) )
 
 
 float max3(float a,float b,float c)
@@ -10,6 +10,11 @@ float min3(float a,float b,float c)
 {
 	return min( a, min( b,c ) );
 }
+
+float Clamp01(float x) 
+{ 
+  return clamp( 0.0, 1.0, x ); 
+} 
 
 float Range(float Min,float Max,float Time)
 {
