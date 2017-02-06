@@ -96,4 +96,17 @@ public class SetMaterialValue : MonoBehaviour {
 		}
 	}
 
+
+	public void SetColor(Color Value)
+	{
+		if (GlobalUniform) 
+		{
+			Shader.SetGlobalColor (Uniform, Value);
+		}
+		else if ( material )
+		{
+			material.SetColor (Uniform, Value);
+		}
+	}
+
 }
