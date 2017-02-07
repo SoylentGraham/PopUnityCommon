@@ -4,25 +4,40 @@ using UnityEngine;
 using System.Threading;
 
 
-class JobThread
+public abstract class JobThread_Base<JOBTYPE>
 {
 	public bool				debug = true;
 
-	List<System.Action>		jobs = new List<System.Action>();
+	List<JOBTYPE>			jobs = new List<JOBTYPE>();
 	bool					run = true;
 	Thread					thread;
 
 	ManualResetEvent		IsIdle = new ManualResetEvent(true);
 
-	public JobThread()
+	public abstract void	ExecuteJob (JOBTYPE Job);
+
+	public JobThread_Base()
 	{
 	}
 
-	public void				PushJob(System.Action Job)
+	public void				PushJob(JOBTYPE Job)
 	{
 		jobs.Add (Job);
 		IsIdle.Reset ();	//	no longer idle
 		Wake();
+	}
+
+	public void				Shutdown()
+	{
+		run = false;
+
+		if (thread != null) {
+
+			Debug.Log ("Shutdown Worker thread joining...");
+			thread.Join ();
+			thread = null;
+			Debug.Log ("Shutdown Worker thread null'd");
+		}
 	}
 
 	void Wake()
@@ -35,7 +50,7 @@ class JobThread
 
 			if ( debug )
 				Debug.Log ("Worker thread not alive: " + jobs.Count + " jobs");
-			run = false;
+
 			if ( debug )
 				Debug.Log ("Worker thread joining...");
 			thread.Join ();
@@ -74,14 +89,11 @@ class JobThread
 
 				//	run through all the jobs, lock so we know they're busy
 				if ( debug )
-					print(jobs.Count + " Jobs todo");
+					Debug.Log(jobs.Count + " Jobs todo");
 
 				while (jobs.Count > 0) {
 					var Job0 = jobs [0];
-					if ( Job0 != null )
-					{
-						Job0.Invoke ();
-					}
+					ExecuteJob( Job0 );
 					jobs.RemoveAt (0);
 				}
 			}
@@ -99,17 +111,29 @@ class JobThread
 		IsIdle.Set ();
 	}
 
-	public void				WaitForJobs()
+	public void				WaitForJobs(int TimeoutMs=0)
 	{
 		Wake ();
 
 		if ( debug )
-			print ("Waiting for " + jobs.Count + " jobs.");
+			Debug.Log ("Waiting for " + jobs.Count + " jobs.");
 		
 		if (jobs.Count > 0) {
-			IsIdle.WaitOne ();
+			if ( TimeoutMs == 0 )
+				IsIdle.WaitOne ();
+			else
+				IsIdle.WaitOne (TimeoutMs);
 		}
 	}
 }
 
 
+public class JobThread : JobThread_Base<System.Action>
+{
+	public override void	ExecuteJob (System.Action Job)
+	{
+		if (Job != null)
+			Job.Invoke ();
+	}
+
+}
