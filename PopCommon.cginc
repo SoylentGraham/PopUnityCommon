@@ -13,7 +13,7 @@ float min3(float a,float b,float c)
 
 float Clamp01(float x) 
 { 
-  return clamp( 0.0, 1.0, x ); 
+  return clamp( x, 0.0, 1.0 ); 
 } 
 
 float Range(float Min,float Max,float Time)
@@ -24,7 +24,7 @@ float Range(float Min,float Max,float Time)
 //	0 = red, 1=green
 float3 NormalToRedGreen(float Value)
 {
-	Value = clamp( 0.0, 1.0, Value );
+	Value = Clamp01( Value );
 	if ( Value < 0.5 )
 	{
 		float Yellow = Range( 0.0, 0.5, Value );
