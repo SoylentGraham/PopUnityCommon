@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class FastParse : MonoBehaviour {
 
@@ -7,6 +8,9 @@ public class FastParse : MonoBehaviour {
 	//	needs more error checking
 	static public float	Float(string FloatStr)
 	{
+		if (FloatStr == null || FloatStr.Length == 0)
+			throw new System.Exception ("Empty string");
+		
 		float Major = 0;
 		float Minor = 0;
 		int Pos = 0;
@@ -56,4 +60,21 @@ public class FastParse : MonoBehaviour {
 		
 		return Modifier * (Major + Minor);
 	}
+
+	static public List<float>	Floats(string FloatString)
+	{
+		var FloatStrings = FloatString.Split (new char[]{ ' ' }, System.StringSplitOptions.RemoveEmptyEntries );
+		if (FloatStrings == null || FloatStrings.Length == 0)
+			FloatStrings = new string[1]{ FloatString };
+
+		var Floats = new List<float> ();
+
+		//	let errors throw
+		foreach (var s in FloatStrings) {
+			var f = Float (s);
+			Floats.Add (f);
+		}
+		return Floats;
+	}
+		
 }
