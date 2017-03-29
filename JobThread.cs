@@ -4,9 +4,159 @@ using UnityEngine;
 using System.Threading;
 
 
+//	from http://answers.unity3d.com/questions/754873/c-how-to-make-a-job-queue-for-noise-function.html
+public abstract class JobPool<JOBTYPE>
+{
+	class TJob
+	{
+		public JOBTYPE			job;
+		public ManualResetEvent	doneEvent; // a flag to signal when the work is complete
+		public JobPool<JOBTYPE>	parent;
+
+		public TJob(JOBTYPE _job,JobPool<JOBTYPE> _parent)
+		{
+			job = _job;
+			parent = _parent;
+			doneEvent = new ManualResetEvent(false);
+			doneEvent.Reset();
+		}
+			
+		public void		ThreadPoolCallback (System.Object o)
+		{
+			doneEvent.Reset();
+			parent.DoExecuteJob (this.job);
+			parent.RemoveJob (this);
+			doneEvent.Set ();
+		}
+	};
+
+
+	public bool				debug = true;
+	public float			jobProgress
+	{
+		get
+		{
+			return jobsCompleted / (float)Mathf.Max(1,jobsPending+jobsCompleted);
+		}
+	}
+	public int				jobsCompleted
+	{
+		get {
+			return jobsCompletedCount + jobsExceptionCount;
+		}		
+	}
+	public int				jobsPending
+	{
+		get
+		{
+			return (jobs!=null) ? jobs.Count : 0;
+		}
+	}
+	int						jobsCompletedCount = 0;
+	int						jobsExceptionCount = 0;
+
+	List<TJob>				jobs = new List<TJob>();
+	List<ManualResetEvent>	jobDoneEvents = new List<ManualResetEvent> ();
+	bool					run = true;
+	Thread					thread;
+
+	protected abstract void	ExecuteJob (JOBTYPE Job);
+
+	private void			DoExecuteJob(JOBTYPE Job)
+	{
+		try {
+			ExecuteJob (Job);
+			jobsCompletedCount++;
+		} catch {
+			jobsExceptionCount++;
+		}
+	}
+
+
+	public void				PushJob(JOBTYPE Job)
+	{
+		var NewJob = new TJob (Job, this);
+		lock (jobDoneEvents) {
+			jobs.Add (NewJob);
+			jobDoneEvents.Add (NewJob.doneEvent);
+		}
+		ThreadPool.QueueUserWorkItem ( NewJob.ThreadPoolCallback );
+	}
+
+	private void				RemoveJob(TJob Job)
+	{
+		lock (jobDoneEvents) {
+			jobDoneEvents.Remove (Job.doneEvent);
+			jobs.Remove (Job);
+		}
+	}
+
+	public void				WaitForJobs(int TimeoutMs)
+	{
+		var NonNullEvents = new List<ManualResetEvent> ();
+		int NullCount = 0;
+		lock (jobDoneEvents) {
+			foreach (var e in jobDoneEvents) {
+				if (e != null)
+					NonNullEvents.Add (e);
+				NullCount++;
+			}
+		}
+		var WaitHandles = NonNullEvents.ToArray ();
+		Debug.Log ("Wait for jobs x" + WaitHandles.Length + " (" + NullCount + " nulls");
+		if (WaitHandles == null)
+			return;
+
+		if ( TimeoutMs == -1 )
+			WaitHandle.WaitAll (WaitHandles);
+		else
+			WaitHandle.WaitAll (WaitHandles,TimeoutMs);
+	}
+
+	public void				Shutdown()
+	{
+		WaitForJobs (-1);
+	}
+};
+
+
+
+public class JobPool_Action : JobPool<System.Action>
+{
+	protected override void	ExecuteJob (System.Action Job)
+	{
+		if (Job != null)
+			Job.Invoke ();
+	}
+}
+
+
+
 public abstract class JobThread_Base<JOBTYPE>
 {
+
 	public bool				debug = true;
+	public float			jobProgress
+	{
+		get
+		{
+			return jobsCompleted / (float)Mathf.Max(1,jobsPending+jobsCompleted);
+		}
+	}
+	public int				jobsCompleted
+	{
+		get {
+			return jobsCompletedCount;
+		}		
+	}
+	public int				jobsPending
+	{
+		get
+		{
+			return (jobs!=null) ? jobs.Count : 0;
+		}
+	}
+	int						jobsCompletedCount = 0;
 
 	List<JOBTYPE>			jobs = new List<JOBTYPE>();
 	bool					run = true;
@@ -76,8 +226,8 @@ public abstract class JobThread_Base<JOBTYPE>
 	{
 		try
 		{
-			//while ( run )
-			while (true)
+			while ( run )
+			//while (true)
 			{
 				if (jobs.Count == 0) {
 					OnIdle ();
@@ -94,6 +244,7 @@ public abstract class JobThread_Base<JOBTYPE>
 				while (jobs.Count > 0) {
 					var Job0 = jobs [0];
 					ExecuteJob( Job0 );
+					jobsCompletedCount++;
 					jobs.RemoveAt (0);
 				}
 			}
