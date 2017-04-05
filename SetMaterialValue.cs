@@ -13,6 +13,10 @@ public class SetMaterialValue : MonoBehaviour {
 			if ( !_material )
 			{
 				var mr = GetComponent<MeshRenderer> ();
+
+				if (!Application.isPlaying)
+					return mr.sharedMaterial;
+				
 				if ( mr )
 				{
 					_material = mr.sharedMaterial;
@@ -25,7 +29,7 @@ public class SetMaterialValue : MonoBehaviour {
 	public bool		GlobalUniform = false;
 	public string	Uniform;
 
-	[Header("If two-part value, this is the 2nd uniform. Dir in Ray")]
+	[Header("If two-part value, this is the 2nd uniform. Dir in Ray. Inverse in matrix")]
 	public string	Uniform2;
 
 	void Start()
@@ -37,10 +41,12 @@ public class SetMaterialValue : MonoBehaviour {
 		if (GlobalUniform) 
 		{
 			Shader.SetGlobalMatrix (Uniform, Value);
+			Shader.SetGlobalMatrix (Uniform2, Value.inverse);
 		}
 		else if ( material )
 		{
 			material.SetMatrix (Uniform, Value);
+			material.SetMatrix (Uniform2, Value.inverse);
 		}
 	}
 
@@ -72,6 +78,19 @@ public class SetMaterialValue : MonoBehaviour {
 	}			
 		
 	public void SetVector4(Vector4 Value)
+	{
+		if (GlobalUniform) 
+		{
+			Shader.SetGlobalVector (Uniform, Value);
+		}
+		else if ( material )
+		{
+			material.SetVector (Uniform, Value);
+		}
+	}
+
+
+	public void SetVector3(Vector3 Value)
 	{
 		if (GlobalUniform) 
 		{
