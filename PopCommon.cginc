@@ -1,5 +1,5 @@
 #define hypotenuse(o,a)	sqrt( (a*a)+(o*o) )
-
+#define lengthsq(x)	( dot(x,x) )
 
 float max3(float a,float b,float c)
 {
