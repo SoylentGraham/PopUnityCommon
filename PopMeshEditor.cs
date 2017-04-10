@@ -31,8 +31,8 @@ public static class PopMeshEditor {
 	}
 
 
-	[MenuItem("CONTEXT/MeshFilter/Set UV0 to triangle index")]
-	public static void SetUV0ToTriangleIndexOfMesh (MenuCommand menuCommand) 
+	[MenuItem("CONTEXT/MeshFilter/Set mesh UV0 to triangle index")]
+	public static void SetMeshUV0ToTriangleIndex (MenuCommand menuCommand) 
 	{
 		var mf = menuCommand.context as MeshFilter;
 		var m = mf.sharedMesh;
@@ -44,8 +44,8 @@ public static class PopMeshEditor {
 				throw new System.Exception ("Aborted assignment of UV triangle indexes");
 		}
 
-		using (var Progress = new ScopedProgressBar ("Setting UV0")) {
-			var Uv0 = new Vector2[m.vertexCount];
+		using (var Progress = new ScopedProgressBar ("Setting UVs")) {
+			var Uvs = new Vector2[m.vertexCount];
 			{
 				var v2 = new Vector2 ();	//	avoid allocs
 				for (int t = 0;	t < TriangleIndexes.Length;	t += 3) {
@@ -57,16 +57,51 @@ public static class PopMeshEditor {
 						var iv = TriangleIndexes [t + i];
 						v2.x = t / 3;
 						v2.y = i;
-						Uv0 [iv] = v2;
+						Uvs [iv] = v2;
 					}
 				}
 			}
-			m.uv = Uv0;
+			m.uv = Uvs;
 			m.UploadMeshData (true);
 			AssetDatabase.SaveAssets ();
 		}
 	}
 
+
+	[MenuItem("CONTEXT/MeshFilter/Set mesh UV1 to triangle barycentric coords")]
+	public static void SetMeshUV1ToTriangleBarycentricCoords (MenuCommand menuCommand) 
+	{
+		var mf = menuCommand.context as MeshFilter;
+		var m = mf.sharedMesh;
+
+		var TriangleIndexes = m.triangles;
+		if (TriangleIndexes.Length != m.vertexCount) {
+			var DialogResult = EditorUtility.DisplayDialog ("Error", "Assigning triangle indexes to attributes probably won't work as expected for meshes sharing vertexes.", "Continue", "Cancel");
+			if (!DialogResult)
+				throw new System.Exception ("Aborted assignment of UV triangle indexes");
+		}
+
+		using (var Progress = new ScopedProgressBar ("Setting UVs")) {
+			var Uvs = new Vector3[m.vertexCount];
+			{
+				var barya = new Vector3 (1,0,0);
+				var baryb = new Vector3 (0,1,0);
+				var baryc = new Vector3 (0,0,1);
+				for (int t = 0;	t < TriangleIndexes.Length;	t += 3) {
+
+					if (t % 100 == 0)
+						Progress.SetProgress ("Setting UV of triangle", t / 3, TriangleIndexes.Length / 3);
+
+					Uvs [TriangleIndexes [t + 0]] = barya;
+					Uvs [TriangleIndexes [t + 1]] = baryb;
+					Uvs [TriangleIndexes [t + 2]] = baryc;
+				}
+			}
+			m.SetUVs( 1, new List<Vector3>(Uvs) );
+			m.UploadMeshData (true);
+			AssetDatabase.SaveAssets ();
+		}
+	}
 
 	class Vertex
 	{
