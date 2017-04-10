@@ -31,6 +31,43 @@ public static class PopMeshEditor {
 	}
 
 
+	[MenuItem("CONTEXT/MeshFilter/Set UV0 to triangle index")]
+	public static void SetUV0ToTriangleIndexOfMesh (MenuCommand menuCommand) 
+	{
+		var mf = menuCommand.context as MeshFilter;
+		var m = mf.sharedMesh;
+
+		var TriangleIndexes = m.triangles;
+		if (TriangleIndexes.Length != m.vertexCount) {
+			var DialogResult = EditorUtility.DisplayDialog ("Error", "Assigning triangle indexes to attributes probably won't work as expected for meshes sharing vertexes.", "Continue", "Cancel");
+			if (!DialogResult)
+				throw new System.Exception ("Aborted assignment of UV triangle indexes");
+		}
+
+		using (var Progress = new ScopedProgressBar ("Setting UV0")) {
+			var Uv0 = new Vector2[m.vertexCount];
+			{
+				var v2 = new Vector2 ();	//	avoid allocs
+				for (int t = 0;	t < TriangleIndexes.Length;	t += 3) {
+
+					if (t % 100 == 0)
+						Progress.SetProgress ("Setting UV of triangle", t / 3, TriangleIndexes.Length / 3);
+						
+					for (int i = 0;	i < 3;	i++) {
+						var iv = TriangleIndexes [t + i];
+						v2.x = t / 3;
+						v2.y = i;
+						Uv0 [iv] = v2;
+					}
+				}
+			}
+			m.uv = Uv0;
+			m.UploadMeshData (true);
+			AssetDatabase.SaveAssets ();
+		}
+	}
+
+
 	class Vertex
 	{
 		public Vector3	position;
@@ -175,7 +212,7 @@ public static class PopMeshEditor {
 			for (int t = 0;	t < OldTriangles.Length;	t += 3) {
 
 				if ( t % 100 == 0 )
-					Progress.SetProgress ("Adding triangle " + (t / 3) + "/" + (OldTriangles.Length / 3), t / (float)OldTriangles.Length);
+					Progress.SetProgress ("Adding triangle", t/3, OldTriangles.Length/3 );
 
 				var ia = OldTriangles [t];
 				var ib = OldTriangles [t+1];
