@@ -39,6 +39,12 @@ public class ScopedProgressBar : System.IDisposable
 		#endif
 	}
 
+	public void SetProgress(string StepName,int Step,int StepCount)
+	{
+		StepName += " " + Step + "/" + StepCount;
+		SetProgress (StepName, Step / (float)StepCount);
+	}
+
 	public void SetProgress(string StepName,float Progress)
 	{
 		#if UNITY_EDITOR
