@@ -39,8 +39,12 @@ public class ScopedProgressBar : System.IDisposable
 		#endif
 	}
 
-	public void SetProgress(string StepName,int Step,int StepCount)
+	//	use NotifyEveryNth (eg.=100) if you're doing large sets as the GUI update will slow down your thread, and you probably don't need to see progress for every one in 300,000 steps
+	public void SetProgress(string StepName,int Step,int StepCount,int NotifyEveryNth=1)
 	{
+		bool Notify = (Step % Mathf.Max(1,NotifyEveryNth)) == 0;
+		if (!Notify)
+			return;
 		StepName += " " + Step + "/" + StepCount;
 		SetProgress (StepName, Step / (float)StepCount);
 	}
