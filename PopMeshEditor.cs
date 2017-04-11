@@ -367,11 +367,13 @@ public static class PopMeshEditor {
 		var m = mesh;
 
 		var TriangleIndexes = m.triangles;
+		#if UNITY_EDITOR
 		if (TriangleIndexes.Length != m.vertexCount) {
 			var DialogResult = EditorUtility.DisplayDialog ("Error", "Assigning triangle indexes to attributes probably won't work as expected for meshes sharing vertexes.", "Continue", "Cancel");
 			if (!DialogResult)
 				throw new System.Exception ("Aborted assignment of UV triangle indexes");
 		}
+		#endif
 
 		using (var Progress = new ScopedProgressBar ("Setting UVs")) {
 			var Uvs = new Vector2[m.vertexCount];
@@ -392,7 +394,9 @@ public static class PopMeshEditor {
 			}
 			m.uv = Uvs;
 			m.UploadMeshData (true);
+			#if UNTIY_EDITOR
 			AssetDatabase.SaveAssets ();
+			#endif
 		}
 	}
 
