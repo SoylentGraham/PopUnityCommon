@@ -48,6 +48,11 @@ public class FastParse : MonoBehaviour {
 				continue;
 			}
 
+			//	hacky handling of exponential
+			if (FloatStr [Pos] == 'e' )
+				if ( FloatStr [Pos+1] == '-')
+				break;
+
 			//	throw if non-number
 			var CharNumber = FloatStr [Pos] - '0';
 			if (CharNumber < 0 || CharNumber > 9)
@@ -63,7 +68,7 @@ public class FastParse : MonoBehaviour {
 
 	static public List<float>	Floats(string FloatString)
 	{
-		var FloatStrings = FloatString.Split (new char[]{ ' ' }, System.StringSplitOptions.RemoveEmptyEntries );
+		var FloatStrings = FloatString.Split (new char[]{ ' ',',' }, System.StringSplitOptions.RemoveEmptyEntries );
 		if (FloatStrings == null || FloatStrings.Length == 0)
 			FloatStrings = new string[1]{ FloatString };
 
