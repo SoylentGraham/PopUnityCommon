@@ -5,6 +5,7 @@ Shader "New Chromantics/Stereo360"
 	Properties
 	{
 		_MainTex ("Texture", 2D) = "white" {}
+
 	}
 	SubShader
 	{
@@ -20,6 +21,11 @@ Shader "New Chromantics/Stereo360"
 
 			#include "UnityCG.cginc"
 			#include "PopCommon.cginc"
+
+
+			//	global toggle
+			int LeftEye = 0;
+
 
 			struct appdata
 			{
@@ -38,7 +44,7 @@ Shader "New Chromantics/Stereo360"
 
 			bool IsStereoLeftEye()
 			{
-				return true;
+				return (LeftEye!=0) ? true : false;
 			}
 
 			float2 MonoUvToStereoUv(float2 uv)
@@ -70,7 +76,9 @@ Shader "New Chromantics/Stereo360"
 				EquirectUv.y = 1 - EquirectUv.y;
 
 				EquirectUv = MonoUvToStereoUv( EquirectUv );
-				return tex2D( _MainTex, EquirectUv );
+				float4 Colour = tex2D( _MainTex, EquirectUv );
+
+				return Colour;
 			}
 			ENDCG
 		}
