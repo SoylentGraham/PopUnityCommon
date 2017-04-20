@@ -2,9 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Events;
+
+[System.Serializable]
+public class UnityEvent_float : UnityEvent <float> {}
+
+
+
 
 public class GotoNextScene : MonoBehaviour {
-	
+
 	[InspectorButton("GotoNextScene")]
 	public bool		_GotoNextScene;
 
@@ -20,8 +27,18 @@ public class GotoNextScene : MonoBehaviour {
 	}
 	private float	TriggerFromTime = 0;
 
+	[Header("sends 0-1 of countdown")]
+	public UnityEvent_float	OnCountdown;
+
 	public void NextScene()
 	{
+		//	see if there's a scene controller
+		var sc = GameObject.FindObjectOfType<SceneOrderController>();
+		if (sc != null) {
+			sc.NextScene ();
+			return;
+		}
+		
 		var CurrentScene = SceneManager.GetActiveScene();
 		var CurrentSceneIndex = CurrentScene.buildIndex;
 		var NextSceneIndex = (CurrentSceneIndex + 1) % SceneManager.sceneCountInBuildSettings;
@@ -38,6 +55,9 @@ public class GotoNextScene : MonoBehaviour {
 
 		if (DoTimedTrigger) {
 			var TimeSinceStart = Time.time - TriggerFromTime;
+			var CountdownFactor = Mathf.Clamp01 (TimeSinceStart / TriggerAfterSecs);
+			//Debug.Log (CountdownFactor);
+			OnCountdown.Invoke (CountdownFactor);
 				if ( TimeSinceStart> TriggerAfterSecs) {
 					NextScene ();
 			}
