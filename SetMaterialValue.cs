@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class SetMaterialValue : MonoBehaviour {
 
@@ -13,13 +14,18 @@ public class SetMaterialValue : MonoBehaviour {
 			if ( !_material )
 			{
 				var mr = GetComponent<MeshRenderer> ();
-
-				if (!Application.isPlaying)
-					return mr.sharedMaterial;
-				
-				if ( mr )
+				if ( mr != null )
 				{
+					if (!Application.isPlaying)
+						return mr.sharedMaterial;
 					_material = mr.sharedMaterial;
+				}
+
+				var ri = GetComponent<RawImage> ();
+				if (ri != null) {
+					if (!Application.isPlaying)
+						return ri.material;
+					_material = ri.material;
 				}
 			}
 			return _material;
