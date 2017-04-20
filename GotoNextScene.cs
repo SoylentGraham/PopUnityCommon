@@ -30,6 +30,8 @@ public class GotoNextScene : MonoBehaviour {
 	[Header("sends 0-1 of countdown")]
 	public UnityEvent_float	OnCountdown;
 
+	public bool SkipOnMouseClick = false;
+
 	public void NextScene()
 	{
 		//	see if there's a scene controller
@@ -52,6 +54,12 @@ public class GotoNextScene : MonoBehaviour {
 	}
 
 	void Update () {
+
+		if (SkipOnMouseClick) {
+			if (Input.GetMouseButtonDown (0)) {
+				NextScene ();
+			}
+		}
 
 		if (DoTimedTrigger) {
 			var TimeSinceStart = Time.time - TriggerFromTime;
