@@ -12,18 +12,23 @@ public class SetAndroidManifest : MonoBehaviour {
 	const string AndroidManifestAssetName = "AndroidManifest";
 	const string AndroidManifestFilename = "AndroidManifest.xml";
 
+#if UNITY_EDITOR
 	[MenuItem("Android/Set Manifest category.LAUNCHER (Store)")]
 	public static void SetAndroidManifest_Launcher()
 	{
 		SetAndroidManifestTo ("LAUNCHER");
 	}
+#endif
 
+#if UNITY_EDITOR
 	[MenuItem("Android/Set Manifest category.INFO (Debug)")]
 	public static void SetAndroidManifest_Info()
 	{
 		SetAndroidManifestTo ("INFO");
 	}
+#endif
 
+#if UNITY_EDITOR
 	public static void SetAndroidManifestTo(string NewCategory)
 	{
 		//	find manifest assets
@@ -60,7 +65,7 @@ public class SetAndroidManifest : MonoBehaviour {
 		//	search/replace in file
 		//	<category android:name="android.intent.category.LAUNCHER"/>
 	}
-
+#endif
 
 
 }
