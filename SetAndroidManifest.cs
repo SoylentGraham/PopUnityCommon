@@ -13,7 +13,7 @@ public class SetAndroidManifest : MonoBehaviour {
 	const string AndroidManifestFilename = "AndroidManifest.xml";
 
 #if UNITY_EDITOR
-	[MenuItem("Android/Set Manifest category.LAUNCHER (Store)")]
+	[MenuItem("Android/Set Manifest category.LAUNCHER (Debug)")]
 	public static void SetAndroidManifest_Launcher()
 	{
 		SetAndroidManifestTo ("LAUNCHER");
@@ -21,7 +21,7 @@ public class SetAndroidManifest : MonoBehaviour {
 #endif
 
 #if UNITY_EDITOR
-	[MenuItem("Android/Set Manifest category.INFO (Debug)")]
+	[MenuItem("Android/Set Manifest category.INFO (Store)")]
 	public static void SetAndroidManifest_Info()
 	{
 		SetAndroidManifestTo ("INFO");
