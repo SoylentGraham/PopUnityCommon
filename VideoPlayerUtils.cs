@@ -7,9 +7,6 @@ using UnityEngine.Events;
 using UnityEngine.Video;
 #endif
 
-[System.Serializable]
-public class UnityEvent_String : UnityEvent <string> {}
-
 
 
 #if UNITY_5_6_OR_NEWER
