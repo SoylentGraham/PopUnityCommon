@@ -12,11 +12,13 @@ using System.Reflection;
 [System.AttributeUsage(System.AttributeTargets.Field)]
 public class OnChangedAttribute : PropertyAttribute
 {
-	public readonly string	FunctionName;
+	public readonly string	BeforeChangeFunctionName;
+	public readonly string	AfterChangeFunctionName;
 
-	public OnChangedAttribute(string _FunctionName)
+	public OnChangedAttribute(string BeforeChangeFunctionName,string AfterChangeFunctionName)
 	{
-		this.FunctionName = _FunctionName;
+		this.BeforeChangeFunctionName = BeforeChangeFunctionName;
+		this.AfterChangeFunctionName = AfterChangeFunctionName;
 	}
 
 }
@@ -29,15 +31,18 @@ public class OnChangedAttributePropertyDrawer : PropertyDrawer
 	private MethodInfo CachedEventMethodInfo = null;
 
 
-	void CallOnChanged(Object TargetObject,OnChangedAttribute Attrib)
+	void CallOnChanged(Object TargetObject,OnChangedAttribute Attrib,string FunctionName)
 	{
+		if (string.IsNullOrEmpty (FunctionName))
+			return;
+		
 		var TargetObjectType = TargetObject.GetType();
 
 		if (CachedEventMethodInfo == null)
-			CachedEventMethodInfo = TargetObjectType.GetMethod(Attrib.FunctionName, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+			CachedEventMethodInfo = TargetObjectType.GetMethod(FunctionName, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
 
 		if (CachedEventMethodInfo == null) {
-			Debug.LogWarning("OnChangedAttribute: Unable to find method "+ Attrib.FunctionName + " in " + TargetObjectType);
+			Debug.LogWarning("OnChangedAttribute: Unable to find method "+ FunctionName + " in " + TargetObjectType);
 			return;
 		}
 
@@ -57,7 +62,12 @@ public class OnChangedAttributePropertyDrawer : PropertyDrawer
 		EditorGUI.PropertyField (position, property, label, true);
 
 		if (EditorGUI.EndChangeCheck ()) {
-			CallOnChanged (TargetObject, Attrib);
+
+			//	gr: property is changed, but not modified back to the serialised object at this point. 
+			//	So we can do a pre-emptive call. But I don't know if calling ApplyModifiedProperties() is really bad here.
+			CallOnChanged(TargetObject, Attrib, Attrib.BeforeChangeFunctionName);
+			property.serializedObject.ApplyModifiedProperties();
+			CallOnChanged(TargetObject, Attrib, Attrib.AfterChangeFunctionName);
 		}
 	}
 	/*
