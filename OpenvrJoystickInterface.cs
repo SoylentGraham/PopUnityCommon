@@ -5,6 +5,14 @@ using UnityEngine.VR;
 using UnityEngine.Events;
 
 
+
+[System.Serializable]
+public class JoysticksFrame
+{
+	public List<OpenvrJoystickFrame>	Joysticks;
+}
+
+
 [System.Serializable]
 public class OpenvrJoystickFrame
 {
@@ -46,7 +54,6 @@ public class OpenvrJoystickInterface : MonoBehaviour {
 	public UnityEvent_PositionRotationJoystick	OnUpdateLeft;
 	public UnityEvent_PositionRotationJoystick	OnUpdateRight;
 	public UnityEvent_JoystickFrames			OnUpdateAll;
-	public UnityEvent_PositionPosition			OnUpdateCalibration;
 
 	const string								JoystickNameLeft = "OpenVR Controller - Left";
 	const string								JoystickNameRight = "OpenVR Controller - Right";
@@ -120,10 +127,7 @@ public class OpenvrJoystickInterface : MonoBehaviour {
 		OnUpdateLeft.Invoke( Left );
 		OnUpdateRight.Invoke( Right );
 		OnUpdateAll.Invoke( new List<OpenvrJoystickFrame>(){Left,Right} );
-		
-		if ( Input.GetKey( LeftAppKeyCode ) && Input.GetKey( RightAppKeyCode ) )
-			OnUpdateCalibration.Invoke( InputTracking.GetLocalPosition(VRNode.LeftHand), InputTracking.GetLocalPosition(VRNode.RightHand) );
-
+	
 		//	debug buttons
 		for ( int btn=(int)KeyCode.JoystickButton0;	btn<(int)KeyCode.Joystick3Button0;	btn++ )
 		{
