@@ -8,25 +8,33 @@ using UnityEngine.Events;
 [System.Serializable]
 public class OpenvrJoystickFrame
 {
+	public Vector3		Position;
+	public Quaternion	Rotation;
+
 	public bool			TriggerIsDown;
 	public bool			TriggerPressed;
 	public bool			TriggerReleased;
 
+	public Vector2		TouchpadAxis;
+
 	public bool			TouchpadIsDown;
 	public bool			TouchpadPressed;
 	public bool			TouchpadReleased;
-	public Vector2		TouchpadAxis;
 
 	public bool			TouchpadClickIsDown;
 	public bool			TouchpadClickPressed;
 	public bool			TouchpadClickReleased;
 
-	public Vector3		Position;
-	public Quaternion	Rotation;
+	public bool			AppButtonIsDown;
+	public bool			AppButtonPressed;
+	public bool			AppButtonReleased;
 }
 
 [System.Serializable]
 public class UnityEvent_PositionRotationJoystick : UnityEvent <OpenvrJoystickFrame> {}
+
+[System.Serializable]
+public class UnityEvent_JoystickFrames : UnityEvent <List<OpenvrJoystickFrame>> {}
 
 [System.Serializable]
 public class UnityEvent_PositionPosition : UnityEvent <Vector3,Vector3> {}
@@ -37,6 +45,7 @@ public class OpenvrJoystickInterface : MonoBehaviour {
 
 	public UnityEvent_PositionRotationJoystick	OnUpdateLeft;
 	public UnityEvent_PositionRotationJoystick	OnUpdateRight;
+	public UnityEvent_JoystickFrames			OnUpdateAll;
 	public UnityEvent_PositionPosition			OnUpdateCalibration;
 
 	const string								JoystickNameLeft = "OpenVR Controller - Left";
@@ -58,7 +67,7 @@ public class OpenvrJoystickInterface : MonoBehaviour {
 	public string								AxisRightTouchPadX = "RightController Touchpad X";
 	public string								AxisRightTouchPadY = "RightController Touchpad Y";
 
-	void UpdateNode(VRNode Node, string Name,UnityEvent_PositionRotationJoystick Event,KeyCode TriggerButton,KeyCode TouchpadButton,KeyCode TouchpadClickButton,KeyCode AppButton,string AxisX,string AxisY)
+	OpenvrJoystickFrame UpdateNode(VRNode Node, string Name,KeyCode TriggerButton,KeyCode TouchpadButton,KeyCode TouchpadClickButton,KeyCode AppButton,string AxisX,string AxisY)
 	{
 		var JoyInput = new OpenvrJoystickFrame();
 		JoyInput.Position = InputTracking.GetLocalPosition(Node);
@@ -68,7 +77,15 @@ public class OpenvrJoystickInterface : MonoBehaviour {
 		JoyInput.TriggerPressed = Input.GetKeyDown( TriggerButton );
 		JoyInput.TriggerReleased = Input.GetKeyUp( TriggerButton );
 
-		JoyInput.TouchpadAxis = new Vector2( Input.GetAxis(AxisX), Input.GetAxis(AxisY) );
+		//	throws if not setup
+		try
+		{
+			JoyInput.TouchpadAxis = new Vector2(Input.GetAxis(AxisX), Input.GetAxis(AxisY));
+		}
+		catch
+		{
+			JoyInput.TouchpadAxis = Vector2.zero;
+		}
 
 		JoyInput.TouchpadIsDown = Input.GetKey( TouchpadButton );
 		JoyInput.TouchpadPressed = Input.GetKeyDown( TouchpadButton );
@@ -78,7 +95,11 @@ public class OpenvrJoystickInterface : MonoBehaviour {
 		JoyInput.TouchpadClickPressed = Input.GetKeyDown( TouchpadClickButton );
 		JoyInput.TouchpadClickReleased = Input.GetKeyUp( TouchpadClickButton );
 
-		Event.Invoke( JoyInput );
+		JoyInput.AppButtonIsDown = Input.GetKey( AppButton );
+		JoyInput.AppButtonPressed = Input.GetKeyDown( AppButton );
+		JoyInput.AppButtonReleased = Input.GetKeyUp( AppButton );
+
+		return JoyInput;
 	}
 
 	void Start()
@@ -93,10 +114,13 @@ public class OpenvrJoystickInterface : MonoBehaviour {
 
 	void Update()
 	{
-		UpdateNode( VRNode.LeftHand, JoystickNameLeft, OnUpdateLeft, LeftTrigger, LeftTouchpad, LeftTouchpadClick, LeftAppKeyCode, AxisLeftTouchPadX, AxisLeftTouchPadY );
-		UpdateNode( VRNode.RightHand, JoystickNameRight, OnUpdateRight, RightTrigger, RightTouchpad, RightTouchpadClick, RightAppKeyCode, AxisRightTouchPadX, AxisRightTouchPadY );
+		var Left = UpdateNode( VRNode.LeftHand, JoystickNameLeft, LeftTrigger, LeftTouchpad, LeftTouchpadClick, LeftAppKeyCode, AxisLeftTouchPadX, AxisLeftTouchPadY );
+		var Right = UpdateNode( VRNode.RightHand, JoystickNameRight, RightTrigger, RightTouchpad, RightTouchpadClick, RightAppKeyCode, AxisRightTouchPadX, AxisRightTouchPadY );
 		
-
+		OnUpdateLeft.Invoke( Left );
+		OnUpdateRight.Invoke( Right );
+		OnUpdateAll.Invoke( new List<OpenvrJoystickFrame>(){Left,Right} );
+		
 		if ( Input.GetKey( LeftAppKeyCode ) && Input.GetKey( RightAppKeyCode ) )
 			OnUpdateCalibration.Invoke( InputTracking.GetLocalPosition(VRNode.LeftHand), InputTracking.GetLocalPosition(VRNode.RightHand) );
 
