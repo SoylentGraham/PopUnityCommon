@@ -36,6 +36,15 @@ public class OpenvrJoystickFrame
 	public bool			AppButtonIsDown;
 	public bool			AppButtonPressed;
 	public bool			AppButtonReleased;
+
+	public bool IsKeyFrame()
+	{
+		return TriggerPressed || TriggerReleased ||
+			TouchpadPressed || TouchpadReleased ||
+			TouchpadClickPressed || TouchpadClickReleased ||
+			AppButtonPressed || AppButtonReleased;
+	}
+
 }
 
 [System.Serializable]
