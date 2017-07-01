@@ -168,6 +168,15 @@ public class PopMath {
 		return a.sqrMagnitude;
 	}
 
+	public static Vector2 AngleRadianToVector2(float radian,float Length=1)
+	{
+		return new Vector2(Mathf.Cos(radian)* Length, Mathf.Sin(radian) * Length);
+	}
+
+	public static Vector2 AngleDegreeToVector2(float degree,float Length=1)
+	{
+		return AngleRadianToVector2(degree * Mathf.Deg2Rad, Length);
+	}
 
 }
 
