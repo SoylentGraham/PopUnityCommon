@@ -9,6 +9,8 @@ using UnityEditor;
 using System.Reflection;
 #endif
 
+
+
 [System.AttributeUsage(System.AttributeTargets.Field)]
 public class FilePathAttribute : PropertyAttribute
 {
@@ -55,6 +57,7 @@ public class FilePathAttribute : PropertyAttribute
 
 	public string BrowseForPath(string PanelTitle,string CurrentFilename)
 	{
+#if UNITY_EDITOR
 		var Dir = "";
 		try
 		{
@@ -82,10 +85,11 @@ public class FilePathAttribute : PropertyAttribute
 
 		if (pathType == PathType.Folder)
 			return EditorUtility.SaveFolderPanel (PanelTitle, Dir, Filename);
-
+#endif
 		throw new System.Exception ("Unhandled path type " + pathType);
 	}
 }
+
 
 
 #if UNITY_EDITOR
