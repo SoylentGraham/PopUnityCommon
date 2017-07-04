@@ -168,7 +168,37 @@ public class PopMath {
 		return a.sqrMagnitude;
 	}
 
+	public static Vector2 AngleRadianToVector2(float radian,float Length=1)
+	{
+		return new Vector2(Mathf.Sin(radian)* Length, Mathf.Cos(radian) * Length);
+	}
 
+	public static Vector2 AngleDegreeToVector2(float degree,float Length=1)
+	{
+		return AngleRadianToVector2(degree * Mathf.Deg2Rad, Length);
+	}
+
+
+	public static float AngleDegreeFromVector2(Vector2 Direction)
+	{
+		Direction.Normalize ();
+		var Angle = Mathf.Atan2 (Direction.x, Direction.y) * Mathf.Rad2Deg;
+		return Angle;
+	}
+
+	public static float AngleDegreeFromVector2(Vector2 From,Vector2 To)
+	{
+		return AngleDegreeFromVector2 (To - From);
+	}
+
+	public static float MakeAngleRelative(float Angle)
+	{
+		while (Angle < -180)
+			Angle += 360;
+		while (Angle > 180)
+			Angle -= 360;
+		return Angle;
+	}
 }
 
 //	gr: this should be somewhere else
