@@ -1,4 +1,6 @@
-﻿Shader "PopUnityCommon/FlipMirror" {
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+Shader "PopUnityCommon/FlipMirror" {
 	Properties {
 		_MainTex ("_MainTex", 2D) = "white" {}
 		Flip("Flip", Int ) = 0
@@ -28,7 +30,7 @@
 			
 			FragInput vert(VertexInput In) {
 				FragInput Out;
-				Out.Position = mul (UNITY_MATRIX_MVP, In.Position );
+				Out.Position = UnityObjectToClipPos (In.Position );
 				Out.uv_MainTex.y = Flip ? 1.0f - In.uv_MainTex.y : In.uv_MainTex.y;
 				Out.uv_MainTex.x = Mirror ? 1.0f - In.uv_MainTex.x  : In.uv_MainTex.x;
 				return Out;
