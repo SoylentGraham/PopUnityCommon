@@ -229,6 +229,23 @@ public class Pop
 		Object = new T();
 	}
 
+
+	public static Material	GetMaterial(GameObject Object,bool SharedMaterial)
+	{
+		try {
+			var Renderer = Object.GetComponent<MeshRenderer> ();
+			var mat = SharedMaterial ? Renderer.sharedMaterial : Renderer.material;
+		} catch {
+		}
+
+		try {
+			var Renderer = Object.GetComponent<SpriteRenderer> ();
+			var mat = SharedMaterial ? Renderer.sharedMaterial : Renderer.material;
+		} catch {
+		}
+
+		return null;
+	}
 }
 
 
