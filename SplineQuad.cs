@@ -117,8 +117,11 @@ public class SplineQuad : MonoBehaviour {
 		var Points = new Vector4[MAX_SPLINE_POINTS];
 		Positions.CopyTo( Points );
 
-		SplineMaterial.SetVectorArray( WorldPositionsUniform, Points );
-		SplineMaterial.SetInt( WorldPositionsCountUniform, Positions.Count );
+		var mat = SplineMaterial;
+		if (mat != null) {
+			mat.SetVectorArray (WorldPositionsUniform, Points);
+			mat.SetInt (WorldPositionsCountUniform, Positions.Count);
+		}
 	}
 
 	void Update () 
