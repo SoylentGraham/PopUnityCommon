@@ -1,19 +1,30 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 
 [System.Serializable]
 public class UnityEvent_float : UnityEvent <float> {}
 
 
 
-
 public class GotoNextScene : MonoBehaviour {
+
+	public enum SceneLoadMode
+	{
+		LoadNextScene,
+		ReloadCurrentScene,
+		LoadSpecificScene
+	};
+
+	public SceneLoadMode	LoadMode = SceneLoadMode.LoadNextScene;
 
 	[InspectorButton("GotoNextScene")]
 	public bool		_GotoNextScene;
+
+	[ShowIf("ModeIs_LoadSpecificScene")]
+	public string levelName;
 
 	[Header("If not zero, go to next scene after X secs from OnEnable")]
 	[Range(0,180)]
@@ -32,20 +43,44 @@ public class GotoNextScene : MonoBehaviour {
 
 	public bool SkipOnMouseClick = false;
 
+
+	bool ModeIs_LoadNextScene()
+	{
+		return LoadMode == SceneLoadMode.LoadNextScene;
+	}
+
+	bool ModeIs_ReloadCurrentScene()
+	{
+		return LoadMode == SceneLoadMode.ReloadCurrentScene;
+	}
+
+	bool ModeIs_LoadSpecificScene()
+	{
+		return LoadMode == SceneLoadMode.LoadSpecificScene;
+	}
+
+
 	public void NextScene()
 	{
-		//	see if there's a scene controller
-		var sc = GameObject.FindObjectOfType<SceneOrderController>();
-		if (sc != null) {
-			sc.NextScene ();
-			return;
-		}
-		
 		var CurrentScene = SceneManager.GetActiveScene();
-		var CurrentSceneIndex = CurrentScene.buildIndex;
-		var NextSceneIndex = (CurrentSceneIndex + 1) % SceneManager.sceneCountInBuildSettings;
 
-		SceneManager.LoadScene(NextSceneIndex, LoadSceneMode.Single);
+		switch( LoadMode )
+		{
+		case SceneLoadMode.LoadNextScene:
+			var CurrentSceneIndex = CurrentScene.buildIndex;
+			var NextSceneIndex = (CurrentSceneIndex + 1) % SceneManager.sceneCountInBuildSettings;
+
+			SceneManager.LoadScene(NextSceneIndex, LoadSceneMode.Single);
+			break;
+
+		case SceneLoadMode.ReloadCurrentScene:
+			SceneManager.LoadScene(CurrentScene.name);
+			break;
+
+		case SceneLoadMode.LoadSpecificScene:
+			SceneManager.LoadScene (levelName);
+			break;
+		}
 	}
 
 	void OnEnable()
@@ -66,8 +101,8 @@ public class GotoNextScene : MonoBehaviour {
 			var CountdownFactor = Mathf.Clamp01 (TimeSinceStart / TriggerAfterSecs);
 			//Debug.Log (CountdownFactor);
 			OnCountdown.Invoke (CountdownFactor);
-				if ( TimeSinceStart> TriggerAfterSecs) {
-					NextScene ();
+			if ( TimeSinceStart> TriggerAfterSecs) {
+				NextScene ();
 			}
 		}
 	}
