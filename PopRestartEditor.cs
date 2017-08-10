@@ -18,7 +18,9 @@ public class PopRestartEditor : MonoBehaviour {
 		//var UnityExe = System.Environment.GetCommandLineArgs()[0];
 		//var UnityExe = EditorApplication.applicationPath;
 		//System.Diagnostics.Process.Start( UnityExe, ArgForceOpengl );
-		EditorApplication.OpenProject("./", ArgForceOpengl);
+		var ProjectPath = Application.dataPath.Split(new string[]{"/Assets"},System.StringSplitOptions.None)[0];
+		//var ProjectPath = "./";	//	shows open-project dialog
+		EditorApplication.OpenProject(ProjectPath, ArgForceOpengl);
 	}
 #endif
 }
