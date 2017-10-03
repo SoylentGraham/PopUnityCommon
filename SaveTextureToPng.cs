@@ -48,19 +48,42 @@ public class SaveTextureToPng : MonoBehaviour {
 
 		return DoSaveTextureToPng( Tex, Filename, Alpha );
 	}
-	#endif
+#endif
+
+	static public Texture2D GetTexture2D(Texture Tex,bool Alpha)
+	{ 
+		return GetTexture2D( Tex, Alpha ? TextureFormat.ARGB32 : TextureFormat.RGB24 );
+	}
+		
+	static public void GetTexture2D(Texture Tex,ref Texture2D Target,TextureFormat Format)
+	{ 
+		//	copy to render texture and read
+		RenderTexture rt = RenderTexture.GetTemporary( Tex.width, Tex.height, 0, RenderTextureFormat.ARGBFloat );
+		Graphics.Blit( Tex, rt );
+		if (Target == null) {
+			Target = new Texture2D (rt.width, rt.height, Format, false);
+		}
+		RenderTexture.active = rt;
+		Target.ReadPixels( new Rect(0,0,rt.width,rt.height), 0, 0 );
+		Target.Apply();
+		RenderTexture.active = null;
+		RenderTexture.ReleaseTemporary( rt );
+	}
+		
+	static public Texture2D GetTexture2D(Texture Tex,TextureFormat Format)
+	{ 
+		if ( Tex is Texture2D )
+			return Tex as Texture2D;
+	
+		Texture2D Temp = null;
+		GetTexture2D (Tex, ref Temp, Format);
+		return Temp;
+	}
+
 
 	static public bool DoSaveTextureToPng(Texture Tex,string Filename,bool Alpha)
 	{
-		//	copy to render texture
-		RenderTexture rt = RenderTexture.GetTemporary( Tex.width, Tex.height, 0, RenderTextureFormat.ARGB32 );
-		Graphics.Blit( Tex, rt );
-		Texture2D Temp = new Texture2D( rt.width, rt.height, Alpha ? TextureFormat.ARGB32 : TextureFormat.RGB24, false );
-		RenderTexture.active = rt;
-		Temp.ReadPixels( new Rect(0,0,rt.width,rt.height), 0, 0 );
-		Temp.Apply();
-		RenderTexture.active = null;
-		RenderTexture.ReleaseTemporary( rt );
+		var Temp = GetTexture2D( Tex, Alpha );
 
 		byte[] Bytes = Temp.EncodeToPNG();
 		File.WriteAllBytes( Filename, Bytes );

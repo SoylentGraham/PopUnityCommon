@@ -1,4 +1,6 @@
-﻿
+#define hypotenuse(o,a)	sqrt( (a*a)+(o*o) )
+#define lengthsq(x)	( dot(x,x) )
+
 float max3(float a,float b,float c)
 {
 	return max( a, max( b,c ) );
@@ -7,6 +9,29 @@ float max3(float a,float b,float c)
 float min3(float a,float b,float c)
 {
 	return min( a, min( b,c ) );
+}
+
+float Clamp01(float x) 
+{ 
+  return clamp( x, 0.0, 1.0 ); 
+} 
+
+float Range(float Min,float Max,float Time)
+{
+	return (Time-Min) / (Max-Min);
+}
+
+//	0 = red, 1=green
+float3 NormalToRedGreen(float Value)
+{
+	Value = Clamp01( Value );
+	if ( Value < 0.5 )
+	{
+		float Yellow = Range( 0.0, 0.5, Value );
+		return float3( 1.0, Yellow, 0.0 );
+	}
+	float Yellow = Range( 1.0, 0.5, Value );
+	return float3( Yellow, 1.0, 0.0 );
 }
 
 float3 RgbToHsl(float3 rgb)
@@ -194,3 +219,193 @@ float3 LatLonToView(float2 LatLon)
 }
 
 
+float2 ViewToEquirect(float3 View3)
+{
+	View3 = normalize(View3);
+	float2 longlat = float2(atan2(View3.x, View3.z) + UNITY_PI, acos(-View3.y));
+
+	//longlat.x += lerp( 0, UNITY_PI*2, Range( 0, 360, LatitudeOffset ) );
+	//longlat.y += lerp( 0, UNITY_PI*2, Range( 0, 360, LongitudeOffset ) );
+
+	float2 uv = longlat / float2(2.0 * UNITY_PI, UNITY_PI);
+
+	return uv;
+}
+
+
+float2 NormalizeUv(float2 uv)
+{
+	//	0..1 -> -1..1
+	uv *= 2;
+	uv -= 1;
+	return uv;
+}
+
+
+#define CUBEMAP_UP			0
+#define CUBEMAP_FORWARD		1
+#define CUBEMAP_LEFT		2
+#define CUBEMAP_BACKWARD	3
+#define CUBEMAP_RIGHT		4
+#define CUBEMAP_DOWN		5
+#define CUBEMAP_FACECOUNT	6
+
+//	https://github.com/SoylentGraham/panopo.ly/blob/master/site_upload/cubemap.php#L286
+#define CUBEMAP_UP_UVTRANSFORM			float3x3( -1,0,0,	0,0,1,	0,1,0 )		//	float3( -uv.x, 1, uv.y );
+#define CUBEMAP_DOWN_UVTRANSFORM		float3x3( -1,0,0,	0,0,-1,	0,-1,0 )	//	float3( -uv.x, -1, -uv.y );
+#define CUBEMAP_FORWARD_UVTRANSFORM		float3x3( 1,0,0,	0,1,0,	0,0,1 )		//	float3( uv.x, uv.y, 1 );
+#define CUBEMAP_BACKWARD_UVTRANSFORM	float3x3( -1,0,0,	0,1,0,	0,0,-1 )	//	float3( -uv.x, uv.y, -1 );
+#define CUBEMAP_LEFT_UVTRANSFORM		float3x3( 0,0,-1,	0,1,0,	1,0,0 )	//	float3( -1, uv.y, -uv.x );
+#define CUBEMAP_RIGHT_UVTRANSFORM		float3x3( 0,0,1,	0,1,0,	-1,0,0 )	//	float3( 1, uv.y, -uv.x );
+
+//	must match CUBEMAP_XX order
+static const float3x3 CubemapUvTransform[CUBEMAP_FACECOUNT] = 
+{
+	CUBEMAP_UP_UVTRANSFORM,	
+	CUBEMAP_FORWARD_UVTRANSFORM,
+	CUBEMAP_LEFT_UVTRANSFORM,
+	CUBEMAP_BACKWARD_UVTRANSFORM,
+	CUBEMAP_RIGHT_UVTRANSFORM,
+	CUBEMAP_DOWN_UVTRANSFORM		
+};
+
+//	gr: be careful, current use of this I believe is 0..1 and not -1...1 but ViewToEquirect corrects for lat/lon
+float3 CubeUvToView(float2 uv,float3x3 Transform)
+{
+	uv = NormalizeUv(uv);
+	return mul( Transform, float3(uv,1) );
+}
+
+float3 CubeLeftToView(float2 uv)
+{
+	return CubeUvToView( uv, CUBEMAP_LEFT_UVTRANSFORM );
+}
+
+float3 CubeRightToView(float2 uv)
+{
+	return CubeUvToView( uv, CUBEMAP_RIGHT_UVTRANSFORM );
+}
+
+float3 CubeUpToView(float2 uv)
+{
+	return CubeUvToView( uv, CUBEMAP_UP_UVTRANSFORM );
+}
+
+float3 CubeDownToView(float2 uv)
+{
+	return CubeUvToView( uv, CUBEMAP_DOWN_UVTRANSFORM );
+}
+
+float3 CubeForwardToView(float2 uv)
+{
+	return CubeUvToView( uv, CUBEMAP_FORWARD_UVTRANSFORM );
+}
+
+float3 CubeBackwardToView(float2 uv)
+{
+	return CubeUvToView( uv, CUBEMAP_BACKWARD_UVTRANSFORM );
+}
+
+
+
+float TimeAlongLine2(float2 Position,float2 Start,float2 End)
+{
+	float2 Direction = End - Start;
+	float DirectionLength = length(Direction);
+	float Projection = dot( Position - Start, Direction) / (DirectionLength*DirectionLength);
+
+	return Projection;
+}
+
+
+float2 NearestToLine2(float2 Position,float2 Start,float2 End)
+{
+	float Projection = TimeAlongLine2( Position, Start, End );
+
+	//	past start
+	Projection = max( 0, Projection );
+	//	past end
+	Projection = min( 1, Projection );
+
+	//	is using lerp faster than 
+	//	Near = Start + (Direction * Projection);
+	float2 Near = lerp( Start, End, Projection );
+	return Near;
+}
+
+
+float DistanceToRay2(float2 Position,float2 Start,float2 End)
+{
+	//	get length of cross product
+	float2 LineDir = End - Start;
+	float2 PerpDir = float2( LineDir.y, -LineDir.x);
+	float2 dirToPt1 = Start - Position;
+	return abs( dot( normalize(PerpDir), dirToPt1 ) );
+}
+
+
+float DistanceToLine2(float2 Position,float2 Start,float2 End)
+{
+	float2 Near = NearestToLine2( Position, Start, End );
+	return length( Near - Position );
+}
+
+
+//	gr: from the tootle engine :) https://github.com/TootleGames/Tootle/blob/master/Code/TootleMaths/TLine.cpp
+float3 NearestToRay3(float3 Position,float3 Start,float3 Direction)
+{
+	float3 LineDir = Direction;
+	float LineDirDotProduct = dot( LineDir, LineDir );
+
+	//	avoid div by zero
+	//	gr: this means the line has no length.... for shaders maybe we can fudge/allow this
+	if ( LineDirDotProduct == 0 )
+		return Start;
+
+	float3 Dist = Position - Start;
+
+	float LineDirDotProductDist = dot( LineDir, Dist );
+
+	float TimeAlongLine = LineDirDotProductDist / LineDirDotProduct;
+
+	//	gr: for line segment
+	/*
+	if ( TimeAlongLine <= 0.f )
+		return Start;
+
+	if ( TimeAlongLine >= 1.f )
+		return GetEnd();
+	*/
+	//	gr: lerp this for gpu speedup
+	return Start + LineDir * TimeAlongLine;
+}
+
+float DistanceToRay3(float3 Position,float3 Start,float3 Direction)
+{
+	float3 Nearest = NearestToRay3( Position, Start, Direction );
+
+	return length( Position - Nearest );
+}
+
+//	possibly faster than above if whatever shader compiler replaces length() with a sqrt formula
+float DistanceSqToRay3(float3 Position,float3 Start,float3 Direction)
+{
+	float3 Nearest = NearestToRay3( Position, Start, Direction );
+
+	float3 Delta = Position - Nearest;
+
+	// Use pythaguras to work out distance between the two points
+	//	gr: err isn't this dot prod/magnitude?
+	//float DistSq = (Delta.x * Delta.x) + (Delta.y * Delta.y) + (Delta.z * Delta.z); 
+	float DistSq = dot( Delta, Delta );
+
+	return DistSq;
+}
+
+//	vector from Pos to nearest point on ray
+float DeltaToRay3(float3 Position,float3 Start,float3 Direction)
+{
+	float3 Nearest = NearestToRay3( Position, Start, Direction );
+
+	return Position - Nearest;
+}

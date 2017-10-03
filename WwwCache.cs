@@ -20,7 +20,11 @@ public class WwwCache
 
 	static string base64ToStr(string base64) {
 		byte[] b = Convert.FromBase64String(base64);
+#if UNITY_WSA
+		return System.Text.Encoding.UTF8.GetString(b,0,b.Length);
+#else
 		return System.Text.Encoding.UTF8.GetString(b);
+#endif
 	}
 
 	static string urlToCachePath(string url) {

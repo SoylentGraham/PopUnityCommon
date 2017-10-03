@@ -1,4 +1,6 @@
-﻿Shader "PopUnityCommon/ColourToLum" {
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+Shader "PopUnityCommon/ColourToLum" {
 	Properties {
 		_MainTex ("Texture", 2D) = "white" {}
 	}
@@ -39,7 +41,7 @@
 			
 			FragInput vert(VertexInput In) {
 				FragInput Out;
-				Out.Position = mul (UNITY_MATRIX_MVP, In.Position );
+				Out.Position = UnityObjectToClipPos (In.Position );
 				Out.uv_MainTex = In.uv_MainTex;
 				return Out;
 			}

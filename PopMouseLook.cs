@@ -4,8 +4,13 @@ using System.Collections;
 [AddComponentMenu("NewChromantics/PopMouseLook")]
 public class PopMouseLook : MonoBehaviour {
 
+	public enum MouseButton	{	None=-1, Left=0, Middle=2, Right=1 };
+	[Header("None here means no buttons needs to be held")]
+	public MouseButton		RotateOnlyOnMouseButton = MouseButton.None;
+
 	public bool				UseGyroOnMobile = true;
 	private Quaternion?		mInitialGyro = null;
+	public bool				UseLateUpdate = false;
 	
 	public enum RotationAxes { MouseXAndY = 0, MouseX = 1, MouseY = 2 }
 	public RotationAxes axes = RotationAxes.MouseXAndY;
@@ -41,12 +46,32 @@ public class PopMouseLook : MonoBehaviour {
 		return true;
 	}
 
+	void Update()
+	{
+		if (!UseLateUpdate)
+			UpdateLook ();
+	}
 
-	void Update ()
+	void LateUpdate()
+	{
+		if (UseLateUpdate)
+			UpdateLook ();
+	}
+
+	void UpdateLook ()
 	{
 		//	in VR mode, no mouse/gyro at all!
 		if (UsingVr() )
 			return;
+
+		if ( Input.mousePresent )
+		{
+			if ( RotateOnlyOnMouseButton != MouseButton.None )
+			{
+				if (!Input.GetMouseButton ((int)RotateOnlyOnMouseButton))
+					return;
+			}
+		}
 
 		bool UseGyro = UseGyroOnMobile;
 		{

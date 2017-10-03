@@ -1,4 +1,6 @@
-﻿Shader "NewChromantics/Distort" {
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+Shader "NewChromantics/Distort" {
 	Properties {
 		_MainTex ("_MainTex", 2D) = "green" {}
 		Invert("Invert",Int) = 0
@@ -47,7 +49,7 @@ SubShader
 			FragInput vert(VertexInput In) {
 				FragInput Out;
 				
-				Out.Position = mul (UNITY_MATRIX_MVP, In.Position );
+				Out.Position = UnityObjectToClipPos (In.Position );
 				Out.uv_MainTex = In.uv_MainTex;
 
 				return Out;
