@@ -21,11 +21,28 @@ public struct Sphere3
 {
 	public Vector3	center;
 	public float	radius;
+	public Vector3	radius3	{	get{	return new Vector3( radius, radius, radius );	}}
 
 	public Sphere3(Vector3 _Center, float _Radius)
 	{ 
 		center = _Center;
 		radius = _Radius;
+	}
+
+	//	negative - inside sphere, positive, distance from sphere.
+	public float Distance(Ray ray)
+	{
+		Vector3 Temp;
+		return Distance (ray, out Temp);
+	}
+
+	//	negative - inside sphere, positive, distance from sphere.
+	public float Distance(Ray ray,out Vector3 NearestPoint)
+	{
+		NearestPoint = PopMath.NearestToRay3 (this.center, ray);
+		var dist = Vector3.Distance (NearestPoint, this.center);
+		dist -= this.radius;
+		return dist;
 	}
 
 };
