@@ -17,10 +17,24 @@ public struct Line3
 };
 
 [System.Serializable]
+public struct Sphere3
+{
+	public Vector3	center;
+	public float	radius;
+
+	public Sphere3(Vector3 _Center, float _Radius)
+	{ 
+		center = _Center;
+		radius = _Radius;
+	}
+
+};
+
+[System.Serializable]
 public class UnityEvent_ListOfLine3 : UnityEngine.Events.UnityEvent <List<Line3>> {}
 
 
-public class PopMath {
+public static class PopMath {
 
 	public static Rect RectToScreen(Rect RectNorm)
 	{
