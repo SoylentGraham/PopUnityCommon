@@ -223,6 +223,94 @@ public static class PopMath {
 		return Angle;
 	}
 
+
+
+	//	gr: from PopCommon.cginc, from ...
+	//	gr: from the tootle engine :) https://github.com/TootleGames/Tootle/blob/master/Code/TootleMaths/TLine.cpp
+	public static Vector3 NearestToRay3(Vector3 Position,Ray Ray)
+	{
+		var Start = Ray.origin;
+		var Direction = Ray.direction;
+
+		Vector3 LineDir = Direction;
+		float LineDirDotProduct = Vector3.Dot( LineDir, LineDir );
+
+		//	avoid div by zero
+		//	gr: this means the line has no length.... for shaders maybe we can fudge/allow this
+		if ( LineDirDotProduct == 0 )
+			return Start;
+
+		var Dist = Position - Start;
+
+		float LineDirDotProductDist = Vector3.Dot( LineDir, Dist );
+
+		float TimeAlongLine = LineDirDotProductDist / LineDirDotProduct;
+
+		//	gr: for line segment
+		/* 	if ( TimeAlongLine <= 0.f ) 		return Start;  	if ( TimeAlongLine >= 1.f ) 		return GetEnd(); 	*/
+		//	gr: lerp this for gpu speedup
+		return Start + (LineDir * TimeAlongLine);
+	}
+
+	public static Sphere3 GetColliderSphere(Collider collider)
+	{
+		if (collider is SphereCollider) {
+			var sc = collider as SphereCollider;
+			return new Sphere3 (sc.center, sc.radius);
+		}
+
+		if (collider is BoxCollider) {
+			var bc = collider as BoxCollider;
+			var sc = new Sphere3 ();
+			sc.center = bc.center;
+
+			//	gr: this is VERY innacurate. use some accumulation instead;
+			//	https://github.com/TootleGames/Tootle/blob/master/Code/TootleMaths/TSphere.cpp
+			sc.radius = bc.size.x;
+			sc.radius = Mathf.Max (sc.radius, bc.size.y);
+			sc.radius = Mathf.Max (sc.radius, bc.size.z);
+			return sc;
+		}
+
+		throw new System.Exception ("Unhandled " + collider.GetType() + " -> SphereCollider conversion");
+	}
+
+	//	gr: this doesn't work for the radius properly, use WorldRayToLocalRay instead
+	public static Sphere3 GetColliderWorldSphere(Collider collider)
+	{
+		//	grab local one
+		var LocalSphere = GetColliderSphere( collider );
+
+		//	transform
+		var ct = collider.transform;
+		LocalSphere.center = ct.TransformPoint (LocalSphere.center);
+
+		var EdgePos = LocalSphere.center + new Vector3 (0, 0, LocalSphere.radius);
+		var WorldEdgePos = ct.TransformPoint (EdgePos );
+
+		LocalSphere.radius = Vector3.Distance (WorldEdgePos, LocalSphere.center);
+
+		return LocalSphere;
+	}
+
+	public static Ray WorldRayToLocalRay(Ray WorldRay,Transform trans)
+	{
+		var LocalOrigin = trans.InverseTransformPoint (WorldRay.origin);
+		var LocalDir = trans.InverseTransformDirection (WorldRay.direction);
+		return new Ray (LocalOrigin, LocalDir);
+	}	
+
+	//	get minimum values from a set
+	public static Vector3 MinComponentsOf(Vector3 a,Vector3 b)
+	{
+		return new Vector3 (Mathf.Min (a.x, b.x), Mathf.Min (a.y, b.y), Mathf.Min (a.z, b.z));
+	}
+
+	public static Vector3 MaxComponentsOf(Vector3 a,Vector3 b)
+	{
+		return new Vector3 (Mathf.Max (a.x, b.x), Mathf.Max (a.y, b.y), Mathf.Max (a.z, b.z));
+	}
+
 }
 
 //	gr: this should be somewhere else
