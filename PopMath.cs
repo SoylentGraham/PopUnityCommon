@@ -270,6 +270,24 @@ public class Pop
 
 		return null;
 	}
+
+	public static RenderTextureFormat Format2DToRenderTextureFormat(TextureFormat Format)
+	{
+		switch (Format) {
+		case TextureFormat.RGBA32:
+		case TextureFormat.ARGB32:
+			return RenderTextureFormat.ARGB32;
+		case TextureFormat.RGB24:
+			return RenderTextureFormat.ARGBFloat;
+		case TextureFormat.RFloat:
+			return RenderTextureFormat.RFloat;
+		case TextureFormat.RGBAFloat:
+			return RenderTextureFormat.ARGBFloat;
+		}
+
+		throw new System.Exception ("Failed to convert " + Format + " to RenderTextureFormat");
+	}
+
 }
 
 
