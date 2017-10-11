@@ -14,9 +14,8 @@ public class TexturePreviewAttribute : PropertyAttribute
 {
 	public TexturePreviewAttribute()
 	{
+		
 	}
-
-
 }
 
 
@@ -26,6 +25,34 @@ public class TexturePreviewAttributePropertyDrawer : PropertyDrawer
 {
 	const int TextureHeight = 200;
 	const int Spacing = 5;
+	const int EnumHeight = 20;
+
+	public enum TexturePreviewMode
+	{
+		Colour,
+		Alpha,
+		Mixed,
+	};
+
+	static TexturePreviewMode	PreviewMode = TexturePreviewMode.Colour;
+
+	public void Draw(Rect rect,Texture texture)
+	{
+		switch ( PreviewMode )
+		{
+		case TexturePreviewMode.Colour:
+			EditorGUI.DrawPreviewTexture( rect, texture );
+			return;
+
+		case TexturePreviewMode.Alpha:
+			EditorGUI.DrawTextureAlpha( rect, texture );
+			return;
+
+		case TexturePreviewMode.Mixed:
+			EditorGUI.DrawTextureTransparent( rect, texture );
+			return;
+		}
+	}
 
 	static Texture GetPropertyAsTexture(SerializedProperty property)
 	{
@@ -37,27 +64,37 @@ public class TexturePreviewAttributePropertyDrawer : PropertyDrawer
 		return t;
 	}
 
+	Rect EatRect(ref Rect rect,float EatHeight)
+	{
+		var SubRect = new Rect (rect);
+		SubRect.height = EatHeight;
+
+		rect.y += EatHeight;
+		rect.height -= EatHeight;
+	
+		return SubRect;
+	}
+
 	public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 	{
 		var Attrib = (TexturePreviewAttribute)attribute;
 		var TargetObject = property.serializedObject.targetObject;
 
 		//	show base selector
-		EditorGUI.PropertyField (position, property, label, true);
-	
-		//	now show the rest
 		var BaseHeight = base.GetPropertyHeight ( property,  label);
+		var PropRect = EatRect (ref position, BaseHeight);
+		EditorGUI.PropertyField (PropRect, property, label, true);
+	
+		//	space
+		var SpaceRect = EatRect (ref position, Spacing);
 
-		position.height -= BaseHeight;
-		position.y += BaseHeight;
-
-		position.height -= Spacing;
-		position.y += Spacing;
+		var EnumRect = EatRect (ref position, EnumHeight);
+		PreviewMode = (TexturePreviewMode)EditorGUI.EnumPopup (EnumRect, "Preview Mode", PreviewMode as System.Enum);
 
 		try
 		{
 			var Texture = GetPropertyAsTexture( property );
-			EditorGUI.DrawPreviewTexture (position, Texture);
+			Draw(position, Texture);
 		}
 		catch(System.Exception e) {
 			EditorGUI.HelpBox (position, e.Message, MessageType.Error);
@@ -72,6 +109,7 @@ public class TexturePreviewAttributePropertyDrawer : PropertyDrawer
 		var Height = base.GetPropertyHeight ( property,  label);
 
 		Height += Spacing;
+		Height += EnumHeight;
 		Height += TextureHeight;
 
 		return Height;
