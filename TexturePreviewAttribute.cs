@@ -67,18 +67,33 @@ public class TexturePreviewAttributePropertyDrawer : PropertyDrawer
 
 	public static void Draw(Rect rect,Texture texture,TexturePreviewMode Mode)
 	{
+		//	see http://answers.unity3d.com/questions/377207/drawing-a-texture-in-a-custom-propertydrawer.html
+		/*	gr: this check is done internally; https://github.com/MattRix/UnityDecompiled/blob/b4b209f8d1c93d66f560bf23c81bc0910cef177c/UnityEditor/UnityEditor/EditorGUI.cs#L6651
+		if (Event.current.type != EventType.Repaint) {
+			return;
+		}
+		*/
+		if (texture == null) {
+			EditorGUI.LabelField (rect, "null");
+			return;
+		}
+	
 		switch ( Mode )
 		{
 		case TexturePreviewMode.Colour:
+			//Graphics.DrawTexture (rect, texture);
 			EditorGUI.DrawPreviewTexture( rect, texture );
+			//GUI.DrawTexture( rect, texture, ScaleMode.ScaleToFit, false );
 			return;
 
 		case TexturePreviewMode.Alpha:
+			//	gr: need an alternative to this
 			EditorGUI.DrawTextureAlpha( rect, texture );
 			return;
 
 		case TexturePreviewMode.Mixed:
 			EditorGUI.DrawTextureTransparent( rect, texture );
+			//GUI.DrawTexture( rect, texture, ScaleMode.ScaleToFit, true );
 			return;
 
 		case TexturePreviewMode.ColourAndAlpha:
@@ -88,6 +103,7 @@ public class TexturePreviewAttributePropertyDrawer : PropertyDrawer
 			Draw (AlphaRect, texture, TexturePreviewMode.Alpha);
 			break;
 		}
+
 	}
 
 	static Texture GetPropertyAsTexture(SerializedProperty property)
@@ -112,6 +128,7 @@ public class TexturePreviewAttributePropertyDrawer : PropertyDrawer
 	
 		//	space
 		var SpaceRect = EatRect (ref position, Spacing);
+		//GUILayout.Space (Spacing);
 
 		var EnumRect = EatRect (ref position, EnumHeight);
 		PreviewMode = (TexturePreviewMode)EditorGUI.EnumPopup (EnumRect, "Preview Mode", PreviewMode as System.Enum);
@@ -122,7 +139,8 @@ public class TexturePreviewAttributePropertyDrawer : PropertyDrawer
 			Draw(position, Texture, PreviewMode );
 		}
 		catch(System.Exception e) {
-			EditorGUI.HelpBox (position, e.Message, MessageType.Error);
+			//EditorGUI.HelpBox (position, e.Message, MessageType.Error);
+			Debug.Log("Error");
 		}
 	}
 
