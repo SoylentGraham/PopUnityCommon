@@ -23,7 +23,7 @@ public class TexturePreviewAttribute : PropertyAttribute
 [CustomPropertyDrawer(typeof(TexturePreviewAttribute))]
 public class TexturePreviewAttributePropertyDrawer : PropertyDrawer
 {
-	const int TextureHeight = 200;
+	const int SingleTextureHeight = 200;
 	const int Spacing = 5;
 	const int EnumHeight = 20;
 
@@ -31,14 +31,43 @@ public class TexturePreviewAttributePropertyDrawer : PropertyDrawer
 	{
 		Colour,
 		Alpha,
+		ColourAndAlpha,
 		Mixed,
 	};
 
 	static TexturePreviewMode	PreviewMode = TexturePreviewMode.Colour;
-
-	public void Draw(Rect rect,Texture texture)
+	static int					GetTexturePreviewCount()
 	{
 		switch ( PreviewMode )
+		{
+		case TexturePreviewMode.ColourAndAlpha:
+			return 2;
+
+		default:
+			return 1;
+		}
+	}
+	static int					GetTextureHeight()
+	{
+		return SingleTextureHeight * GetTexturePreviewCount ();
+	}
+
+	static public Rect EatRect(ref Rect rect,float EatHeight)
+	{
+		var SubRect = new Rect (rect);
+		SubRect.height = EatHeight;
+
+		rect.y += EatHeight;
+		rect.height -= EatHeight;
+
+		return SubRect;
+	}
+
+
+
+	public static void Draw(Rect rect,Texture texture,TexturePreviewMode Mode)
+	{
+		switch ( Mode )
 		{
 		case TexturePreviewMode.Colour:
 			EditorGUI.DrawPreviewTexture( rect, texture );
@@ -51,6 +80,13 @@ public class TexturePreviewAttributePropertyDrawer : PropertyDrawer
 		case TexturePreviewMode.Mixed:
 			EditorGUI.DrawTextureTransparent( rect, texture );
 			return;
+
+		case TexturePreviewMode.ColourAndAlpha:
+			var ColourRect = EatRect (ref rect, SingleTextureHeight);
+			var AlphaRect = EatRect (ref rect, SingleTextureHeight);
+			Draw (ColourRect, texture, TexturePreviewMode.Colour);
+			Draw (AlphaRect, texture, TexturePreviewMode.Alpha);
+			break;
 		}
 	}
 
@@ -62,17 +98,6 @@ public class TexturePreviewAttributePropertyDrawer : PropertyDrawer
 
 		var t = property.objectReferenceValue as Texture;
 		return t;
-	}
-
-	Rect EatRect(ref Rect rect,float EatHeight)
-	{
-		var SubRect = new Rect (rect);
-		SubRect.height = EatHeight;
-
-		rect.y += EatHeight;
-		rect.height -= EatHeight;
-	
-		return SubRect;
 	}
 
 	public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -94,7 +119,7 @@ public class TexturePreviewAttributePropertyDrawer : PropertyDrawer
 		try
 		{
 			var Texture = GetPropertyAsTexture( property );
-			Draw(position, Texture);
+			Draw(position, Texture, PreviewMode );
 		}
 		catch(System.Exception e) {
 			EditorGUI.HelpBox (position, e.Message, MessageType.Error);
@@ -110,7 +135,7 @@ public class TexturePreviewAttributePropertyDrawer : PropertyDrawer
 
 		Height += Spacing;
 		Height += EnumHeight;
-		Height += TextureHeight;
+		Height += GetTextureHeight();
 
 		return Height;
 	}
