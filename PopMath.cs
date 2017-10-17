@@ -45,6 +45,18 @@ public struct Sphere3
 		return dist;
 	}
 
+	public bool	IsPointInside(Vector3 Position)
+	{
+		return Distance (Position) <= 0;
+	}
+
+	public float Distance(Vector3 Position)
+	{
+		var Dist = Vector3.Distance (Position, this.center );
+		Dist -= this.radius;
+		return Dist;
+	}
+
 };
 
 [System.Serializable]
