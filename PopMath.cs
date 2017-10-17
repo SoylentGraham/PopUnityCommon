@@ -310,11 +310,11 @@ public static class PopMath {
 		//	grab local one
 		var LocalSphere = GetColliderSphere( collider );
 
+		var EdgePos = LocalSphere.center + new Vector3 (0, 0, LocalSphere.radius);
+
 		//	transform
 		var ct = collider.transform;
 		LocalSphere.center = ct.TransformPoint (LocalSphere.center);
-
-		var EdgePos = LocalSphere.center + new Vector3 (0, 0, LocalSphere.radius);
 		var WorldEdgePos = ct.TransformPoint (EdgePos );
 
 		LocalSphere.radius = Vector3.Distance (WorldEdgePos, LocalSphere.center);
