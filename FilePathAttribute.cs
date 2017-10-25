@@ -101,6 +101,8 @@ public class FilePathAttribute : PropertyAttribute
 				throw new System.Exception("Path not in project; " + Path );
 			
 			Path = Path.Remove( 0, Application_ProjectPath.Length );
+			if ( Path[0] == System.IO.Path.DirectorySeparatorChar || Path[0] == System.IO.Path.AltDirectorySeparatorChar )
+				Path = Path.Remove(0);
 			return Path;
 		}
 				
