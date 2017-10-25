@@ -14,11 +14,15 @@ using System.Reflection;
 [System.AttributeUsage(System.AttributeTargets.Field)]
 public class FilePathAttribute : PropertyAttribute
 {
+	static public string	Application_ProjectPath	{	get { return Application.dataPath.Split (new string[]{ "/Assets" }, System.StringSplitOptions.None) [0]; } }
+
+
 	public enum PathType
 	{
 		File,
 		FileInProject,
-		Folder
+		Folder,
+		FolderInProject,
 	};
 	PathType	pathType;
 	string		fileType = "";
@@ -85,6 +89,21 @@ public class FilePathAttribute : PropertyAttribute
 
 		if (pathType == PathType.Folder)
 			return EditorUtility.SaveFolderPanel (PanelTitle, Dir, Filename);
+
+		if (pathType == PathType.FolderInProject)
+		{
+			var Path = EditorUtility.SaveFolderPanel (PanelTitle, Dir, Filename);
+			//	strip /asset/ path
+			if ( string.IsNullOrEmpty( Path ) )
+				return Path;
+			
+			if ( !Path.StartsWith( Application_ProjectPath ) )
+				throw new System.Exception("Path not in project; " + Path );
+			
+			Path = Path.Remove( 0, Application_ProjectPath.Length );
+			return Path;
+		}
+				
 #endif
 		throw new System.Exception ("Unhandled path type " + pathType);
 	}

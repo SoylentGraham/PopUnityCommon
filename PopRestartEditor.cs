@@ -9,6 +9,8 @@ using UnityEditor;
 
 public class PopRestartEditor : MonoBehaviour {
 
+	static string	Application_ProjectPath	{	get {	return FilePathAttribute.Application_ProjectPath;}}
+
 	//	https://docs.unity3d.com/Manual/CommandLineArguments.html
 	//	gr: is this glcore now? opengl still works on windows, even after this changed...
 	static string	ArgForceOpengl = "-force-opengl";
@@ -24,7 +26,7 @@ public class PopRestartEditor : MonoBehaviour {
 		//var UnityExe = System.Environment.GetCommandLineArgs()[0];
 		//var UnityExe = EditorApplication.applicationPath;
 		//System.Diagnostics.Process.Start( UnityExe, ArgForceOpengl );
-		var ProjectPath = Application.dataPath.Split(new string[]{"/Assets"},System.StringSplitOptions.None)[0];
+		var ProjectPath = Application_ProjectPath;
 		//var ProjectPath = "./";	//	shows open-project dialog
 		EditorApplication.OpenProject(ProjectPath);
 	}
@@ -37,7 +39,7 @@ public class PopRestartEditor : MonoBehaviour {
 		//var UnityExe = System.Environment.GetCommandLineArgs()[0];
 		//var UnityExe = EditorApplication.applicationPath;
 		//System.Diagnostics.Process.Start( UnityExe, ArgForceOpengl );
-		var ProjectPath = Application.dataPath.Split(new string[]{"/Assets"},System.StringSplitOptions.None)[0];
+		var ProjectPath = Application_ProjectPath;
 		//var ProjectPath = "./";	//	shows open-project dialog
 		EditorApplication.OpenProject(ProjectPath, ArgForceOpengl);
 	}
@@ -51,7 +53,7 @@ public class PopRestartEditor : MonoBehaviour {
 		//var UnityExe = System.Environment.GetCommandLineArgs()[0];
 		//var UnityExe = EditorApplication.applicationPath;
 		//System.Diagnostics.Process.Start( UnityExe, ArgForceOpengl );
-		var ProjectPath = Application.dataPath.Split(new string[]{"/Assets"},System.StringSplitOptions.None)[0];
+		var ProjectPath = Application_ProjectPath;
 		//var ProjectPath = "./";	//	shows open-project dialog
 		EditorApplication.OpenProject(ProjectPath, ArgForceMetal);
 	}
