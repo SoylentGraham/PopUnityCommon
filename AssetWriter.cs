@@ -2,6 +2,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
+namespace PopX
+{
+	//	gr: using System breaks too many references :/
+	public static class Sys
+	{
+		public class UserCancelledException : global::System.Exception
+		{
+			public UserCancelledException(string message)
+				: base(message) { }
+		};
+	};
+}
+
+
 public class AssetWriter : MonoBehaviour {
 
 
@@ -37,7 +52,10 @@ public class AssetWriter : MonoBehaviour {
 	}
 	#endif
 
-
+	#if UNITY_EDITOR
+	//	[on OSX at least] SaveFilePanelInProject doesn't remember your last dir... lets try
+	static string LastSavedDirectory = null;
+	#endif
 
 	#if UNITY_EDITOR
 	public static T SaveAsset<T>(T Asset) where T : Object
@@ -47,19 +65,40 @@ public class AssetWriter : MonoBehaviour {
 
 		var Path = UnityEditor.AssetDatabase.GetAssetPath (Asset);
 		if (string.IsNullOrEmpty (Path)) {
-			Path = UnityEditor.EditorUtility.SaveFilePanelInProject ("Save new asset...", Asset.name, "asset", "Save asset");
-			if (string.IsNullOrEmpty (Path))
-				throw new System.Exception ("Save aborted");
 
-			//	gr: returns null
-			//Path = UnityEditor.FileUtil.GetProjectRelativePath (Path);
+			var Filename = Asset.name;
+
+			if (!string.IsNullOrEmpty (LastSavedDirectory))
+				Filename = LastSavedDirectory + Filename;
+
+			Path = UnityEditor.EditorUtility.SaveFilePanelInProject ("Save new asset...", Filename, "asset", "Save asset");
+			if (string.IsNullOrEmpty (Path))
+				throw new PopX.Sys.UserCancelledException ("Save aborted");
+
+			//	save last path
+			try
+			{
+				LastSavedDirectory = PopX.IO.GetProjectRelativePath(Path);
+			}
+			catch {
+				LastSavedDirectory = null;
+			}
 		}
 
 		var ExistingAsset = UnityEditor.AssetDatabase.LoadAssetAtPath<T>(Path);
 
 		if ( ExistingAsset == null )
 		{
+			var LastActiveRenderTexture = RenderTexture.active;
+
+			//	gr: cant save a render texture if it's active!
+			if (Asset is RenderTexture)
+				RenderTexture.active = null;
+			
 			UnityEditor.AssetDatabase.CreateAsset( Asset, Path );
+
+			RenderTexture.active = LastActiveRenderTexture;
+
 			UnityEditor.AssetDatabase.SaveAssets();
 		}
 		else
