@@ -20,11 +20,12 @@ public class GotoNextScene : MonoBehaviour {
 
 	public SceneLoadMode	LoadMode = SceneLoadMode.LoadNextScene;
 
+	[ShowIf("ModeIs_LoadSpecificScene")]
+	[SceneName]
+	public string levelName;
+
 	[InspectorButton("GotoNextScene")]
 	public bool		_GotoNextScene;
-
-	[ShowIf("ModeIs_LoadSpecificScene")]
-	public string levelName;
 
 	[Header("If not zero, go to next scene after X secs from OnEnable")]
 	[Range(0,180)]

@@ -83,11 +83,21 @@ public class OpenvrJoystickInterface : MonoBehaviour {
 	public string								AxisRightTouchPadX = "RightController Touchpad X";
 	public string								AxisRightTouchPadY = "RightController Touchpad Y";
 
-	OpenvrJoystickFrame UpdateNode(VRNode Node, string Name,KeyCode TriggerButton,KeyCode TouchpadButton,KeyCode TouchpadClickButton,KeyCode AppButton,string AxisX,string AxisY)
+	#if UNITY_2017_2_OR_NEWER
+	OpenvrJoystickFrame UpdateNode(UnityEngine.XR.XRNode Node, string Name,KeyCode TriggerButton,KeyCode TouchpadButton,KeyCode TouchpadClickButton,KeyCode AppButton,string AxisX,string AxisY)
+	#else
+	OpenvrJoystickFrame UpdateNode(UnityEngine.VR.VRNode Node, string Name,KeyCode TriggerButton,KeyCode TouchpadButton,KeyCode TouchpadClickButton,KeyCode AppButton,string AxisX,string AxisY)
+	#endif
 	{
 		var JoyInput = new OpenvrJoystickFrame();
-		JoyInput.Position = InputTracking.GetLocalPosition(Node);
-		JoyInput.Rotation = InputTracking.GetLocalRotation(Node);
+
+		#if UNITY_2017_2_OR_NEWER
+		JoyInput.Position = UnityEngine.XR.InputTracking.GetLocalPosition(Node);
+		JoyInput.Rotation = UnityEngine.XR.InputTracking.GetLocalRotation(Node);
+		#else
+		JoyInput.Position = UnityEngine.VR.InputTracking.GetLocalPosition(Node);
+		JoyInput.Rotation = UnityEngine.VR.InputTracking.GetLocalRotation(Node);
+		#endif
 
 		JoyInput.TriggerIsDown = Input.GetKey( TriggerButton );
 		JoyInput.TriggerPressed = Input.GetKeyDown( TriggerButton );
@@ -130,9 +140,14 @@ public class OpenvrJoystickInterface : MonoBehaviour {
 
 	void Update()
 	{
-		var Left = UpdateNode( VRNode.LeftHand, JoystickNameLeft, LeftTrigger, LeftTouchpad, LeftTouchpadClick, LeftAppKeyCode, AxisLeftTouchPadX, AxisLeftTouchPadY );
-		var Right = UpdateNode( VRNode.RightHand, JoystickNameRight, RightTrigger, RightTouchpad, RightTouchpadClick, RightAppKeyCode, AxisRightTouchPadX, AxisRightTouchPadY );
-		
+		#if UNITY_2017_2_OR_NEWER
+		var Left = UpdateNode( UnityEngine.XR.XRNode.LeftHand, JoystickNameLeft, LeftTrigger, LeftTouchpad, LeftTouchpadClick, LeftAppKeyCode, AxisLeftTouchPadX, AxisLeftTouchPadY );
+		var Right = UpdateNode( UnityEngine.XR.XRNode.RightHand, JoystickNameRight, RightTrigger, RightTouchpad, RightTouchpadClick, RightAppKeyCode, AxisRightTouchPadX, AxisRightTouchPadY );
+		#else
+		var Left = UpdateNode( UnityEngine.VR.VRNode.LeftHand, JoystickNameLeft, LeftTrigger, LeftTouchpad, LeftTouchpadClick, LeftAppKeyCode, AxisLeftTouchPadX, AxisLeftTouchPadY );
+		var Right = UpdateNode( UnityEngine.VR.VRNode.RightHand, JoystickNameRight, RightTrigger, RightTouchpad, RightTouchpadClick, RightAppKeyCode, AxisRightTouchPadX, AxisRightTouchPadY );
+		#endif
+
 		OnUpdateLeft.Invoke( Left );
 		OnUpdateRight.Invoke( Right );
 		OnUpdateAll.Invoke( new List<OpenvrJoystickFrame>(){Left,Right} );

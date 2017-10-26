@@ -35,12 +35,22 @@ public class PopMouseLook : MonoBehaviour {
 	}
 
 	static public bool UsingVr()
-	{
-		if (UnityEngine.VR.VRSettings.loadedDevice == UnityEngine.VR.VRDeviceType.None)
+	{		
+		#if UNITY_2017_2_OR_NEWER
+		var LoadedDevice = UnityEngine.XR.XRSettings.loadedDeviceName;
+		if ( string.IsNullOrEmpty( LoadedDevice ))
+		#else
+		if (UnityEngine.XR.XRSettings.loadedDevice == UnityEngine.VR.VRDeviceType.None)
+		#endif
+		{
 			return false;
+		}
 
-
+		#if UNITY_2017_2_OR_NEWER
+		if (!UnityEngine.XR.XRDevice.isPresent)
+		#else
 		if (!UnityEngine.VR.VRDevice.isPresent)
+		#endif
 			return false;
 
 		return true;
