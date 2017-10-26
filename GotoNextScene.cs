@@ -24,6 +24,8 @@ public class GotoNextScene : MonoBehaviour {
 	public bool		_GotoNextScene;
 
 	[ShowIf("ModeIs_LoadSpecificScene")]
+
+	[SceneName]
 	public string levelName;
 
 	[Header("If not zero, go to next scene after X secs from OnEnable")]
