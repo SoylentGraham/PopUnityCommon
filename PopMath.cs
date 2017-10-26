@@ -2,66 +2,6 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-[System.Serializable]
-public struct Line3
-{
-	public Vector3	Start;
-	public Vector3	End;
-
-	public Line3(Vector3 _Start, Vector3 _End)
-	{ 
-		Start = _Start;
-		End = _End;
-	}
-
-};
-
-[System.Serializable]
-public struct Sphere3
-{
-	public Vector3	center;
-	public float	radius;
-	public Vector3	radius3	{	get{	return new Vector3( radius, radius, radius );	}}
-
-	public Sphere3(Vector3 _Center, float _Radius)
-	{ 
-		center = _Center;
-		radius = _Radius;
-	}
-
-	//	negative - inside sphere, positive, distance from sphere.
-	public float Distance(Ray ray)
-	{
-		Vector3 Temp;
-		return Distance (ray, out Temp);
-	}
-
-	//	negative - inside sphere, positive, distance from sphere.
-	public float Distance(Ray ray,out Vector3 NearestPoint)
-	{
-		NearestPoint = PopMath.NearestToRay3 (this.center, ray);
-		var dist = Vector3.Distance (NearestPoint, this.center);
-		dist -= this.radius;
-		return dist;
-	}
-
-	public bool	IsPointInside(Vector3 Position)
-	{
-		return Distance (Position) <= 0;
-	}
-
-	public float Distance(Vector3 Position)
-	{
-		var Dist = Vector3.Distance (Position, this.center );
-		Dist -= this.radius;
-		return Dist;
-	}
-
-};
-
-[System.Serializable]
-public class UnityEvent_ListOfLine3 : UnityEngine.Events.UnityEvent <List<Line3>> {}
-
 
 public static class PopMath {
 
@@ -281,16 +221,16 @@ public static class PopMath {
 		return Start + (LineDir * TimeAlongLine);
 	}
 
-	public static Sphere3 GetColliderSphere(Collider collider)
+	public static PopX.Sphere3 GetColliderSphere(Collider collider)
 	{
 		if (collider is SphereCollider) {
 			var sc = collider as SphereCollider;
-			return new Sphere3 (sc.center, sc.radius);
+			return new PopX.Sphere3 (sc.center, sc.radius);
 		}
 
 		if (collider is BoxCollider) {
 			var bc = collider as BoxCollider;
-			var sc = new Sphere3 ();
+			var sc = new PopX.Sphere3 ();
 			sc.center = bc.center;
 
 			//	gr: this is VERY innacurate. use some accumulation instead;
@@ -305,7 +245,7 @@ public static class PopMath {
 	}
 
 	//	gr: this doesn't work for the radius properly, use WorldRayToLocalRay instead
-	public static Sphere3 GetColliderWorldSphere(Collider collider)
+	public static PopX.Sphere3 GetColliderWorldSphere(Collider collider)
 	{
 		//	grab local one
 		var LocalSphere = GetColliderSphere( collider );
@@ -342,7 +282,7 @@ public static class PopMath {
 
 }
 
-//	gr: this should be somewhere else
+//	gr: move this to namespace and System or Alloc static class
 public class Pop
 { 
 	public static int sizeofElement<T>(T[] Array)
@@ -356,12 +296,6 @@ public class Pop
 	}
 
 
-	public static Mesh	GetPrimitiveMesh(PrimitiveType type)
-	{
-		return GameObject.CreatePrimitive( type ).GetComponent<MeshFilter>().sharedMesh;
-	}
-
-
 	public static void AllocIfNull<T>(ref T Object) where T : new()
 	{
 		if ( Object != null )
@@ -371,82 +305,5 @@ public class Pop
 	}
 
 
-	public static Material	GetMaterial(GameObject Object,bool SharedMaterial)
-	{
-		try {
-			var Renderer = Object.GetComponent<MeshRenderer> ();
-			var mat = SharedMaterial ? Renderer.sharedMaterial : Renderer.material;
-		} catch {
-		}
-
-		try {
-			var Renderer = Object.GetComponent<SpriteRenderer> ();
-			var mat = SharedMaterial ? Renderer.sharedMaterial : Renderer.material;
-		} catch {
-		}
-
-		return null;
-	}
-
-	public static RenderTextureFormat Format2DToRenderTextureFormat(TextureFormat Format)
-	{
-		switch (Format) {
-		case TextureFormat.RGBA32:
-		case TextureFormat.ARGB32:
-			return RenderTextureFormat.ARGB32;
-		case TextureFormat.RGB24:
-			return RenderTextureFormat.ARGBFloat;
-		case TextureFormat.RFloat:
-			return RenderTextureFormat.RFloat;
-		case TextureFormat.RGBAFloat:
-			return RenderTextureFormat.ARGBFloat;
-		}
-
-		throw new System.Exception ("Failed to convert " + Format + " to RenderTextureFormat");
-	}
-
 }
-
-
-public class ScopedComputeBuffer
-{
-	public ComputeBuffer	Buffer;
-
-	~ScopedComputeBuffer()
-	{
-		Buffer.Release();
-	} 
-
-	public static implicit operator ComputeBuffer(ScopedComputeBuffer scb)
-	{
-		return scb.Buffer;
-    }
-	
-	//	mapping
-	public ScopedComputeBuffer(int Count,int Stride)
-	{
-		Buffer = new ComputeBuffer( Count, Stride );
-	}
-
-	public ScopedComputeBuffer(int Count,int Stride,ComputeBufferType type)
-	{
-		Buffer = new ComputeBuffer( Count, Stride, type );
-	}
-
-	public void SetData(System.Array Data)
-	{
-		Buffer.SetData( Data );
-	}
-
-	public void GetData(System.Array Data)
-	{
-		Buffer.GetData( Data );
-	}
-
-	public void SetCounterValue(uint counterValue)
-	{
-		Buffer.SetCounterValue( counterValue );
-	}
-}
-
 
