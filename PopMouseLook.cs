@@ -40,7 +40,7 @@ public class PopMouseLook : MonoBehaviour {
 		var LoadedDevice = UnityEngine.XR.XRSettings.loadedDeviceName;
 		if ( string.IsNullOrEmpty( LoadedDevice ))
 		#else
-		if (UnityEngine.XR.XRSettings.loadedDevice == UnityEngine.VR.VRDeviceType.None)
+		if (UnityEngine.VR.VRSettings.loadedDevice == UnityEngine.VR.VRDeviceType.None)
 		#endif
 		{
 			return false;
