@@ -14,18 +14,16 @@ using System.Reflection;
 [System.AttributeUsage(System.AttributeTargets.Field)]
 public class FilePathAttribute : PropertyAttribute
 {
-	static public string	Application_ProjectPath	{	get { return Application.dataPath.Split (new string[]{ "/Assets" }, System.StringSplitOptions.None) [0]; } }
-
-
 	public enum PathType
 	{
 		File,
 		FileInProject,
-		Folder,
-		FolderInProject,
+		Folder
 	};
 	PathType	pathType;
+#if UNITY_EDITOR
 	string		fileType = "";
+#endif
 
 	public FilePathAttribute(PathType _pathType)
 	{
@@ -33,7 +31,9 @@ public class FilePathAttribute : PropertyAttribute
 	}
 	public FilePathAttribute(string _fileType,PathType _pathType=PathType.File)
 	{
+#if UNITY_EDITOR
 		this.fileType = _fileType;
+#endif
 		this.pathType = _pathType;
 	}
 
@@ -89,23 +89,6 @@ public class FilePathAttribute : PropertyAttribute
 
 		if (pathType == PathType.Folder)
 			return EditorUtility.SaveFolderPanel (PanelTitle, Dir, Filename);
-
-		if (pathType == PathType.FolderInProject)
-		{
-			var Path = EditorUtility.SaveFolderPanel (PanelTitle, Dir, Filename);
-			//	strip /asset/ path
-			if ( string.IsNullOrEmpty( Path ) )
-				return Path;
-			
-			if ( !Path.StartsWith( Application_ProjectPath ) )
-				throw new System.Exception("Path not in project; " + Path );
-			
-			Path = Path.Remove( 0, Application_ProjectPath.Length );
-			if ( Path[0] == System.IO.Path.DirectorySeparatorChar || Path[0] == System.IO.Path.AltDirectorySeparatorChar )
-				Path = Path.Remove(0);
-			return Path;
-		}
-				
 #endif
 		throw new System.Exception ("Unhandled path type " + pathType);
 	}

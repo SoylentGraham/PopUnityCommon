@@ -9,7 +9,7 @@ using UnityEditor;
 
 public class PopRestartEditor : MonoBehaviour {
 
-	static string	Application_ProjectPath	{	get {	return FilePathAttribute.Application_ProjectPath;}}
+	static string	Application_ProjectPath	{	get {	return PopX.IO.Application_ProjectPath;}}
 
 #if UNITY_EDITOR
 	//	https://docs.unity3d.com/Manual/CommandLineArguments.html

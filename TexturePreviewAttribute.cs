@@ -127,7 +127,7 @@ public class TexturePreviewAttributePropertyDrawer : PropertyDrawer
 		EditorGUI.PropertyField (PropRect, property, label, true);
 	
 		//	space
-		var SpaceRect = EatRect (ref position, Spacing);
+		/*var SpaceRect = */EatRect (ref position, Spacing);
 		//GUILayout.Space (Spacing);
 
 		var EnumRect = EatRect (ref position, EnumHeight);
@@ -138,7 +138,8 @@ public class TexturePreviewAttributePropertyDrawer : PropertyDrawer
 			var Texture = GetPropertyAsTexture( property );
 			Draw(position, Texture, PreviewMode );
 		}
-		catch(System.Exception e) {
+		catch
+		{
 			//EditorGUI.HelpBox (position, e.Message, MessageType.Error);
 			Debug.Log("Error");
 		}

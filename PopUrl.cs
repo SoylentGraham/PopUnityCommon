@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.IO;
 using System;
@@ -18,6 +18,7 @@ public class PopUrl  {
 	{
 		//	gr: updated OS and now legacy exists but is unreadable
 		return "/sdcard/";
+	/*
 		return "/storage/self/primary/";
 		return "/storage/emulated/legacy/";
 
@@ -48,6 +49,7 @@ public class PopUrl  {
 			Debug.LogError(e.ToString());
 			return null;
 		}
+	*/
 	}
 	#endif
 
