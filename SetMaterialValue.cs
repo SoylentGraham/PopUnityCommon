@@ -136,7 +136,8 @@ public class SetMaterialValue : MonoBehaviour {
 		return _material == null;
 	}
 
-	void Start()
+
+	void DoInitialiseValue()
 	{
 		//	init
 		switch (InitialiseValue) {
@@ -154,6 +155,26 @@ public class SetMaterialValue : MonoBehaviour {
 
 		}
 	}
+
+	void Start()
+	{
+		DoInitialiseValue ();
+	}
+
+	//	re-set value when editor stops
+	void Awake()
+	{
+		#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
+		UnityEditor.EditorApplication.playModeStateChanged += (NewState) => {
+			if ( NewState == UnityEditor.PlayModeStateChange.ExitingPlayMode )
+				DoInitialiseValue();
+			//if (EditorApplication.isPlayingOrWillChangePlaymode && EditorApplication.isPlaying)
+				
+		};
+		#endif
+	}
+
+		
 
 	void ForEachMaterial(System.Action<Material> Lambda)
 	{
