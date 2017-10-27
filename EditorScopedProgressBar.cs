@@ -16,12 +16,14 @@ To make this go out of scope without having to call YourProgress.Dispose() or GC
 */
 public class ScopedProgressBar : System.IDisposable
 {
+	#if UNITY_EDITOR
 	string	mTitle;
+	#endif
 
 	public ScopedProgressBar(string Title)
 	{
-		mTitle = Title;
 		#if UNITY_EDITOR
+		mTitle = Title;
 		EditorUtility.DisplayProgressBar (mTitle, "...", 0.0f);
 		#endif
 	}

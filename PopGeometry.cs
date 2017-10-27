@@ -504,12 +504,14 @@ namespace PopX
 			try {
 				var Renderer = Object.GetComponent<MeshRenderer> ();
 				var mat = SharedMaterial ? Renderer.sharedMaterial : Renderer.material;
+				return mat;
 			} catch {
 			}
 
 			try {
 				var Renderer = Object.GetComponent<SpriteRenderer> ();
 				var mat = SharedMaterial ? Renderer.sharedMaterial : Renderer.material;
+				return mat;
 			} catch {
 			}
 
