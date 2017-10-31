@@ -44,5 +44,19 @@ public static class PopGameObject
 		return default(T);
 	}
 
+	public static T FindObjectOfTypeInParents<T>(this GameObject go)
+	{
+		var parent = go.transform.parent;
+		if (parent == null)
+			return default (T);
+
+		var Match = parent.GetComponent<T> ();
+		if (Match != null)
+			return Match;
+
+		return parent.gameObject.FindObjectOfTypeInParents<T> ();
+	}
+
+
 }
 
