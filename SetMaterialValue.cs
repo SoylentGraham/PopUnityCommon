@@ -76,6 +76,14 @@ public class SetMaterialValue : MonoBehaviour {
 		if (ri == null)
 			return null;
 
+		//	raw image material is always shared, so as long as we're caching, make another
+		if (!UseSharedMaterial) {
+			//	instance
+			Debug.Log ("Making instance of RawImage material " + ri.material.name);
+			var MaterialInstance = new Material (ri.material);
+			ri.material = MaterialInstance;
+		}
+
 		return ri.material;
 	}
 
