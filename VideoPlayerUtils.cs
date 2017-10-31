@@ -14,6 +14,8 @@ using UnityEngine.Video;
 #endif
 public class VideoPlayerUtils : MonoBehaviour {
 
+	public double				InitialTime = 0;
+
 	public bool					DebugEvents = true;
 	public bool					DebugEveryFrame = false;
 
@@ -22,6 +24,7 @@ public class VideoPlayerUtils : MonoBehaviour {
 	[Header("gr: sometimes OnStarted happens before OnPrepared")]
 	public UnityEvent			OnPrepared;
 	public UnityEvent			OnStarted;
+	public UnityEvent_float		OnFirstFrameReady;
 	public UnityEvent			OnLoopPoint;
 
 	[Header("Callback just before video finishes")]
@@ -78,6 +81,7 @@ public class VideoPlayerUtils : MonoBehaviour {
 
 		//	gr; this is stopping the video from playing... on android... if video has started?
 		//Player.skipOnDrop = SkipDroppedFrames;
+		Player.time = InitialTime;
 
 		Player.errorReceived += (player, error) => {
 			if ( DebugEvents )
@@ -106,7 +110,24 @@ public class VideoPlayerUtils : MonoBehaviour {
 			OnPrepared.Invoke();
 			LastFrameIndex = null;
 		};
-			
+
+		Player.seekCompleted += (player) =>
+		{
+			if ( DebugEvents )
+				Debug.Log( this.name + " seekCompleted");
+		};
+
+		Player.frameReady += (player,FrameIndex) =>
+		{
+			if ( LastFrameIndex == null )
+			{
+				var timef = (float)player.time;
+				if ( DebugEvents )
+					Debug.Log( this.name + " first frame ready at " + timef);
+				OnFirstFrameReady.Invoke( timef );
+			}
+		};
+
 		try
 		{
 			var ClipDuration = GetClipDuration();
