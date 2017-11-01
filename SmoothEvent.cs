@@ -17,6 +17,8 @@ public class SmoothEvent : MonoBehaviour {
 	public float				Duration = 5;
 	public AnimationCurve		Curve;
 
+	public bool					OnDisableJumpToEnd = false;
+
 
 	float				StartTime = 0;
 
@@ -25,7 +27,17 @@ public class SmoothEvent : MonoBehaviour {
 	{
 		StartTime = Time.time;
 		Update ();
-	}		
+	}
+
+	void OnDisable()
+	{
+		if ( OnDisableJumpToEnd )
+		{
+			StartTime = Time.time - Duration;
+			Update();
+		}
+	}
+
 
 	void Update () {
 
