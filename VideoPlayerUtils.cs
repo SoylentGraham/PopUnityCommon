@@ -14,7 +14,24 @@ using UnityEngine.Video;
 #endif
 public class VideoPlayerUtils : MonoBehaviour {
 
-	public double				InitialTime = 0;
+	public float?				InitialTime	
+	{
+		get
+		{
+			#if UNITY_EDITOR || UNITY_EDITOR_64 || UNITY_EDITOR_OSX
+			var StartTime = EditorInitialTime;
+			#else
+			var StartTime = InitialTime;
+			#endif
+			if (StartTime > 0)
+				return (float)StartTime;
+			return null;
+		}
+	}
+
+	public double				PlayerInitialTime = 0;
+	[Header("For debugging. Set initial time, but only in editor")]
+	public double				EditorInitialTime = 0;
 
 	public bool					DebugEvents = true;
 	public bool					DebugEveryFrame = false;
@@ -81,8 +98,15 @@ public class VideoPlayerUtils : MonoBehaviour {
 
 		//	gr; this is stopping the video from playing... on android... if video has started?
 		//Player.skipOnDrop = SkipDroppedFrames;
-		Player.time = InitialTime;
 
+		var StartTime = InitialTime;
+		if ( StartTime.HasValue )
+		{
+			if ( !Player.canSetTime )
+				Debug.LogError("Couldn't not set video player start time to " + StartTime.Value );
+			Player.time = StartTime.Value;
+		}
+		
 		Player.errorReceived += (player, error) => {
 			if ( DebugEvents )
 				Debug.Log( this.name + " error: " + error );
