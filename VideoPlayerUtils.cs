@@ -21,7 +21,7 @@ public class VideoPlayerUtils : MonoBehaviour {
 			#if UNITY_EDITOR || UNITY_EDITOR_64 || UNITY_EDITOR_OSX
 			var StartTime = EditorInitialTime;
 			#else
-			var StartTime = InitialTime;
+			var StartTime = PlayerInitialTime;
 			#endif
 			if (StartTime > 0)
 				return (float)StartTime;
