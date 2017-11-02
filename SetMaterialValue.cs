@@ -89,6 +89,8 @@ public class SetMaterialValue : MonoBehaviour {
 		//	instance
 		Debug.Log ("Making instance of material " + SharedMaterial.name);
 		var MaterialInstance = new Material (SharedMaterial);
+		MaterialInstance.name += MaterialInstanceSuffix;
+
 		return MaterialInstance;
 	}
 
