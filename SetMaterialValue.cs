@@ -12,6 +12,11 @@ public class SetMaterialValue : MonoBehaviour {
 		Colour,
 	};
 
+
+	public bool	MaterialOwnerIsParent = false;
+
+	public GameObject	RootMaterialOwner	{	get	{ return MaterialOwnerIsParent ? this.transform.parent.gameObject : this.gameObject; }}
+
 	[Header("Apply (and set) all children's materials to first material found")]
 	public bool MaterialOwnerInChildren = false;
 	bool HasSetAllChildrensMaterial = false;
@@ -62,7 +67,7 @@ public class SetMaterialValue : MonoBehaviour {
 	{
 		MeshRenderer mr = materialOwner;
 		if (mr == null) {
-			mr = GetComponent<MeshRenderer> ();
+			mr = RootMaterialOwner.GetComponent<MeshRenderer> ();
 		}
 		if (mr == null)
 			return null;
@@ -70,38 +75,53 @@ public class SetMaterialValue : MonoBehaviour {
 		return UseSharedMaterial ? mr.sharedMaterial : mr.material;
 	}
 
+
+	const string MaterialInstanceSuffix = " Instance!";
+
+	Material GetInstancedMaterial(Material SharedMaterial)
+	{
+		if ( UseSharedMaterial )
+			return SharedMaterial;
+
+		if (SharedMaterial.name.EndsWith (MaterialInstanceSuffix))
+			return SharedMaterial;
+
+		//	instance
+		Debug.Log ("Making instance of material " + SharedMaterial.name);
+		var MaterialInstance = new Material (SharedMaterial);
+		return MaterialInstance;
+	}
+
 	Material GetRawImageMaterial()
 	{
-		var ri = GetComponent<UnityEngine.UI.RawImage> ();
+		var ri = RootMaterialOwner.GetComponent<UnityEngine.UI.RawImage> ();
 		if (ri == null)
 			return null;
 
-		//	raw image material is always shared, so as long as we're caching, make another
-		if (!UseSharedMaterial) {
-			//	instance
-			Debug.Log ("Making instance of RawImage material " + ri.material.name);
-			var MaterialInstance = new Material (ri.material);
-			ri.material = MaterialInstance;
-		}
-
+		ri.material = GetInstancedMaterial (ri.material);
 		return ri.material;
 	}
 
+
 	Material GetTextMaterial()
 	{
-		var t = GetComponent<UnityEngine.UI.Text> ();
+		var t = RootMaterialOwner.GetComponent<UnityEngine.UI.Text> ();
 		if (t == null)
 			return null;
 
+		t.material = GetInstancedMaterial (t.material);
+	
 		return t.material;
 	}
 
 
 	Material GetSpriteRendererMaterial()
 	{
-		var t = GetComponent<SpriteRenderer> ();
+		var t = RootMaterialOwner.GetComponent<SpriteRenderer> ();
 		if (t == null)
 			return null;
+	
+		t.material = GetInstancedMaterial (t.material);
 
 		return t.material;
 	}
@@ -190,9 +210,9 @@ public class SetMaterialValue : MonoBehaviour {
 		//	todo: make this an option, and cache a list of materials
 		if (MaterialOwnerInChildren && !HasSetAllChildrensMaterial) {
 		
-			var mrs = GetComponentsInChildren<MeshRenderer> ();
-			var ris = GetComponentsInChildren<UnityEngine.UI.RawImage> ();
-			var ts = GetComponentsInChildren<UnityEngine.UI.Text> ();
+			var mrs = RootMaterialOwner.GetComponentsInChildren<MeshRenderer> ();
+			var ris = RootMaterialOwner.GetComponentsInChildren<UnityEngine.UI.RawImage> ();
+			var ts = RootMaterialOwner.GetComponentsInChildren<UnityEngine.UI.Text> ();
 
 			var cm = CachedMaterial;
 
