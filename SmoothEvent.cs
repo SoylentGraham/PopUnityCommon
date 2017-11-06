@@ -19,6 +19,7 @@ public class SmoothEvent : MonoBehaviour {
 
 	public bool					OnDisableJumpToEnd = false;
 
+	public bool					ClampOutput01 = false;
 
 	float				StartTime = 0;
 
@@ -61,6 +62,9 @@ public class SmoothEvent : MonoBehaviour {
 		} else {
 			Value = TimePassed / Duration;
 		}
+
+		if (ClampOutput01)
+			Value = Mathf.Clamp01 (Value);
 
 		OnUpdate.Invoke (Value);
 		OnUpdateInverse.Invoke (1 - Value);
