@@ -12,7 +12,7 @@ public class SetMaterialValue : MonoBehaviour {
 		Colour,
 	};
 
-
+	public bool	DebugLogSetValue = false;
 	public bool	MaterialOwnerIsParent = false;
 
 	public GameObject	RootMaterialOwner	{	get	{ return MaterialOwnerIsParent ? this.transform.parent.gameObject : this.gameObject; }}
@@ -340,6 +340,9 @@ public class SetMaterialValue : MonoBehaviour {
 
 	public void SetFloat(float Value)
 	{
+		if (DebugLogSetValue)
+			Debug.Log (this.name + " SetFloat( " + Value + " )");
+		
 		if (GlobalUniform) 
 		{
 			Shader.SetGlobalFloat (Uniform, Value);
@@ -355,6 +358,9 @@ public class SetMaterialValue : MonoBehaviour {
 
 	public void SetInt(int Value)
 	{
+		if (DebugLogSetValue)
+			Debug.Log (this.name + " SetInt( " + Value + " )");
+
 		if (GlobalUniform) 
 		{
 			Shader.SetGlobalInt(Uniform, Value);
