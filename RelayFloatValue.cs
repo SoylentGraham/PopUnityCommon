@@ -29,4 +29,10 @@ public class RelayFloatValue : MonoBehaviour
 		if ( SetDefaultOnDestroy )
 	        OnUpdate.Invoke(DefaultValue);
     }
+
+	public void SetValue(float f)
+	{
+		Value = f;
+		OnUpdate.Invoke (Value);
+	}
 }
