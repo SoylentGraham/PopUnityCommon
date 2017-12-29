@@ -22,6 +22,7 @@ public class BytePool
 	public int		TotalAllocatedArrays	{	get	{	return FreeArrays.Count + UsedArrays.Count;	}	}
 	public int		FreeBytes				{	get	{	return CountBytes( FreeArrays );	}	}
 	public int		UsedBytes				{	get	{	return CountBytes( UsedArrays );	}	}
+	public bool		IsFull					{	get {	return UsedArrays.Count >= MaxPoolSize; } }
 		
 	static public int	CountBytes(List<byte[]> Arrays)
 	{
@@ -85,10 +86,14 @@ public class BytePool
 	{
 		lock(FreeArrays)
 		{
+			if (!UsedArrays.Remove (ReleasedBuffer)) {
+				Debug.LogError ("Tried to remove ByteBuffer (" + ReleasedBuffer.Length + ") from pool that does not belong");
+				return;
+			}
+
 			//	move out of used arrays
 			//	gr: more error checking plz!
 			FreeArrays.Add(ReleasedBuffer);
-			UsedArrays.Remove(ReleasedBuffer);
 		}
 	}	
 };
