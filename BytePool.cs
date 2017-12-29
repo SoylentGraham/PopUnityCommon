@@ -22,6 +22,7 @@ public class BytePool
 	public int		TotalAllocatedArrays	{	get	{	return FreeArrays.Count + UsedArrays.Count;	}	}
 	public int		FreeBytes				{	get	{	return CountBytes( FreeArrays );	}	}
 	public int		UsedBytes				{	get	{	return CountBytes( UsedArrays );	}	}
+	public bool		IsFull					{	get { return TotalAllocatedArrays >= MaxPoolSize; } }
 		
 	static public int	CountBytes(List<byte[]> Arrays)
 	{
