@@ -37,10 +37,8 @@ namespace PopX
 
 			//	match (with whitepspace)
 			//	name semicolon [ [ 
-			var NamePattern = "([\"]{1}[A-Za-z0-9]+[\"]{1})";
-			var SemiColonPattern = "([\\s]*):([\\s]*)";
 			var ParenthesisPattern = "\\[([\\s]*)\\[";
-			var DoubleArrayPattern = NamePattern + SemiColonPattern + ParenthesisPattern;
+			var DoubleArrayPattern = PopX.Json.NamePattern + PopX.Json.SemiColonPattern + ParenthesisPattern;
 			var RegExpression = new Regex(DoubleArrayPattern);
 
 			int Iterations = 0;	//	stop infinite loops

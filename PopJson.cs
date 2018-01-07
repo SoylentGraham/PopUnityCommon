@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Text.RegularExpressions;
 
 
 
@@ -8,6 +9,17 @@ namespace PopX
 {
 	public class Json
 	{
+		public const string	NamePattern = "([\"]{1}[A-Za-z0-9]+[\"]{1})";
+		public const string	SemiColonPattern = "([\\s]*):([\\s]*)";
+		//	https://stackoverflow.com/a/32155765/355753
+		public const string	ValueStringPattern = "([\\s]*)\"([^\\\\\"]*)\"([\\s]*)";
+		public const string	ValueBoolPattern = "([\\s]*)(true|false){1}([\\s]*)";
+
+		public static string GetNamePattern(string Name)
+		{
+			return "([\"]{1}" + Name + "[\"]{1})";
+		}
+
 		//	works on byte[] and string, but can't do a generics with that in c#, so accessor for now. 
 		//	Which is probably ultra slow
 		static public int GetJsonLength(System.Func<int, char> GetChar)
@@ -48,5 +60,18 @@ namespace PopX
 		{
 			return GetJsonLength((i) => { return (char)Data[i]; });
 		}
+
+		static public void	Replace(ref string Json,string Key,string Value)
+		{
+			var StringElementPattern = GetNamePattern (Key) + PopX.Json.SemiColonPattern + ValueStringPattern;
+			var RegExpression = new Regex (StringElementPattern);
+
+			//	todo: json escaping!
+			var Replacement = '"' + Key + ':' + '"' + Value + '"';
+
+			//	harder to debug, but simpler implementation
+			Json = RegExpression.Replace (Json, Replacement);
+		}
+
 	}
 }
