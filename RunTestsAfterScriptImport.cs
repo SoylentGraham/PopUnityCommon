@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-
+using UnityEditor.TestTools;
 /*	
  Automatically run unit tests after scripts are changed.
  Like how unit tests are supposed to work! (break immediately after compile, not later!)
@@ -40,7 +40,18 @@ class RunTestsAfterScriptImport : AssetPostprocessor
 	[MenuItem(MenuTitle_Run)]
 	static void RunUnitTests()
 	{
-		UnityEditor.TestRunner;
+		//	until I can figure out how to use UnityEditor.TestRunner.dll... just run [test] funcs
+		//UnityEngine.TestTools.TestRunner.
+		//	UnityEditor.TestRunner.dll
+		/*
+		//UnityEditor.UnityTest.Batch.RunUnitTests();
+		var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+		var Types = new List<System.Type> (assembly.GetTypes ());
+		var Methods = Types
+			.SelectMany (x => x.GetMethods ())
+			.Where (y => y.GetCustomAttributes ().OfType<MethodAttribute> ().Any ())
+			.ToDictionary (z => z.Name);
+		*/
 	}
 
 	public static void SetEnabled(bool enabled)
@@ -48,10 +59,10 @@ class RunTestsAfterScriptImport : AssetPostprocessor
 		RunTestsEnabled = enabled;
 
 		//	update menu
-		Menu.SetChecked(MenuTitle, RunTestsEnabled);
+		Menu.SetChecked(MenuTitle_Enabled, RunTestsEnabled);
 
 		//	save settings
-		EditorPrefs.SetBool(MenuTitle, RunTestsEnabled);
+		EditorPrefs.SetBool(MenuTitle_Run, RunTestsEnabled);
 	}
 
 
