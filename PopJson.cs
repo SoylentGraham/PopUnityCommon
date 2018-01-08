@@ -23,31 +23,37 @@ namespace PopX
 		//	Which is probably ultra slow
 		static public int GetJsonLength(System.Func<int, char> GetChar)
 		{
+			var Index = 0;
+
+			while (IsJsonWhitespace (GetChar (Index))) {
+				Index++;
+			}
+
 			//	pull json off the front
-			if (GetChar(0) != '{')
-				throw new System.Exception("Data is not json. Starts with " + (char)GetChar(0));
+			if (GetChar(Index) != '{')
+				throw new System.Exception("Data is not json. Starts["+Index+"] with " + (char)GetChar(Index));
+			Index++;
 
 			var OpeningBrace = '{';
 			var ClosingBrace = '}';
 			int BraceCount = 1;
-			int i = 1;
 			while (BraceCount > 0)
 			{
 				try
 				{
-					var Char = GetChar(i);
+					var Char = GetChar(Index);
 					if (Char == OpeningBrace)
 						BraceCount++;
 					if (Char == ClosingBrace)
 						BraceCount--;
-					i++;
+					Index++;
 				}
 				catch //	OOB
 				{
 					throw new System.Exception("Json braces not balanced");
 				}
 			}
-			return i;
+			return Index;
 		}
 
 		static public int GetJsonLength(string Data)
