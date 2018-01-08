@@ -4,7 +4,6 @@ using UnityEngine;
 using System.Text.RegularExpressions;
 
 
-
 namespace PopX
 {
 	public class Json
@@ -67,11 +66,14 @@ namespace PopX
 			var RegExpression = new Regex (StringElementPattern);
 
 			//	todo: json escaping!
-			var Replacement = '"' + Key + ':' + '"' + Value + '"';
+			var Replacement = '"' + Key + '"' + ':' + '"' + Value + '"';
 
 			//	harder to debug, but simpler implementation
 			Json = RegExpression.Replace (Json, Replacement);
 		}
 
 	}
+
+
+
 }
