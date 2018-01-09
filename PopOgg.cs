@@ -13,21 +13,7 @@ namespace PopX
 		//	throws on EOF
 		public static int	FindNextOggPage (List<Byte> Data, int Start)
 		{
-			var PrefixLen = OggPagePrefix.Length;
-			int Position = Start;
-			while (Position + PrefixLen < Data.Count) {
-
-				var Match = true;
-				for (int i = 0;	i < OggPagePrefix.Length;	i++)
-					Match = Match && (Data [Position + i] == OggPagePrefix [i]);
-			
-				if (Match)
-					return Position;
-
-				Position++;
-			}
-
-			throw new OggPage.NotFound();
+			return PopX.Data.FindPattern (Data, OggPagePrefix, Start);
 		}
 
 
@@ -52,7 +38,7 @@ namespace PopX
 		public int			PageSequence	{	get { return BytesToInt32 (18); } }
 		public int			Checksum		{	get { return BytesToInt32 (22); } }	//	includes page header
 		public byte			PageSegments	{	get{ return Data[26];	}}
-		int					PacketStartIndex	{	get { return 26 + PageSegments; } }
+		int					PacketStartIndex	{	get { return 27 + PageSegments; } }
 
 		public OggPage(List<byte> _Data,int Size)
 		{
@@ -64,12 +50,6 @@ namespace PopX
 				throw new System.Exception ("OggPage version not zero (" + Version + ")");
 		}
 
-		public class NotFound : Exception
-		{
-			public NotFound()
-			{
-			}
-		}
 
 
 		public void CopyPacketBytes(List<byte> Packet,out bool IsFinished)
@@ -185,7 +165,7 @@ namespace PopX
 			{
 				Length = Ogg.FindNextOggPage (PendingBytes,1);
 			}
-			catch(OggPage.NotFound) {
+			catch(Data.NotFound) {
 				Length = PendingBytes.Count;
 			}
 
