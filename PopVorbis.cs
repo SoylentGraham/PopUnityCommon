@@ -16,10 +16,23 @@ namespace PopX
 	{
 		csvorbis.Info		InfoHeader;
 		csvorbis.Comment	CommentHeader;
-		bool	HasInitialHeader	{	get{	return InfoHeader!=null;}}
-		bool	HasCommentHeader	{	get{	return CommentHeader!=null;}}
-		bool	HasCodeBookHeader = false;
-		bool	HasAllHeaders	{	get{ return HasInitialHeader && HasCommentHeader && HasCodeBookHeader; }}
+		bool				HasInitialHeader	{	get{	return InfoHeader!=null;}}
+		bool				HasCommentHeader	{	get{	return CommentHeader!=null;}}
+		bool				HasCodeBookHeader = false;
+		public bool			HasAllHeaders	{	get{ return HasInitialHeader && HasCommentHeader && HasCodeBookHeader; }}
+
+		public string		EncoderVendor	{	get { return CommentHeader!=null ? CommentHeader.getVendor () : null; } }
+		public string[]		EncoderComments
+		{
+			get {
+				var Comments = new string[ CommentHeader == null ? 0 : CommentHeader.comments ];
+				for (int i = 0;	i < Comments.Length;	i++)
+					Comments [i] = CommentHeader.getComment (i);
+				return Comments;
+			}
+		}
+		public int			SampleRate		{	get { return InfoHeader!=null ? InfoHeader.rate : 0; } }
+		public int			ChannelCount	{	get { return InfoHeader!=null ? InfoHeader.channels : 0; } }
 
 		List<Byte>			PendingBytes = new List<Byte>();
 
