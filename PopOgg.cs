@@ -8,7 +8,7 @@ namespace PopX
 {
 	public static class Ogg
 	{
-		static readonly char[] OggPagePrefix = new char[] {'O','g','g','S'};
+		static readonly char[] OggPagePrefix = "OggS".ToCharArray ();
 
 		//	throws on EOF
 		public static int	FindNextOggPage (List<Byte> Data, int Start)
@@ -32,8 +32,8 @@ namespace PopX
 		public bool			IsContinuation	{	get{	return (HeaderType & (1<<0))!=0;	}}
 		public bool			IsBeginningOfStream	{	get{	return (HeaderType & (1<<1))!=0;	}}
 		public bool			IsEndOfStream		{	get{	return (HeaderType & (1<<2))!=0;	}}
-		int					GranulePosition	{	get { return BytesToInt64 (6); } }
-		public int			Timecode	{	get { return GranulePosition; } }
+		long				GranulePosition	{	get { return BytesToInt64 (6); } }
+		public long			Timecode	{	get { return GranulePosition; } }
 		public int			BitstreamSerial	{	get { return BytesToInt32 (14); } }
 		public int			PageSequence	{	get { return BytesToInt32 (18); } }
 		public int			Checksum		{	get { return BytesToInt32 (22); } }	//	includes page header
@@ -112,7 +112,7 @@ namespace PopX
 		}
 
 
-		int					BytesToInt64(int FirstByte)
+		long				BytesToInt64(int FirstByte)
 		{
 			int x = 0;
 			x |= Data [FirstByte + 0] << 0;
@@ -175,12 +175,13 @@ namespace PopX
 			return true;
 		}
 
-		public List<byte> PopPacket()
+		public List<byte> PopPacket(out long Timecode)
 		{
 			var PoppedPages = new List<OggPage> ();
 
 			//	pages may be interleaved, so only concatonate matching serials
 			int? StreamSerialNumber = null;
+			Timecode = 0;
 			int NextPageIndex = 0;
 			var PacketBytes = new List<Byte> ();
 
@@ -191,12 +192,18 @@ namespace PopX
 
 			while ( NextPageIndex < Pages.Count ) {
 				var NextPage = Pages [NextPageIndex];
-				if (!StreamSerialNumber.HasValue)
+				if (!StreamSerialNumber.HasValue) {
 					StreamSerialNumber = NextPage.BitstreamSerial;
+					Timecode = NextPage.Timecode;
+				}
 
+				//	gr: should timecode also always match?
 				if (NextPage.BitstreamSerial != StreamSerialNumber) {
 					NextPageIndex++;
 					continue;
+				}
+				if (NextPage.Timecode != Timecode) {
+					Debug.LogWarning ("Next page timecode(" + NextPage.Timecode + ") different to first page in sequence's timecode(" + Timecode + ")");
 				}
 
 				bool Finished;
