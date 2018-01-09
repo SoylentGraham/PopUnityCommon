@@ -36,6 +36,10 @@ namespace PopX
 
 		List<Byte>			PendingBytes = new List<Byte>();
 
+		csvorbis.DspState	Dsp;
+		csvorbis.Block		DspWorkingBlock;
+
+
 		public void			PushBytes(byte[] Data)
 		{
 			PendingBytes.AddRange (Data);
@@ -130,10 +134,86 @@ namespace PopX
 				return true;
 			}
 
+			//	finished headers, setup DSP
+			if (Dsp == null) {
+				Dsp = new csvorbis.DspState ();
+				Dsp.synthesis_init (InfoHeader);
+				DspWorkingBlock.init (Dsp);
+			}
+
+			DecodeDsp ();
+
+
 			Debug.Log ("Read non header vorbis data");
 			return false;
 		}
 
+
+		void DecodeDsp()
+		{
+			var vi = InfoHeader;
+		
+			// so multiple block decodes can
+			// proceed in parallel.  We could init
+			// multiple vorbis_block structures
+			// for vd here
+
+			var vb = DspWorkingBlock;
+			var vd = Dsp;
+
+			//	op = packet
+			// we have a packet.  Decode it
+			if (vb.synthesis(op) == 0)
+			{
+				// test for success!
+				vd.synthesis_blockin(vb);
+			}
+
+			// **pcm is a multichannel float vector.  In stereo, for
+			// example, pcm[0] is left, and pcm[1] is right.  samples is
+			// the size of each channel.  Convert the float values
+			// (-1.<=range<=1.) to whatever PCM format and write it out
+
+			while (true)
+			{
+				float[][][] _pcm = new float[1][][];
+				int[] _index = new int[vi.channels];
+
+				var samples = vd.synthesis_pcmout(_pcm, _index);
+				if ( samples <= 0 )
+					break;
+				
+				float[][] pcm = _pcm[0];
+				bool clipflag = false;
+				var convsize = 4096 / vi.channels;
+				int bout = (samples < convsize ? samples : convsize);
+
+				// convert floats to 16 bit signed ints (host order) and
+				// interleave
+				for ( var i = 0; i < vi.channels; i++)
+				{
+					int ptr = i * 2;
+					//int ptr=i;
+					int mono = _index[i];
+					for (int j = 0; j < bout; j++)
+					{
+						var Sample = pcm [i] [mono + j];
+						var ChannelIndex = i;
+						OnReadSample (Sample,ChannelIndex);
+						//ptr += 2 * (vi.channels);
+					}
+				}
+
+				vd.synthesis_read(bout); // tell libvorbis how
+				// many samples we
+				// actually consumed
+			}
+		}
+	}
+	if (og.eos() != 0) eos = 1;
+}
+				}
+			}
 	}
 
 }
