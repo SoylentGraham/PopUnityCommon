@@ -39,6 +39,7 @@ namespace PopX
 		csvorbis.DspState	Dsp;
 		csvorbis.Block		DspWorkingBlock;
 
+		List<List<float>>	PcmData;		//	array per channel
 
 		public void			PushBytes(byte[] Data)
 		{
@@ -138,6 +139,7 @@ namespace PopX
 			if (Dsp == null) {
 				Dsp = new csvorbis.DspState ();
 				Dsp.synthesis_init (InfoHeader);
+				DspWorkingBlock = new csvorbis.Block (Dsp);
 				DspWorkingBlock.init (Dsp);
 			}
 
@@ -160,6 +162,12 @@ namespace PopX
 
 			var vb = DspWorkingBlock;
 			var vd = Dsp;
+
+			var Packet = new csogg.Packet ();
+			Packet.packet_base = PendingBytes.ToArray ();
+			Packet.bytes = Packet.packet_base.Length;
+
+			var op = Packet;
 
 			//	op = packet
 			// we have a packet.  Decode it
@@ -184,7 +192,6 @@ namespace PopX
 					break;
 				
 				float[][] pcm = _pcm[0];
-				bool clipflag = false;
 				var convsize = 4096 / vi.channels;
 				int bout = (samples < convsize ? samples : convsize);
 
@@ -193,13 +200,12 @@ namespace PopX
 				for ( var i = 0; i < vi.channels; i++)
 				{
 					int ptr = i * 2;
-					//int ptr=i;
 					int mono = _index[i];
 					for (int j = 0; j < bout; j++)
 					{
 						var Sample = pcm [i] [mono + j];
 						var ChannelIndex = i;
-						OnReadSample (Sample,ChannelIndex);
+						OnDecodePcmSample (Sample,ChannelIndex);
 						//ptr += 2 * (vi.channels);
 					}
 				}
@@ -209,11 +215,19 @@ namespace PopX
 				// actually consumed
 			}
 		}
+
+		void OnDecodePcmSample(float Sample,int ChannelIndex)
+		{
+			if ( PcmData == null )
+				PcmData = new List<List<float>>();
+
+			var ChannelCount = ChannelIndex + 1;
+			while (PcmData.Count < ChannelCount)
+				PcmData.Add (new List<float> ());
+			
+			PcmData [ChannelIndex].Add (Sample);
+		}
 	}
-	if (og.eos() != 0) eos = 1;
-}
-				}
-			}
-	}
+
 
 }
