@@ -56,14 +56,14 @@ namespace PopX
 			return Index;
 		}
 
-		static public int GetJsonLength(string Data)
+		static public int GetJsonLength(string Data,int StartPos=0)
 		{
-			return GetJsonLength((i) => { return Data[i]; });
+			return GetJsonLength((i) => { return Data[i+StartPos]; });
 		}
 
-		static public int GetJsonLength(byte[] Data)
+		static public int GetJsonLength(byte[] Data,int StartPos=0)
 		{
-			return GetJsonLength((i) => { return (char)Data[i]; });
+			return GetJsonLength((i) => { return (char)Data[i+StartPos]; });
 		}
 
 		static void EscapeChar(ref char[] CharPair)
