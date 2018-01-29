@@ -21,6 +21,31 @@ float Range(float Min,float Max,float Time)
 	return (Time-Min) / (Max-Min);
 }
 
+float2 Range(float2 Min,float2 Max,float2 Time)
+{
+	return float2( Range(Min.x,Max.x,Time.x), Range(Min.y,Max.y,Time.y) );
+}
+
+bool Inside(float Min,float Max,float Value)
+{
+	return (Value>=Min) && (Value<=Max);
+}
+
+bool Inside(float2 Min,float2 Max,float2 Value)
+{
+	return Inside(Min.x,Max.x,Value.x) && Inside(Min.y,Max.y,Value.y);
+}
+
+bool Inside01(float a)
+{
+	return Inside(0,1,a);
+}
+
+bool Inside01(float2 ab)
+{
+	return Inside01(ab.x) && Inside01(ab.y);
+}
+
 //	0 = red, 1=green
 float3 NormalToRedGreen(float Value)
 {
