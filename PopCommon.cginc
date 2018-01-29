@@ -26,6 +26,12 @@ float2 Range(float2 Min,float2 Max,float2 Time)
 	return float2( Range(Min.x,Max.x,Time.x), Range(Min.y,Max.y,Time.y) );
 }
 
+
+float3 Range(float3 Min,float3 Max,float3 Time)
+{
+	return float3( Range(Min.x,Max.x,Time.x), Range(Min.y,Max.y,Time.y), Range(Min.z,Max.z,Time.z) );
+}
+
 bool Inside(float Min,float Max,float Value)
 {
 	return (Value>=Min) && (Value<=Max);
