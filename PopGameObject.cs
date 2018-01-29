@@ -57,6 +57,30 @@ public static class PopGameObject
 		return parent.gameObject.FindObjectOfTypeInParents<T> ();
 	}
 
+	public static T[] FindObjectsOfTypeWithName<T>(string MatchName) where T : Component
+	{
+		System.Func<T,bool> Match = (x) =>
+		{
+			return x.name == MatchName;
+		};
+		return FindObjectsOfTypeMatching<T> (Match);
+	}
 
+	public static T[] FindObjectsOfTypeMatching<T>(System.Func<T,bool> Match) where T : Object
+	{
+		var MatchObjects = new List<T> ();
+		MatchObjects.AddRange (GameObject.FindObjectsOfType<T> ());
+
+		for (int i = MatchObjects.Count - 1;	i >= 0;	i--) {
+			var mo = MatchObjects [i];
+			if (Match (mo))
+				continue;
+
+			MatchObjects.RemoveAt (i);
+		}
+
+		return MatchObjects.ToArray ();
+	}
+			
 }
 
