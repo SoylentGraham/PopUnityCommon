@@ -3,6 +3,32 @@ using System.Collections;
 using System.Collections.Generic;
 
 
+
+public class int2
+{
+	public int x, y;
+
+	public int2(int _x, int _y)
+	{
+		x = _x;
+		y = _y;
+	}
+};
+
+
+public class int3
+{
+	public int x, y,z;
+
+	public int3(int _x, int _y,int _z)
+	{
+		x = _x;
+		y = _y;
+		z = _z;
+	}
+};
+
+
 public static class PopMath {
 
 	public static Rect RectToScreen(Rect RectNorm)
