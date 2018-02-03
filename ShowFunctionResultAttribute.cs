@@ -12,10 +12,12 @@ using System.Reflection;
 public class ShowFunctionResultAttribute : PropertyAttribute
 {
 	public readonly string MethodName;
+	public readonly float AdditionalHeight;
 
-	public ShowFunctionResultAttribute(string MethodName)
+	public ShowFunctionResultAttribute(string MethodName,float AdditionalHeight=0)
 	{
 		this.MethodName = MethodName;
+		this.AdditionalHeight = AdditionalHeight;
 	}
 }
 
@@ -44,5 +46,15 @@ public class ShowFunctionResultAttributeDrawer : PropertyDrawer
 			EditorGUI.HelpBox (position, e.Message, MessageType.Error);
 		}
 	}
+
+	public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+	{
+		var Attrib = (ShowFunctionResultAttribute)attribute;
+
+		var OriginalHeight = base.GetPropertyHeight(property, label);
+		OriginalHeight += Attrib.AdditionalHeight;
+		return OriginalHeight;
+	}
+		
 }
 #endif
