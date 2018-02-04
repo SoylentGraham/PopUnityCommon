@@ -12,11 +12,43 @@ namespace PopX
 		public const string	SemiColonPattern = "([\\s]*):([\\s]*)";
 		//	https://stackoverflow.com/a/32155765/355753
 		public const string	ValueStringPattern = "([\\s]*)\"([^\\\\\"]*)\"([\\s]*)";
-		public const string	ValueBoolPattern = "([\\s]*)(true|false){1}([\\s]*)";
+		public const string ValueBoolPattern = "([\\s]*)(true|false){1}([\\s]*)";
+
+		public const string WhiteSpaceCharacters = " \n\r\t\b\f";
+		public const string ValidAsciiCharacters = "\"\\/";
 
 		public static string GetNamePattern(string Name)
 		{
 			return "([\"]{1}" + Name + "[\"]{1})";
+		}
+
+		public static bool IsValidJsonAscii(char Char)
+		{
+			//	https://www.json.org/
+			//	gr: this tests unicode, which is supposed to be valid, but for binary-testing purposes it's letting through 0xff and stuff. no good
+			//if (System.Char.IsLetter(Char))
+			//	return true;
+			if (IsWhiteSpace(Char))
+				return true;
+			if (Char >= 'A' && Char <= 'Z')
+				return true;
+			if (Char >= 'a' && Char <= 'z')
+				return true;
+			if (Char >= '0' && Char <= '9')
+				return true;
+			var MatchIndex = ValidAsciiCharacters.IndexOf(Char);
+			if (MatchIndex != -1)
+				return true;
+
+			//Debug.Log("Non json char: " + Char);
+			return false;
+		}
+
+
+		public static bool IsWhiteSpace(char Char)
+		{
+			var MatchIndex = WhiteSpaceCharacters.IndexOf(Char);
+			return MatchIndex != -1;
 		}
 
 		//	works on byte[] and string, but can't do a generics with that in c#, so accessor for now. 
