@@ -440,3 +440,17 @@ float DeltaToRay3(float3 Position,float3 Start,float3 Direction)
 
 	return Position - Nearest;
 }
+
+//	same as PopMath
+float2 AngleRadianToVector2(float radian)
+{
+	float x = sin(radian);
+	float y = cos(radian);
+	return float2(x,y);
+}
+
+//	same as PopMath
+float2 AngleDegreeToVector2(float degree)
+{
+	return AngleRadianToVector2( radians(degree) );
+}
