@@ -1,4 +1,4 @@
-﻿//	gr: actually the simpler solution.
+//	gr: actually the simpler solution.
 #define PAUSE_VIA_ENABLE
 
 using System.Collections;
