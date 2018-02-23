@@ -81,6 +81,46 @@ public static class PopGameObject
 
 		return MatchObjects.ToArray ();
 	}
+
+
+
+	public static void ForEachChild(this GameObject go,System.Action<GameObject> Lambda)
+	{
+		var t = go.transform;
+		for (var c = 0; c < t.childCount;	c++ )
+		{
+			var Child = t.GetChild(c);
+			Lambda.Invoke(Child.gameObject);
+		}
+	}
+
+	//	if you return false from this lambda, the search will abort early
+	public static void ForEachChild(this GameObject go, System.Func<GameObject,bool> Lambda)
+	{
+		var t = go.transform;
+		for (var c = 0; c < t.childCount; c++)
+		{
+			var Child = t.GetChild(c);
+			if (!Lambda.Invoke(Child.gameObject))
+				break;
+		}
+	}
+
+
+
+	public static GameObject GetChildWithName(this GameObject go,string Name)
+	{
+		GameObject FoundChild = null;
+		System.Func<GameObject,bool> Match = (Child) =>
+		{
+			if (Child.name != Name)
+				return true;
 			
+			FoundChild = Child;
+			return false;
+		};
+		ForEachChild(go,Match);
+		return FoundChild;
+	}
 }
 
