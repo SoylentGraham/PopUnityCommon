@@ -192,7 +192,7 @@ Shader "NewChromantics/BlitCubemapToEquirect"
 
 
 				#if defined(USE_CUBEMAP)
-				return float4( View, 1 );
+				//return float4( View, 1 );
 					float4 Rgba = texCUBE( Cubemap, View );
 					Rgba.a = 1;
 					return Rgba;
