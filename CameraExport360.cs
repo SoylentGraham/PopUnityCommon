@@ -11,6 +11,7 @@ public class CameraExport360 {
 
 	[Range(0, 100)]
 	const int JpegQuality = 100;
+	const string BlitCubemapToEquirect_ShaderName = "BlitCubemapToEquirect";
 
 	#if UNITY_EDITOR
 	[MenuItem("CONTEXT/Camera/Capture 360 to png...")]
@@ -72,9 +73,23 @@ public class CameraExport360 {
 	}
 #endif
 
-	public Shader GetCubemapToEquirectShader()
+	public static Shader GetCubemapToEquirectShader()
 	{
-		return null;
+		var AssetGuids = AssetDatabase.FindAssets(BlitCubemapToEquirect_ShaderName);
+		foreach (var AssetGuid in AssetGuids)
+		{
+			try
+			{
+				var AssetPath = AssetDatabase.GUIDToAssetPath(AssetGuid);
+				var AssetShader = AssetDatabase.LoadAssetAtPath<Shader>(AssetPath);
+				return AssetShader;
+			}
+			catch (System.Exception e)
+			{
+				Debug.LogError("Failed to grab shader asset " +  AssetGuid + ": " + e.Message );
+			}
+		}
+		throw new System.Exception("Failed to find shader " + BlitCubemapToEquirect_ShaderName);
 	}
 
 	public static Texture2D Capture360ToTexture(Camera cam)
@@ -100,7 +115,28 @@ public class CameraExport360 {
 		if ( !cam.RenderToCubemap(Target) )
 			throw new System.Exception("cam(" + cam.name + ").RenderToCubemap failed");
 
-		//	todo: take a temp texture, turn it into an equirect and return
+		//	take a temp texture, turn it into an equirect and return
+		var EquirectShader = GetCubemapToEquirectShader();
+
+		var EquirectTarget = RenderTexture.GetTemporary(Target.width, Target.height, 0, Target.format);
+		try
+		{
+			var EquirectShader_CubemapUniform = "Cubemap";
+			var EquirectShader_UseCubemapKeyword = "USE_CUBEMAP";
+
+			var EquirectMaterial = new Material(EquirectShader);
+			EquirectMaterial.SetTexture(EquirectShader_CubemapUniform, Target);
+			EquirectMaterial.EnableKeyword(EquirectShader_UseCubemapKeyword);
+
+			Graphics.Blit(Target, EquirectTarget, EquirectMaterial);
+			Graphics.Blit( EquirectTarget, Target );
+			RenderTexture.ReleaseTemporary(EquirectTarget);
+		}
+		catch
+		{
+			RenderTexture.ReleaseTemporary(EquirectTarget);
+			throw;
+		}
 	}
 
 }
