@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 [AddComponentMenu("NewChromantics/PopMouseLook")]
@@ -35,12 +35,24 @@ public class PopMouseLook : MonoBehaviour {
 	}
 
 	static public bool UsingVr()
-	{
+	{		
+		#if UNITY_2017_2_OR_NEWER
+		var LoadedDevice = UnityEngine.XR.XRSettings.loadedDeviceName;
+		if ( string.IsNullOrEmpty( LoadedDevice ))
+		#elif UNITY_2017_1_OR_NEWER
+		if (UnityEngine.VR.VRSettings.supportedDevices.Length == 0)
+		#else
 		if (UnityEngine.VR.VRSettings.loadedDevice == UnityEngine.VR.VRDeviceType.None)
+		#endif
+		{
 			return false;
+		}
 
-
+		#if UNITY_2017_2_OR_NEWER
+		if (!UnityEngine.XR.XRDevice.isPresent)
+		#else
 		if (!UnityEngine.VR.VRDevice.isPresent)
+		#endif
 			return false;
 
 		return true;

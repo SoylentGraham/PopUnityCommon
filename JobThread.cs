@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading;
@@ -57,7 +57,7 @@ public abstract class JobPool<JOBTYPE>
 
 	List<TJob>				jobs = new List<TJob>();
 	List<ManualResetEvent>	jobDoneEvents = new List<ManualResetEvent> ();
-	bool					run = true;
+	//bool					run = true;
 	Thread					thread;
 
 	protected abstract void	ExecuteJob (JOBTYPE Job);

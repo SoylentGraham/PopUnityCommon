@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -21,7 +21,9 @@ public class FilePathAttribute : PropertyAttribute
 		Folder
 	};
 	PathType	pathType;
+#if UNITY_EDITOR
 	string		fileType = "";
+#endif
 
 	public FilePathAttribute(PathType _pathType)
 	{
@@ -29,7 +31,9 @@ public class FilePathAttribute : PropertyAttribute
 	}
 	public FilePathAttribute(string _fileType,PathType _pathType=PathType.File)
 	{
+#if UNITY_EDITOR
 		this.fileType = _fileType;
+#endif
 		this.pathType = _pathType;
 	}
 

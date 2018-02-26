@@ -65,10 +65,28 @@ Shader "NewChromantics/BlitCubemapToEquirect"
 		#define FRONT 4
 		#define BACK 5
 
+
+
+
+			float2 STtoUV(float2 st)
+			{
+				st += float2(1,1);
+				st /= float2(2,2);
+				return st;
+			}
+
+			float2 UVtoST(float2 uv)
+			{
+				uv *= float2(2,2);
+				uv -= float2(1,1);
+				return uv;
+			}
+
 			//	returns index and xy sample
 			int GetCubemapIndex(float3 View,out float2 st)
 			{
 				//	gr: if this appears to be getting the wrong angle (left/right/forward/back), it's because the screens need to face the same direction as the actor
+				View = normalize(View);
 
 				float x = View.x;
 				float y = View.y;
@@ -77,10 +95,9 @@ Shader "NewChromantics/BlitCubemapToEquirect"
 				float ay = abs(y);
 				float az = abs(z);
 
-
 				if (ax >ay && ax > az && x>=0)
 				{
-					st.x = -(z / ax);
+					st.x = -z / ax;
 					st.y = -y / ax;
 
 					return RIGHT;
@@ -123,6 +140,7 @@ Shader "NewChromantics/BlitCubemapToEquirect"
 			}
 
 
+
 			float4 SampleTexCube(float3 View)
 			{
 				float2 st;
@@ -130,20 +148,21 @@ Shader "NewChromantics/BlitCubemapToEquirect"
 				int TextureIndex = GetCubemapIndex( View, st );
 				//return float4(View.x, View.y,View.z,1);
 				//return float4(st.x,st.y,0,1);
-				st += float2(1,1);
-				st /= float2(2,2);
+				st = STtoUV(st);
 				st.y = 1 - st.y;
+				//st.x = 1 - st.x;
 
 				bool RenderFaceDebug = false;
 				if ( RenderFaceDebug )
 				{
-					if ( TextureIndex == TOP )		return float4( 1, 0, 0, 1 );//tex2D( CubemapTop, st );
-					if ( TextureIndex == BOTTOM )	return float4( 0, 1, 0, 1 );//tex2D( CubemapBottom, st );
-					if ( TextureIndex == LEFT )		return float4( 0, 0, 1, 1 );//tex2D( CubemapLeft, st );
-					if ( TextureIndex == RIGHT )	return float4( 1, 1, 0, 1 );//tex2D( CubemapRight, st );
-					if ( TextureIndex == FRONT )	return float4( 0, 1, 1, 1 );//tex2D( CubemapFront, st );
-					if ( TextureIndex == BACK )		return float4( 1, 0, 1, 1 );//tex2D( CubemapBack, st );
+					if ( TextureIndex == TOP )		return float4( 1, st.y, 0, 1 );//tex2D( CubemapTop, st );
+					if ( TextureIndex == BOTTOM )	return float4( 0, 1, 1-st.y, 1 );//tex2D( CubemapBottom, st );
+					if ( TextureIndex == LEFT )		return float4( st.y, 0, 1, 1 );//tex2D( CubemapLeft, st );
+					if ( TextureIndex == RIGHT )	return float4( 1, 1, st.y, 1 );//tex2D( CubemapRight, st );
+					if ( TextureIndex == FRONT )	return float4( st.y, 1, 1, 1 );//tex2D( CubemapFront, st );
+					if ( TextureIndex == BACK )		return float4( 1, st.y, 1, 1 );//tex2D( CubemapBack, st );
 				}        	
+
 				if ( TextureIndex == TOP )		return tex2D( CubemapTop, st );
 				if ( TextureIndex == BOTTOM )	return tex2D( CubemapBottom, st );
 				if ( TextureIndex == LEFT )		return tex2D( CubemapLeft, st );
@@ -158,28 +177,22 @@ Shader "NewChromantics/BlitCubemapToEquirect"
 			fixed4 frag (v2f i) : SV_Target
 			{
 				//	rotate uv (??)
-				float2 uv = i.uv.yx;
-
-				#if !defined(USE_CUBEMAP)
-				uv.y = 1 - uv.y;
-				#endif
+				float2 uv = i.uv.xy;
 
 				float2 LatLon;
 
-
-				//#if defined(USE_CUBEMAP)
-				uv.y *= 2;
-				//#endif
-
-				LatLon.x = lerp( -UNITY_PI/2, UNITY_PI/2, uv.x );
-				LatLon.y = lerp( -UNITY_PI/2, UNITY_PI/2, uv.y );
+				//uv.y *= 2;
+				uv.x *= 2;
+				uv.y *= 1;
+				LatLon.x = lerp( -UNITY_PI/2, UNITY_PI/2, uv.y );
+				LatLon.y = lerp( -UNITY_PI/2, UNITY_PI/2, uv.x );
 				float3 View = LatLonToView( LatLon );
 
 
 
 
 				#if defined(USE_CUBEMAP)
-				return float4( View, 1 );
+				//return float4( View, 1 );
 					float4 Rgba = texCUBE( Cubemap, View );
 					Rgba.a = 1;
 					return Rgba;

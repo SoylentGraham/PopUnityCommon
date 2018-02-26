@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -148,12 +148,12 @@ public class SplineQuad : MonoBehaviour {
 				Points.Add (WorldPos);
 			}
 
-			Gizmos.DrawWireSphere (Points[0], Debug_Radius);
+			Gizmos.DrawWireSphere (Points[0], Radius);
 			for ( int i=1;	i<Points.Count;	i++ )
 			{
 				Gizmos.DrawLine (Points[i-1], Points[i]);
 
-				Gizmos.DrawWireSphere (Points[i], Debug_Radius);
+				Gizmos.DrawWireSphere (Points[i], Radius);
 			}
 		}
 	}

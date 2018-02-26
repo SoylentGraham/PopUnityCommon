@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -17,6 +17,9 @@ public class SmoothEvent : MonoBehaviour {
 	public float				Duration = 5;
 	public AnimationCurve		Curve;
 
+	public bool					OnDisableJumpToEnd = false;
+
+	public bool					ClampOutput01 = false;
 
 	float				StartTime = 0;
 
@@ -25,7 +28,17 @@ public class SmoothEvent : MonoBehaviour {
 	{
 		StartTime = Time.time;
 		Update ();
-	}		
+	}
+
+	void OnDisable()
+	{
+		if ( OnDisableJumpToEnd )
+		{
+			StartTime = Time.time - Duration;
+			Update();
+		}
+	}
+
 
 	void Update () {
 
@@ -49,6 +62,9 @@ public class SmoothEvent : MonoBehaviour {
 		} else {
 			Value = TimePassed / Duration;
 		}
+
+		if (ClampOutput01)
+			Value = Mathf.Clamp01 (Value);
 
 		OnUpdate.Invoke (Value);
 		OnUpdateInverse.Invoke (1 - Value);

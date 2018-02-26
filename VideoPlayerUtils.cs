@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -14,6 +14,25 @@ using UnityEngine.Video;
 #endif
 public class VideoPlayerUtils : MonoBehaviour {
 
+	public float?				InitialTime	
+	{
+		get
+		{
+			#if UNITY_EDITOR || UNITY_EDITOR_64 || UNITY_EDITOR_OSX
+			var StartTime = EditorInitialTime;
+			#else
+			var StartTime = PlayerInitialTime;
+			#endif
+			if (StartTime > 0)
+				return (float)StartTime;
+			return null;
+		}
+	}
+
+	public double				PlayerInitialTime = 0;
+	[Header("For debugging. Set initial time, but only in editor")]
+	public double				EditorInitialTime = 0;
+
 	public bool					DebugEvents = true;
 	public bool					DebugEveryFrame = false;
 
@@ -22,6 +41,7 @@ public class VideoPlayerUtils : MonoBehaviour {
 	[Header("gr: sometimes OnStarted happens before OnPrepared")]
 	public UnityEvent			OnPrepared;
 	public UnityEvent			OnStarted;
+	public UnityEvent_float		OnFirstFrameReady;
 	public UnityEvent			OnLoopPoint;
 
 	[Header("Callback just before video finishes")]
@@ -79,6 +99,14 @@ public class VideoPlayerUtils : MonoBehaviour {
 		//	gr; this is stopping the video from playing... on android... if video has started?
 		//Player.skipOnDrop = SkipDroppedFrames;
 
+		var StartTime = InitialTime;
+		if ( StartTime.HasValue )
+		{
+			if ( !Player.canSetTime )
+				Debug.LogError("Couldn't not set video player start time to " + StartTime.Value );
+			Player.time = StartTime.Value;
+		}
+		
 		Player.errorReceived += (player, error) => {
 			if ( DebugEvents )
 				Debug.Log( this.name + " error: " + error );
@@ -106,7 +134,24 @@ public class VideoPlayerUtils : MonoBehaviour {
 			OnPrepared.Invoke();
 			LastFrameIndex = null;
 		};
-			
+
+		Player.seekCompleted += (player) =>
+		{
+			if ( DebugEvents )
+				Debug.Log( this.name + " seekCompleted");
+		};
+
+		Player.frameReady += (player,FrameIndex) =>
+		{
+			if ( LastFrameIndex == null )
+			{
+				var timef = (float)player.time;
+				if ( DebugEvents )
+					Debug.Log( this.name + " first frame ready at " + timef);
+				OnFirstFrameReady.Invoke( timef );
+			}
+		};
+
 		try
 		{
 			var ClipDuration = GetClipDuration();

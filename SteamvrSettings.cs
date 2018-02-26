@@ -1,7 +1,8 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Text.RegularExpressions;
+using System.IO;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -10,13 +11,17 @@ using UnityEditor;
 public class SteamVrSettings : MonoBehaviour
 {
 
-	const string SettingsFilename = "default.vrsettings";
-	const string RequireHmdKey = "requireHmd";
+	const string 	SettingsFilename = "default.vrsettings";
+	const string	RequireHmdKey = "requireHmd";
+	static string	SettingsPath	{	get	{	return SettingsFolder + SettingsFilename;	}	}
 
 	//	todo, work this out from env vars etc
+#if UNITY_EDITOR_OSX
+	static string	SettingsFolder	{	get	{	return Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal), "Library/Application Support/Steam/steamapps/common/SteamVR/SteamVR.app/Contents/MacOS/runtime/resources/settings/" );	}	}
+#else
 	const string SettingsFolder = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\SteamVR\\resources\\settings\\";
+#endif
 
-	static string SettingsPath	{	get	{	return SettingsFolder + SettingsFilename;	}	}
 
 #if UNITY_EDITOR
 	[MenuItem("SteamVR/Set RequireHmd False")]
@@ -61,7 +66,7 @@ public class SteamVrSettings : MonoBehaviour
 		foreach (var Path in FilePaths) {
 			try
 			{
-				var Contents = System.IO.File.ReadAllText( Path );
+				var Contents = File.ReadAllText( Path );
 				var NewContents = RegExpression.Replace( Contents, Replacement );
 				if ( Contents != NewContents )
 				{

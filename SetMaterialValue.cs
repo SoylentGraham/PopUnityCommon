@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,6 +11,11 @@ public class SetMaterialValue : MonoBehaviour {
 		Int,
 		Colour,
 	};
+
+	public bool	DebugLogSetValue = false;
+	public bool	MaterialOwnerIsParent = false;
+
+	public GameObject	RootMaterialOwner	{	get	{ return MaterialOwnerIsParent ? this.transform.parent.gameObject : this.gameObject; }}
 
 	[Header("Apply (and set) all children's materials to first material found")]
 	public bool MaterialOwnerInChildren = false;
@@ -62,7 +67,7 @@ public class SetMaterialValue : MonoBehaviour {
 	{
 		MeshRenderer mr = materialOwner;
 		if (mr == null) {
-			mr = GetComponent<MeshRenderer> ();
+			mr = RootMaterialOwner.GetComponent<MeshRenderer> ();
 		}
 		if (mr == null)
 			return null;
@@ -70,30 +75,55 @@ public class SetMaterialValue : MonoBehaviour {
 		return UseSharedMaterial ? mr.sharedMaterial : mr.material;
 	}
 
+
+	const string MaterialInstanceSuffix = " Instance!";
+
+	Material GetInstancedMaterial(Material SharedMaterial)
+	{
+		if ( UseSharedMaterial )
+			return SharedMaterial;
+
+		if (SharedMaterial.name.EndsWith (MaterialInstanceSuffix))
+			return SharedMaterial;
+
+		//	instance
+		Debug.Log ("Making instance of material " + SharedMaterial.name);
+		var MaterialInstance = new Material (SharedMaterial);
+		MaterialInstance.name += MaterialInstanceSuffix;
+
+		return MaterialInstance;
+	}
+
 	Material GetRawImageMaterial()
 	{
-		var ri = GetComponent<UnityEngine.UI.RawImage> ();
+		var ri = RootMaterialOwner.GetComponent<UnityEngine.UI.RawImage> ();
 		if (ri == null)
 			return null;
 
+		ri.material = GetInstancedMaterial (ri.material);
 		return ri.material;
 	}
 
+
 	Material GetTextMaterial()
 	{
-		var t = GetComponent<UnityEngine.UI.Text> ();
+		var t = RootMaterialOwner.GetComponent<UnityEngine.UI.Text> ();
 		if (t == null)
 			return null;
 
+		t.material = GetInstancedMaterial (t.material);
+	
 		return t.material;
 	}
 
 
 	Material GetSpriteRendererMaterial()
 	{
-		var t = GetComponent<SpriteRenderer> ();
+		var t = RootMaterialOwner.GetComponent<SpriteRenderer> ();
 		if (t == null)
 			return null;
+	
+		t.material = GetInstancedMaterial (t.material);
 
 		return t.material;
 	}
@@ -136,7 +166,8 @@ public class SetMaterialValue : MonoBehaviour {
 		return _material == null;
 	}
 
-	void Start()
+
+	void DoInitialiseValue()
 	{
 		//	init
 		switch (InitialiseValue) {
@@ -155,15 +186,35 @@ public class SetMaterialValue : MonoBehaviour {
 		}
 	}
 
+	void Start()
+	{
+		DoInitialiseValue ();
+	}
+
+	//	re-set value when editor stops
+	void Awake()
+	{
+		#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
+		UnityEditor.EditorApplication.playModeStateChanged += (NewState) => {
+			if ( NewState == UnityEditor.PlayModeStateChange.ExitingPlayMode )
+				DoInitialiseValue();
+			//if (EditorApplication.isPlayingOrWillChangePlaymode && EditorApplication.isPlaying)
+				
+		};
+		#endif
+	}
+
+		
+
 	void ForEachMaterial(System.Action<Material> Lambda)
 	{
 		//	todo; merge all this. Cache an array of materials, and set all children to the same material (option!)
 		//	todo: make this an option, and cache a list of materials
 		if (MaterialOwnerInChildren && !HasSetAllChildrensMaterial) {
 		
-			var mrs = GetComponentsInChildren<MeshRenderer> ();
-			var ris = GetComponentsInChildren<UnityEngine.UI.RawImage> ();
-			var ts = GetComponentsInChildren<UnityEngine.UI.Text> ();
+			var mrs = RootMaterialOwner.GetComponentsInChildren<MeshRenderer> ();
+			var ris = RootMaterialOwner.GetComponentsInChildren<UnityEngine.UI.RawImage> ();
+			var ts = RootMaterialOwner.GetComponentsInChildren<UnityEngine.UI.Text> ();
 
 			var cm = CachedMaterial;
 
@@ -289,6 +340,9 @@ public class SetMaterialValue : MonoBehaviour {
 
 	public void SetFloat(float Value)
 	{
+		if (DebugLogSetValue)
+			Debug.Log (this.name + " SetFloat( " + Value + " )");
+		
 		if (GlobalUniform) 
 		{
 			Shader.SetGlobalFloat (Uniform, Value);
@@ -304,6 +358,9 @@ public class SetMaterialValue : MonoBehaviour {
 
 	public void SetInt(int Value)
 	{
+		if (DebugLogSetValue)
+			Debug.Log (this.name + " SetInt( " + Value + " )");
+
 		if (GlobalUniform) 
 		{
 			Shader.SetGlobalInt(Uniform, Value);

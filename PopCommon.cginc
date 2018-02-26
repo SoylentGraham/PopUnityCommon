@@ -21,6 +21,37 @@ float Range(float Min,float Max,float Time)
 	return (Time-Min) / (Max-Min);
 }
 
+float2 Range(float2 Min,float2 Max,float2 Time)
+{
+	return float2( Range(Min.x,Max.x,Time.x), Range(Min.y,Max.y,Time.y) );
+}
+
+
+float3 Range(float3 Min,float3 Max,float3 Time)
+{
+	return float3( Range(Min.x,Max.x,Time.x), Range(Min.y,Max.y,Time.y), Range(Min.z,Max.z,Time.z) );
+}
+
+bool Inside(float Min,float Max,float Value)
+{
+	return (Value>=Min) && (Value<=Max);
+}
+
+bool Inside(float2 Min,float2 Max,float2 Value)
+{
+	return Inside(Min.x,Max.x,Value.x) && Inside(Min.y,Max.y,Value.y);
+}
+
+bool Inside01(float a)
+{
+	return Inside(0,1,a);
+}
+
+bool Inside01(float2 ab)
+{
+	return Inside01(ab.x) && Inside01(ab.y);
+}
+
 //	0 = red, 1=green
 float3 NormalToRedGreen(float Value)
 {
@@ -408,4 +439,18 @@ float DeltaToRay3(float3 Position,float3 Start,float3 Direction)
 	float3 Nearest = NearestToRay3( Position, Start, Direction );
 
 	return Position - Nearest;
+}
+
+//	same as PopMath
+float2 AngleRadianToVector2(float radian)
+{
+	float x = sin(radian);
+	float y = cos(radian);
+	return float2(x,y);
+}
+
+//	same as PopMath
+float2 AngleDegreeToVector2(float degree)
+{
+	return AngleRadianToVector2( radians(degree) );
 }
