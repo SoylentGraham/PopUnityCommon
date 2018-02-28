@@ -16,7 +16,7 @@ public static class PopVector3
 	public static Vector2 zx(this Vector3 three)			{	return new Vector2(three.z, three.x);	}
 	public static Vector2 zy(this Vector3 three)			{	return new Vector2(three.z, three.y);	}
 
-	public static Vector2 xzy(this Vector3 three)			{	return new Vector3(three.x, three.z, three.y); }
+	public static Vector3 xzy(this Vector3 three)			{	return new Vector3(three.x, three.z, three.y); }
 
 	public static Vector4 xyz0(this Vector3 three)			{	return new Vector4(three.x, three.y, three.z, 0);	}
 	public static Vector4 xyz1(this Vector3 three)			{	return new Vector4(three.x, three.y, three.z, 1); }
