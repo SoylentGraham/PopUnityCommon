@@ -35,7 +35,8 @@ public static class PopMath {
 	{
 		return RectMult (RectNorm, new Rect (0, 0, Screen.width, Screen.height));
 	}
-	
+
+	//	fit a normalised rect into a parent rect
 	public static Rect RectMult(Rect RectNorm,Rect Body)
 	{
 		RectNorm.x *= Body.width;
@@ -45,6 +46,18 @@ public static class PopMath {
 		RectNorm.x += Body.x;
 		RectNorm.y += Body.y;
 		return RectNorm;
+	}
+
+	//	Rect = Rect.Scale(f)
+	public static Rect Scale(this Rect rect,float Scale)
+	{
+		var Offsetx = (rect.width * Scale) - rect.width;
+		var Offsety = (rect.height * Scale) - rect.height;
+		rect.x -= Offsetx / 2.0f;
+		rect.y -= Offsety / 2.0f;
+		rect.width *= Scale;
+		rect.height *= Scale;
+		return rect;
 	}
 
 	public static float Range(float Min,float Max,float Value)
