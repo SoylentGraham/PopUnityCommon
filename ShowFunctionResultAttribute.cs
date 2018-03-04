@@ -38,8 +38,16 @@ public class ShowFunctionResultAttributeDrawer : PropertyDrawer
 
 			var Result = _eventMethodInfo.Invoke(prop.serializedObject.targetObject, null);
 
-			var Text = "" + Result;
-			EditorGUI.HelpBox (position, Text, MessageType.Info);
+			if ( Result is Color )
+			{
+				var ResultColour = (Color)Result;
+				EditorGUI.DrawRect(position, ResultColour);
+			}
+			else
+			{
+				var Text = "" + Result;
+				EditorGUI.HelpBox(position, Text, MessageType.Info);
+			}
 		}
 		catch(System.Exception e) 
 		{
