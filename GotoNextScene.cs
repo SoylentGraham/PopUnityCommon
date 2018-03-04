@@ -60,6 +60,14 @@ public class GotoNextScene : MonoBehaviour {
 		return LoadMode == SceneLoadMode.LoadSpecificScene;
 	}
 
+	public static void LoadNextScene()
+	{
+		var CurrentScene = SceneManager.GetActiveScene();
+		var CurrentSceneIndex = CurrentScene.buildIndex;
+		var NextSceneIndex = (CurrentSceneIndex + 1) % SceneManager.sceneCountInBuildSettings;
+		SceneManager.LoadScene(NextSceneIndex, LoadSceneMode.Single);
+	}
+
 
 	public void NextScene()
 	{
