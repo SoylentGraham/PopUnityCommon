@@ -49,3 +49,23 @@ public static class PopVector2
 	}
 }
 
+
+public static class PopVector4
+{
+	public static Vector2 xy(this Vector4 three) { return new Vector2(three.x, three.y); }
+	public static Vector2 xz(this Vector4 three) { return new Vector2(three.x, three.z); }
+	public static Vector2 yx(this Vector4 three) { return new Vector2(three.y, three.x); }
+	public static Vector2 yz(this Vector4 three) { return new Vector2(three.y, three.z); }
+	public static Vector2 zx(this Vector4 three) { return new Vector2(three.z, three.x); }
+	public static Vector2 zy(this Vector4 three) { return new Vector2(three.z, three.y); }
+
+	//	returns 0-1 for each component inside a min/mac
+	public static Vector4 Range(this Vector4 Value, Vector4 Min, Vector4 Max)
+	{
+		var x = PopMath.Range(Min.x, Max.x, Value.x);
+		var y = PopMath.Range(Min.y, Max.y, Value.y);
+		var z = PopMath.Range(Min.z, Max.z, Value.z);
+		var w = PopMath.Range(Min.w, Max.w, Value.w);
+		return new Vector4(x, y, z, w );
+	}
+}
