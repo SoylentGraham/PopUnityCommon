@@ -112,33 +112,36 @@ public class SteamVrSettings : MonoBehaviour
 	}
 #endif
 
+	//	returns if changed
 #if UNITY_EDITOR
 	[MenuItem("SteamVR/enable " + NullDriver +" driver")]
-	public static void EnableNullDriver()
+#endif
+	public static bool EnableNullDriver()
 	{
 		//	gr: for OSX. March 7th 2018
 		//	enable the driver and make it always activate
 		//	general settings dont NEED requireHmd nor forcedDriver, just activateMultipleDrivers
-		ChangeSettings(NullDriver,DriverEnableKey,true);
+		var Changed = false;
+		Changed |= ChangeSettings(NullDriver,DriverEnableKey,true);
 		if ( ManifestFilename != null)
-			ChangeManifest(NullDriver, AlwaysActivateKey, true);
-		ChangeSettings(null, ActivateMultipleDriversKey, true);
+			Changed |= ChangeManifest(NullDriver, AlwaysActivateKey, true);
+		Changed |= ChangeSettings(null, ActivateMultipleDriversKey, true);
+		return Changed;
 	}
-#endif
 
-	public static void ChangeSettings(string DriverName, string Key, bool Value)
+	public static bool ChangeSettings(string DriverName, string Key, bool Value)
 	{
 		var Filename = GetDriverSettingsPath(DriverName);
-		ChangeFile(Filename, Key, Value,DriverName);
+		return ChangeFile(Filename, Key, Value,DriverName);
 	}
 
-	public static void ChangeManifest(string DriverName, string Key, bool Value)
+	public static bool ChangeManifest(string DriverName, string Key, bool Value)
 	{
 		var Filename = GetDriverManifestPath(DriverName);
-		ChangeFile(Filename, Key, Value,DriverName);
+		return ChangeFile(Filename, Key, Value,DriverName);
 	}
 
-	public static void ChangeFile(string Filename,string Key,bool Value,string DriverName)
+	public static bool ChangeFile(string Filename,string Key,bool Value,string DriverName)
 	{
 		if (string.IsNullOrEmpty(DriverName))
 			DriverName = "null";
@@ -151,16 +154,18 @@ public class SteamVrSettings : MonoBehaviour
 			if (NewContents == Contents)
 			{
 				Debug.Log("No changes made to " + DriverName + " settings (" + Key + "=" + Value + ")");
-				return;
+				return false;
 			}
 			System.IO.File.WriteAllText(Filename, NewContents);
 			Debug.Log("Updated " + DriverName + " settings.");
+			return true;
 		}
 		catch (System.Exception e)
 		{
 			Debug.LogError("Error replacing " + Key + " in " + DriverName + " settings...");
 			Debug.LogException(e);
-		}	
+			throw;
+		}
 	}
 
 
