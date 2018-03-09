@@ -39,7 +39,7 @@ namespace PopX
 		}
 
 
-
+#if UNITY_EDITOR
 		public static Dictionary<string, System.Type> GetProperties(Shader shader)
 		{
 			//	get file contents of asset
@@ -48,6 +48,7 @@ namespace PopX
 
 			return GetProperties(Contents);
 		}
+#endif
 
 		public static System.Type GetType(string TypeName)
 		{
