@@ -13,7 +13,12 @@ using UnityEditor;
 public class SteamVrSettings : MonoBehaviour
 {
 	const string	SettingsFilename = "default.vrsettings";
+	//	manifest not present on windows (I don't think?) but doesn't need configuration for hmd-less mode to work it seems
+#if UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
 	const string	ManifestFilename = "driver.vrdrivermanifest";
+#else
+	const string	ManifestFilename = null;
+#endif
 	const string 	NullDriver = "null";
 
 	//	general settings
@@ -115,7 +120,8 @@ public class SteamVrSettings : MonoBehaviour
 		//	enable the driver and make it always activate
 		//	general settings dont NEED requireHmd nor forcedDriver, just activateMultipleDrivers
 		ChangeSettings(NullDriver,DriverEnableKey,true);
-		ChangeManifest(NullDriver, AlwaysActivateKey, true);
+		if ( ManifestFilename != null)
+			ChangeManifest(NullDriver, AlwaysActivateKey, true);
 		ChangeSettings(null, ActivateMultipleDriversKey, true);
 	}
 #endif
