@@ -1,3 +1,6 @@
+//	nicer matrix space names
+#define unity_WorldToClip	UNITY_MATRIX_VP
+			
 #define hypotenuse(o,a)	sqrt( (a*a)+(o*o) )
 #define lengthsq(x)	( dot(x,x) )
 
