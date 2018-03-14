@@ -126,6 +126,14 @@ public class SteamVrSettings : MonoBehaviour
 		if ( ManifestFilename != null)
 			Changed |= ChangeManifest(NullDriver, AlwaysActivateKey, true);
 		Changed |= ChangeSettings(null, ActivateMultipleDriversKey, true);
+
+#if UNITY_EDITOR_OSX //|| UNITY_STANDALONE_OSX
+		if (Changed)
+		{
+			EditorUtility.DisplayDialog("Settings may not yet apply", "After changing settings, the steamvr runtime may need to be restarted.\n\nClosing Unity and/or steamvr may not be enough.\n\nOpen activity monitor and kill the process called vrserver", "ok");
+		}
+#endif
+
 		return Changed;
 	}
 
