@@ -6,8 +6,10 @@ using UnityEngine.Events;
 [System.Serializable]
 public class UnityEvent_Texture : UnityEvent <Texture> {}
 
-
 public class AnimCurveTo1DTexture : MonoBehaviour {
+
+	[InspectorButton("RegenerateAll")]
+	public bool				_RegenerateAll;
 
 	public Texture2D		Target;
 	[Range(1,4096)]
@@ -16,6 +18,7 @@ public class AnimCurveTo1DTexture : MonoBehaviour {
 	[ShowIfAttribute("TargetIsNull")]
 	public TextureFormat	TargetFormat = TextureFormat.RGBAFloat;
 
+	[OnChanged(null,"Generate1DTexture")]
 	public AnimationCurve	Curve;
 
 	[InspectorButton("Generate1DTexture")]
@@ -23,8 +26,24 @@ public class AnimCurveTo1DTexture : MonoBehaviour {
 
 	public UnityEvent_Texture	OnGenerated;
 
-	void Start () {
-		Generate1DTexture ();
+
+	void RegenerateAll()
+	{
+		var acs = GameObject.FindObjectsOfType<AnimCurveTo1DTexture> ();
+		foreach (var ac in acs) {
+			try {
+				ac.Generate1DTexture ();
+			} catch {
+			}
+		}
+	}
+			
+		
+
+	void OnEnable () 
+	{
+		//	invoke event, but only generate texture if required
+		OnGenerated.Invoke( GetTexture() );
 	}
 
 	bool TargetIsNull()
@@ -34,11 +53,17 @@ public class AnimCurveTo1DTexture : MonoBehaviour {
 
 	public void Generate1DTexture()
 	{
+		if (!this.enabled)
+			return;
+		
 		if (Target == null) {
+			Debug.Log (this.name + " allocating new AnimCurve 1D texture", this);
 			Target = new Texture2D (TargetWidth, 16, TargetFormat, false);
 			Target.filterMode = FilterMode.Point;
+			Target.wrapMode = TextureWrapMode.Clamp;
 		}
 		
+		Debug.Log (this.name + " generating new AnimCurve 1D texture", this);
 		var w = Target.width;
 
 		var Colour = new Color (0, 0, 0);
@@ -68,4 +93,13 @@ public class AnimCurveTo1DTexture : MonoBehaviour {
 		Target.Apply ();
 		OnGenerated.Invoke (Target);
 	}
+
+	//	only alloc texture if dirty/not generated
+	public Texture GetTexture()
+	{
+		if (Target == null)
+			Generate1DTexture ();
+		return Target;
+	}
+
 }

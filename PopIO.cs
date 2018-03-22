@@ -69,6 +69,23 @@ namespace PopX
 			DoSave(Filename, Extension);
 		}
 		#endif
+
+
+		//	cannot extend System.IO.Path
+		public static string Path_Combine(IEnumerable<string> Paths)
+		{
+			string FullPath = null;
+			foreach ( var Folder in Paths )
+			{
+				//	the test in here means we will return null if Paths is null/empty
+				if (FullPath == null)
+					FullPath = Folder;
+				else
+					FullPath = System.IO.Path.Combine(FullPath, Folder);
+			}
+			return FullPath;
+		}
+
 	}
 }
 

@@ -75,6 +75,7 @@ public class CameraExport360 {
 
 	public static Shader GetCubemapToEquirectShader()
 	{
+#if UNITY_EDITOR
 		var AssetGuids = AssetDatabase.FindAssets(BlitCubemapToEquirect_ShaderName);
 		foreach (var AssetGuid in AssetGuids)
 		{
@@ -90,6 +91,9 @@ public class CameraExport360 {
 			}
 		}
 		throw new System.Exception("Failed to find shader " + BlitCubemapToEquirect_ShaderName);
+#else
+		throw new System.Exception("This is currently editor only. Change caller to allow shader param to allow capture in-player");
+#endif
 	}
 
 	public static Texture2D Capture360ToTexture(Camera cam)

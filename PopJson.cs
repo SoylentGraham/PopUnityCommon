@@ -146,6 +146,19 @@ namespace PopX
 			Json = RegExpression.Replace (Json, Replacement);
 		}
 
+
+		static public void Replace(ref string Json, string Key,bool Value)
+		{
+			var StringElementPattern = GetNamePattern(Key) + PopX.Json.SemiColonPattern + ValueBoolPattern;
+			var RegExpression = new Regex(StringElementPattern);
+
+			//	todo: json escaping!
+			var Replacement = '"' + Key + '"' + ':' + EscapeValue(Value);
+
+			//	harder to debug, but simpler implementation
+			Json = RegExpression.Replace(Json, Replacement);
+		}
+
 		static bool IsJsonWhitespace(char Char)
 		{
 			switch(Char)

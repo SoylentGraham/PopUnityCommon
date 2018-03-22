@@ -8,6 +8,7 @@ using System.Reflection;
 using System;
 #endif
 
+#if UNITY_EDITOR
 public class AudioClipTrimmer : EditorWindow {
 
 	float Left = 0;
@@ -122,4 +123,5 @@ public class AudioClipTrimmer : EditorWindow {
 		
     }
 }
+#endif
 

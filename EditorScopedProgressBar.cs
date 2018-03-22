@@ -18,13 +18,17 @@ public class ScopedProgressBar : System.IDisposable
 {
 	#if UNITY_EDITOR
 	string	mTitle;
+	bool ShowProgressBar = true;
 	#endif
 
-	public ScopedProgressBar(string Title)
+	//	gr: added a simple bool to disable rendering of the progress bar so caller can quickly turn on&off and still use using()
+	public ScopedProgressBar(string Title,bool ShowProgressBar=true)
 	{
 		#if UNITY_EDITOR
-		mTitle = Title;
-		EditorUtility.DisplayProgressBar (mTitle, "...", 0.0f);
+		this.ShowProgressBar = ShowProgressBar;
+		this.mTitle = Title;
+		if ( ShowProgressBar )
+			EditorUtility.DisplayProgressBar (mTitle, "...", 0.0f);
 		#endif
 	}
 
@@ -37,6 +41,8 @@ public class ScopedProgressBar : System.IDisposable
 	public void Dispose()
 	{
 		#if UNITY_EDITOR
+		if (!ShowProgressBar)
+			return;
 		EditorUtility.ClearProgressBar();
 		#endif
 	}
@@ -54,6 +60,8 @@ public class ScopedProgressBar : System.IDisposable
 	public void SetProgress(string StepName,float Progress)
 	{
 		#if UNITY_EDITOR
+		if (!ShowProgressBar)
+			return;
 		if (EditorUtility.DisplayCancelableProgressBar (mTitle, StepName, Progress))
 			throw new System.Exception (mTitle + " cancelled");
 		#endif
