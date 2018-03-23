@@ -19,6 +19,7 @@ public class ScopedProgressBar : System.IDisposable
 	#if UNITY_EDITOR
 	string	mTitle;
 	bool ShowProgressBar = true;
+	int NotifyCounter = 0;
 	#endif
 
 	//	gr: added a simple bool to disable rendering of the progress bar so caller can quickly turn on&off and still use using()
@@ -50,7 +51,12 @@ public class ScopedProgressBar : System.IDisposable
 	//	use NotifyEveryNth (eg.=100) if you're doing large sets as the GUI update will slow down your thread, and you probably don't need to see progress for every one in 300,000 steps
 	public void SetProgress(string StepName,int Step,int StepCount,int NotifyEveryNth=1)
 	{
-		bool Notify = (Step % Mathf.Max(1,NotifyEveryNth)) == 0;
+		//	gr: we now have a notify counter for steps which aren't linear
+		//		eg. parsing chunks of a file that skip lines
+		NotifyCounter++;
+		bool Notify = (NotifyCounter % Mathf.Max(1,NotifyEveryNth)) == 0;
+		Notify |= (Step % Mathf.Max(1,NotifyEveryNth)) == 0;
+
 		if (!Notify)
 			return;
 		StepName += " " + Step + "/" + StepCount;
