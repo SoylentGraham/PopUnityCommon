@@ -29,6 +29,11 @@ float min3(float a,float b,float c)
 	return min( a, min( b,c ) );
 }
 
+float min4(float a,float b,float c,float d)
+{
+	return min( a, min( b, min(c,d) ) );
+}
+
 float Clamp01(float x) 
 { 
   return clamp( x, 0.0, 1.0 ); 
