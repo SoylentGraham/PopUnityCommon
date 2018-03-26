@@ -58,7 +58,7 @@ public abstract class JobPool<JOBTYPE>
 	List<TJob>				jobs = new List<TJob>();
 	List<ManualResetEvent>	jobDoneEvents = new List<ManualResetEvent> ();
 	//bool					run = true;
-	Thread					thread;
+	//Thread					thread;
 
 	protected abstract void	ExecuteJob (JOBTYPE Job);
 

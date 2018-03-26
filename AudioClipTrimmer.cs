@@ -51,7 +51,7 @@ public class AudioClipTrimmer : EditorWindow {
 
 	public static void PlayClip(AudioClip clip, float startTime, bool loop)
 	{
-		int startSample = (int)(startTime * clip.frequency);
+		//int startSample = (int)(startTime * clip.frequency);
   
 		Assembly assembly = typeof(AudioImporter).Assembly;
 		Type audioUtilType = assembly.GetType("UnityEditor.AudioUtil");
@@ -63,7 +63,7 @@ public class AudioClipTrimmer : EditorWindow {
 		Type[] typeParams = { typeof(AudioClip) };
 		object[] objParams = { clip };
 		MethodInfo method = audioUtilType.GetMethod("PlayClip", typeParams);
-		var Result = method.Invoke(null, BindingFlags.Static | BindingFlags.Public, null, objParams, null);
+		/*var Result = */method.Invoke(null, BindingFlags.Static | BindingFlags.Public, null, objParams, null);
 	}
 
 	void ShowInspector(AudioClip Clip)
