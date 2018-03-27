@@ -21,7 +21,7 @@ public class PopRestartEditor : MonoBehaviour {
 #endif
 
 #if UNITY_EDITOR
-	[MenuItem("Editor/Restart Editor")]
+	[MenuItem("NewChromantics/Editor/Restart Editor")]
 	static void RestartEditor()
 	{
 		//var UnityExe = System.Environment.GetCommandLineArgs()[0];
@@ -34,7 +34,7 @@ public class PopRestartEditor : MonoBehaviour {
 	#endif
 
 #if UNITY_EDITOR
-	[MenuItem("Editor/Restart Editor in Opengl")]
+	[MenuItem("NewChromantics/Editor/Restart Editor in Opengl")]
 	static void RestartEditorInOpengl()
 	{
 		//var UnityExe = System.Environment.GetCommandLineArgs()[0];
@@ -48,7 +48,7 @@ public class PopRestartEditor : MonoBehaviour {
 
 
 #if UNITY_EDITOR && UNITY_EDITOR_OSX
-	[MenuItem("Editor/Restart Editor in Metal")]
+	[MenuItem("NewChromantics/Editor/Restart Editor in Metal")]
 	static void RestartEditorInMetal()
 	{
 		//var UnityExe = System.Environment.GetCommandLineArgs()[0];

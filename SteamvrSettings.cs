@@ -80,7 +80,7 @@ public class SteamVrSettings : MonoBehaviour
 
 
 #if UNITY_EDITOR
-	[MenuItem("SteamVR/Set RequireHmd False")]
+	[MenuItem("NewChromantics/SteamVR/Set RequireHmd False")]
 	public static void Set_RequireHmd_False()
 	{
 		ChangeSettings(null, RequireHmdKey, false);
@@ -88,7 +88,7 @@ public class SteamVrSettings : MonoBehaviour
 #endif
 
 #if UNITY_EDITOR
-	[MenuItem("SteamVR/Set RequireHmd True")]
+	[MenuItem("NewChromantics/SteamVR/Set RequireHmd True")]
 	public static void Set_RequireHmd_True()
 	{
 		ChangeSettings(null, RequireHmdKey, true);
@@ -96,7 +96,7 @@ public class SteamVrSettings : MonoBehaviour
 #endif
 	
 #if UNITY_EDITOR
-	[MenuItem("SteamVR/Show " + SettingsFilename)]
+	[MenuItem("NewChromantics/SteamVR/Show " + SettingsFilename)]
 	public static void ShowSettingsFile()
 	{
 		EditorUtility.RevealInFinder( SettingsPath );
@@ -105,7 +105,7 @@ public class SteamVrSettings : MonoBehaviour
 
 
 #if UNITY_EDITOR
-	[MenuItem("SteamVR/Show " + NullDriver + " driver settings")]
+	[MenuItem("NewChromantics/SteamVR/Show " + NullDriver + " driver settings")]
 	public static void ShowDriverSettingsFile()
 	{
 		EditorUtility.RevealInFinder( GetDriverFolder(NullDriver));
@@ -114,7 +114,7 @@ public class SteamVrSettings : MonoBehaviour
 
 	//	returns if changed
 #if UNITY_EDITOR
-	[MenuItem("SteamVR/enable " + NullDriver +" driver")]
+	[MenuItem("NewChromantics/SteamVR/enable " + NullDriver +" driver")]
 #endif
 	public static bool EnableNullDriver()
 	{

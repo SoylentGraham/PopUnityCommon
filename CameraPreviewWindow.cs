@@ -14,7 +14,7 @@ public class CameraPreviewWindow : UnityEditor.EditorWindow
 	public RenderTexture mRenderTexture;
 
 	// Add menu named "My Window" to the Window menu
-	[MenuItem ("Camera Preview Window/Create Camera Preview Window")]
+	[MenuItem ("NewChromantics/Camera Preview Window/Create Camera Preview Window")]
 	static void Init () 
 	{
 		//	create a new window
