@@ -10,10 +10,11 @@ public static class PopAssetDatabase
 {
 	public static string GetTypeAssetTypeName(System.Type Type)
 	{
+#if UNITY_EDITOR
 		//	some special cases
 		if (Type == typeof(SceneAsset))
 			return "scene";
-		
+#endif
 		return Type.Name;
 	}
 	

@@ -51,6 +51,7 @@ public class ScopedProgressBar : System.IDisposable
 	//	use NotifyEveryNth (eg.=100) if you're doing large sets as the GUI update will slow down your thread, and you probably don't need to see progress for every one in 300,000 steps
 	public void SetProgress(string StepName,int Step,int StepCount,int NotifyEveryNth=1)
 	{
+		#if UNITY_EDITOR
 		//	gr: we now have a notify counter for steps which aren't linear
 		//		eg. parsing chunks of a file that skip lines
 		NotifyCounter++;
@@ -61,6 +62,7 @@ public class ScopedProgressBar : System.IDisposable
 			return;
 		StepName += " " + Step + "/" + StepCount;
 		SetProgress (StepName, Step / (float)StepCount);
+		#endif
 	}
 
 	public void SetProgress(string StepName,float Progress)
