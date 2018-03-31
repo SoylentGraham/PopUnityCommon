@@ -5,6 +5,12 @@ using System.Collections.Generic;
 /*
  * Swizzling extensions for vectors
  */
+public static class PopFloat
+{
+	public static Vector2 xx(this float f) { return new Vector2(f, f); }
+	public static Vector3 xxx(this float f) { return new Vector3(f, f, f); }
+	public static Vector4 xxxx(this float f) { return new Vector4(f, f, f, f); }
+}
 
 
 public static class PopVector3
