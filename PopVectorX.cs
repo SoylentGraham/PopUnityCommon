@@ -2,6 +2,15 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+
+
+//	this is kind of like a swizzle... 
+public static class PopColor
+{
+	public static Color WithAlpha(this Color rgba, float Alpha) { return new Color(rgba.r, rgba.g, rgba.b, Alpha); }
+}
+
+
 /*
  * Swizzling extensions for vectors
  */
