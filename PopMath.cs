@@ -31,6 +31,16 @@ public class int3
 
 public static class PopMath {
 
+	//	Rect(struct) is pass by value, must return.
+	public static Rect ClipToParent(this Rect Child,Rect Parent)
+	{
+		Child.xMin = Mathf.Clamp(Child.xMin, Parent.xMin, Parent.xMax);
+		Child.yMin = Mathf.Clamp(Child.yMin, Parent.yMin, Parent.yMax);
+		Child.xMax = Mathf.Clamp(Child.xMax, Parent.xMin, Parent.xMax);
+		Child.yMax = Mathf.Clamp(Child.yMax, Parent.yMin, Parent.yMax);
+		return Child;
+	}
+
 	public static Rect RectToScreen(Rect RectNorm)
 	{
 		return RectMult (RectNorm, new Rect (0, 0, Screen.width, Screen.height));
