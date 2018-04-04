@@ -29,6 +29,28 @@ public class int3
 };
 
 
+//	move to this please!
+namespace PopX
+{
+	public static class Math
+	{
+		//	if the rotation is invalid, return identity
+		//	catch invalid quaternions :/
+		//	annoyingly even if we turn assertions into exceptions, we still get the message printed out and clogs up the console.
+		//UnityEngine.Assertions.Assert.raiseExceptions = true;
+		static public Quaternion GetSafeRotation(Quaternion Rotation)
+		{
+			var Rot4 = new Vector4(Rotation.x, Rotation.y, Rotation.z, Rotation.w);
+
+			if (Rot4.sqrMagnitude < float.Epsilon)
+				return Quaternion.identity;
+
+			return Rotation;
+		}
+
+	}
+}
+
 public static class PopMath {
 
 	//	Rect(struct) is pass by value, must return.
