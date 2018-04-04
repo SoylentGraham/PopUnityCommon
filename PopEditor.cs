@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using System.Reflection;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -62,6 +62,69 @@ namespace PopX
 		}
 #endif
 
+
+		[MenuItem("NewChromantics/Editor/Enable Gizmos in all game views")]
+		public static void EnableGizmos_Menu()
+		{
+			EnableGizmos(true);
+		}
+
+		[MenuItem("NewChromantics/Editor/Disable Gizmos in all game views")]
+		public static void DisableGizmos_Menu()
+		{
+			EnableGizmos(false);
+		}
+
+		public static List<EditorWindow> GetAllEditorWindows(System.Type FilterType=null)
+		{
+			if (FilterType == null)
+				FilterType = typeof(EditorWindow);
+					
+			var EditorWindowObjects = Resources.FindObjectsOfTypeAll(FilterType);
+			var EditorWindows = new List<EditorWindow>();
+			foreach ( var ewo in EditorWindowObjects )
+			{
+				var ew = ewo as EditorWindow;
+				EditorWindows.Add(ew);
+			}
+			return EditorWindows;
+		}
+
+		//	from https://answers.unity.com/questions/851470/how-to-hide-gizmos-by-script.html
+		//	^^ outdated, but still might be useful reference.
+		public static void EnableGizmos(bool Enable)
+		{
+#if UNITY_EDITOR
+			var GameViewTypename = "UnityEditor.GameView";
+			var GizmoPropertyName = "m_Gizmos";
+			System.Type GameViewType = null;
+			//var asm = Assembly.GetAssembly(typeof(Editor));
+			foreach (var asm in System.AppDomain.CurrentDomain.GetAssemblies())
+			{
+				var t = asm.GetType(GameViewTypename, false, true);
+				if (t == null)
+					continue;
+				GameViewType = t;
+				break;
+			}
+
+			//	find the gizmo variable
+			//	https://github.com/Unity-Technologies/UnityCsReference/blob/83cceb769a97e24025616acc7503e9c21891f0f1/Editor/Mono/GameView/GameView.cs#L61
+			var Binding = BindingFlags.Instance | BindingFlags.NonPublic;
+			//var GizmoProperty = GameViewType.GetProperty(GizmoPropertyName, Binding);
+			var GizmoField = GameViewType.GetField(GizmoPropertyName, Binding);
+
+			var GameViewWindows = GetAllEditorWindows(GameViewType);
+
+			foreach (var gvw in GameViewWindows)
+			{
+				GizmoField.SetValue(gvw, Enable);
+				gvw.Repaint();
+			}
+#endif
+		}
+
 	}
+
 }
 
