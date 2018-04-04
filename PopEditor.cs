@@ -7,59 +7,61 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
-public class PopRestartEditor : MonoBehaviour {
-
-	static string	Application_ProjectPath	{	get {	return PopX.IO.Application_ProjectPath;}}
+namespace PopX
+{
+	public static class Editor
+	{
+		static string Application_ProjectPath { get { return PopX.IO.Application_ProjectPath; } }
 
 #if UNITY_EDITOR
-	//	https://docs.unity3d.com/Manual/CommandLineArguments.html
-	//	gr: is this glcore now? opengl still works on windows, even after this changed...
-	static string	ArgForceOpengl = "-force-opengl";
+		//	https://docs.unity3d.com/Manual/CommandLineArguments.html
+		//	gr: is this glcore now? opengl still works on windows, even after this changed...
+		static string ArgForceOpengl = "-force-opengl";
 
-	//	not documented yet; https://forum.unity.com/threads/hair-tool-1-1-0.446431/page-5#post-3058637
-	static string	ArgForceMetal = "-force-metal";
+		//	not documented yet; https://forum.unity.com/threads/hair-tool-1-1-0.446431/page-5#post-3058637
+		static string ArgForceMetal = "-force-metal";
 #endif
 
 #if UNITY_EDITOR
-	[MenuItem("NewChromantics/Editor/Restart Editor")]
-	static void RestartEditor()
-	{
-		//var UnityExe = System.Environment.GetCommandLineArgs()[0];
-		//var UnityExe = EditorApplication.applicationPath;
-		//System.Diagnostics.Process.Start( UnityExe, ArgForceOpengl );
-		var ProjectPath = Application_ProjectPath;
-		//var ProjectPath = "./";	//	shows open-project dialog
-		EditorApplication.OpenProject(ProjectPath);
-	}
-	#endif
+		[MenuItem("NewChromantics/Editor/Restart Editor")]
+		static void RestartEditor()
+		{
+			//var UnityExe = System.Environment.GetCommandLineArgs()[0];
+			//var UnityExe = EditorApplication.applicationPath;
+			//System.Diagnostics.Process.Start( UnityExe, ArgForceOpengl );
+			var ProjectPath = Application_ProjectPath;
+			//var ProjectPath = "./";	//	shows open-project dialog
+			EditorApplication.OpenProject(ProjectPath);
+		}
+#endif
 
 #if UNITY_EDITOR
-	[MenuItem("NewChromantics/Editor/Restart Editor in Opengl")]
-	static void RestartEditorInOpengl()
-	{
-		//var UnityExe = System.Environment.GetCommandLineArgs()[0];
-		//var UnityExe = EditorApplication.applicationPath;
-		//System.Diagnostics.Process.Start( UnityExe, ArgForceOpengl );
-		var ProjectPath = Application_ProjectPath;
-		//var ProjectPath = "./";	//	shows open-project dialog
-		EditorApplication.OpenProject(ProjectPath, ArgForceOpengl);
-	}
+		[MenuItem("NewChromantics/Editor/Restart Editor in Opengl")]
+		static void RestartEditorInOpengl()
+		{
+			//var UnityExe = System.Environment.GetCommandLineArgs()[0];
+			//var UnityExe = EditorApplication.applicationPath;
+			//System.Diagnostics.Process.Start( UnityExe, ArgForceOpengl );
+			var ProjectPath = Application_ProjectPath;
+			//var ProjectPath = "./";	//	shows open-project dialog
+			EditorApplication.OpenProject(ProjectPath, ArgForceOpengl);
+		}
 #endif
 
 
 #if UNITY_EDITOR && UNITY_EDITOR_OSX
-	[MenuItem("NewChromantics/Editor/Restart Editor in Metal")]
-	static void RestartEditorInMetal()
-	{
-		//var UnityExe = System.Environment.GetCommandLineArgs()[0];
-		//var UnityExe = EditorApplication.applicationPath;
-		//System.Diagnostics.Process.Start( UnityExe, ArgForceOpengl );
-		var ProjectPath = Application_ProjectPath;
-		//var ProjectPath = "./";	//	shows open-project dialog
-		EditorApplication.OpenProject(ProjectPath, ArgForceMetal);
-	}
+		[MenuItem("NewChromantics/Editor/Restart Editor in Metal")]
+		static void RestartEditorInMetal()
+		{
+			//var UnityExe = System.Environment.GetCommandLineArgs()[0];
+			//var UnityExe = EditorApplication.applicationPath;
+			//System.Diagnostics.Process.Start( UnityExe, ArgForceOpengl );
+			var ProjectPath = Application_ProjectPath;
+			//var ProjectPath = "./";	//	shows open-project dialog
+			EditorApplication.OpenProject(ProjectPath, ArgForceMetal);
+		}
 #endif
 
-
+	}
 }
 
