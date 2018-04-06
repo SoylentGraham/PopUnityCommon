@@ -23,38 +23,38 @@ namespace PopX
 		public const string Tag_VertexParameter = "vp";	//	arbritry vertex data
 		public const string Tag_Face = "f";
 
-		public static Matrix4x4 UnityToWavefrontTransform
+		public static Matrix4x4 UnityToMayaTransform
 		{
 			get
 			{
-				//	based on http://wiki.unity3d.com/index.php?title=ExportOBJ
-				//	pos sb.Append(string.Format("v {0} {1} {2}\n",v.x,v.y,-v.z));
-				//	normal sb.Append(string.Format("vn {0} {1} {2}\n",-v.x,-v.y,v.z));	//	conflicting sources on this
-
-				//	gr: right hand to left hand just flips X... no? (still 90 out)
-
 				//	output cm
 				var cm = 100.0f;
 
-				//	right hand to left hand
-				//var Scale = new Vector3(-cm, cm, cm);
-				//Transform = Matrix4x4.TRS( Vector3.zero, Quaternion.identity, new Vector3(-cm,cm,cm));
-				//	swap x & z
+				//	swap x & z AND face opposite direction (tested in maya)
 				var Transform = new Matrix4x4();
-				Transform.SetRow(0,new Vector4(0, 0, 1, 0));
+				Transform.SetRow(0,new Vector4(0, 0, -1, 0));
 				Transform.SetRow(1,new Vector4(0, 1, 0, 0));
-				Transform.SetRow(2,new Vector4(1, 0, 0, 0));
+				Transform.SetRow(2,new Vector4(-1, 0, 0, 0));
 				Transform.SetRow(3,new Vector4(0, 0, 0, 1));
 
 				//	scale to cm
 				Transform *= Matrix4x4.Scale(cm.xxx());
+
 				return Transform;
 			}
 		}
+		public static Matrix4x4 MayaToUnityTransform
+		{
+			get
+			{
+				return UnityToMayaTransform.inverse;
+			}
+		}
+
 
 		public static void Export(System.Action<string> WriteLine,Mesh Mesh,Matrix4x4 Transform,List<string> Comments=null)
 		{
-			Transform = UnityToWavefrontTransform * Transform;
+			Transform = UnityToMayaTransform * Transform;
 
 			if (Comments == null)
 				Comments = new List<string>();
