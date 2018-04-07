@@ -64,8 +64,8 @@ namespace PopX
 
 				var fn = i + 1;
 				var x = Frame.Position.x;
-				var y = Frame.Position.x;
-				var z = Frame.Position.x;
+				var y = Frame.Position.y;
+				var z = Frame.Position.z;
 
 				var pitch = RotationAngles.x;
 				var yaw = RotationAngles.y;
