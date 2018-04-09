@@ -15,6 +15,7 @@ namespace PopX
 	{
 		public const string FileExtension = "obj";
 
+		public const string Tag_Comment = "#";
 		public const string Tag_Object = "o";
 		public const string Tag_Group = "g";
 		public const string Tag_VertexPosition = "v";
@@ -124,6 +125,147 @@ namespace PopX
 				WriteLine(null);
 			}
 		}
+
+
+		public static void Import(System.Func<string> ReadLine,System.Action<Vector3> OnPosition)
+		{
+			System.Action<string> ReadComment = (Comment) =>
+			{
+
+			};
+
+			System.Action<string> ReadGroup = (GroupName) =>
+			{
+
+			};
+
+			System.Action<string> ReadVertex = (PositionsString) =>
+			{
+				try
+				{
+					var Positions = FastParse.Floats(PositionsString);
+					var xyz = new Vector3(Positions[0], Positions[1], Positions[2]);
+
+					//	todo: handle w
+					if (Positions.Count >= 4)
+					{
+						var w = Positions[3];
+						if (w != 1)
+							Debug.LogWarning("Warning, not PopX.WavefrontObj.Import not handling xyzw and w=" + w);
+					}
+					OnPosition.Invoke(xyz);
+				}
+				catch(System.Exception e)
+				{
+					Debug.LogError("Error parsing Vertex line [" + PositionsString + "]: " + e.Message + " (Skipped)");
+				}
+			};
+
+			while ( true )
+			{
+				var TagAndLine = ReadLine();
+				if (TagAndLine == null)
+					break;
+				
+				System.Action<string,System.Action<string>> TryHandleTag = (Tag,TagHandler)=>
+				{
+					if (!TagAndLine.StartsWith(Tag))
+						return;
+					//	remove tag + space
+					var Line = TagAndLine.Substring(Tag.Length + 1);
+					TagHandler(Line);
+				};
+
+				TryHandleTag(Tag_Comment, ReadComment);
+				TryHandleTag(Tag_Group, ReadGroup);
+				TryHandleTag(Tag_VertexPosition, ReadVertex);
+
+			}
+
+		}
+
+
+#if UNITY_EDITOR
+		static List<string> GetSelectedObjFilenames()
+		{
+			var Filenames = new List<string>();
+			var AssetGuids = Selection.assetGUIDs;
+			for (int i = 0; i < AssetGuids.Length; i++)
+			{
+				var Guid = AssetGuids[i];
+				var Path = AssetDatabase.GUIDToAssetPath(Guid);
+				//	skip .
+				var Ext = System.IO.Path.GetExtension(Path).Substring(1).ToLower();
+				if (Ext != FileExtension)
+					continue;
+
+				Filenames.Add(Path);
+			}
+			return Filenames;
+		}
+#endif
+
+#if UNITY_EDITOR
+		//	unity doesn't load OBJ's that JUST have points in them, so lets handle that
+		[MenuItem("Assets/Mesh/Import OBJ positions to Point Mesh", true)]
+		static bool ImportObjPositionsToJson_Verify()
+		{
+			var Filenames = GetSelectedObjFilenames();
+			return (Filenames.Count > 0);
+		}
+#endif
+
+#if UNITY_EDITOR
+		[MenuItem("Assets/Mesh/Import OBJ positions to Point Mesh")]
+		static void ImportObjPositionsToJson()
+		{
+			var Filenames = GetSelectedObjFilenames();
+
+			foreach (var Filename in Filenames)
+			{
+				try
+				{
+					var Mesh = ImportFileToPointMesh(Filename);
+					AssetWriter.SaveAsset(Mesh);
+				}
+				catch (System.Exception e)
+				{
+					Debug.LogError("Failed to convert " + Filename + "; " + e.Message);
+				}
+			}
+		}
+#endif
+
+		static public Mesh ImportFileToPointMesh(string Filename)
+		{
+			using (var Stream = new System.IO.StreamReader(Filename))
+			{
+				System.Func<string> ReadLine = () =>
+				{
+					var Line = Stream.ReadLine();
+					return Line;
+				};
+
+				//	read mesh points...
+				var Positions = new List<Vector3>();
+				System.Action<Vector3> SavePosition = (Position) =>
+				{
+					Positions.Add(Position);
+				};
+				Import(ReadLine, SavePosition);
+
+				//	and make a mesh
+				var Mesh = new Mesh();
+				Mesh.name = Filename;
+				Mesh.vertices = Positions.ToArray();
+				var Indexes = new int[Positions.Count];
+				for (int i = 0; i < Indexes.Length; i++)
+					Indexes[i] = i;
+				Mesh.SetIndices(Indexes, MeshTopology.Points, 0);
+				return Mesh;
+			}
+		}
+
 
 	}
 }
