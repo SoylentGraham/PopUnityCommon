@@ -74,6 +74,18 @@ namespace PopX
 			return Dist;
 		}
 
+		public void Transform(Matrix4x4 Transform)
+		{
+			var EdgePos = center + new Vector3(0, 0, radius);
+
+			//	transform
+			center = Transform.MultiplyPoint(center);
+
+			//	find new edge
+			var WorldEdgePos = Transform.MultiplyPoint(EdgePos);
+
+			radius = Vector3.Distance(WorldEdgePos, center);
+		}
 	};
 
 
