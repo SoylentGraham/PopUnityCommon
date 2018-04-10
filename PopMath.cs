@@ -315,20 +315,25 @@ public static class PopMath {
 		throw new System.Exception ("Unhandled " + collider.GetType() + " -> SphereCollider conversion");
 	}
 
-	//	gr: this doesn't work for the radius properly, use WorldRayToLocalRay instead
 	public static PopX.Sphere3 GetColliderWorldSphere(Collider collider)
 	{
-		//	grab local one
-		var LocalSphere = GetColliderSphere( collider );
+		var ct = collider.transform;
+		var Transform = ct.localToWorldMatrix;
+		return GetColliderWorldSphere(collider, Transform);
+	}
 
-		var EdgePos = LocalSphere.center + new Vector3 (0, 0, LocalSphere.radius);
+	public static PopX.Sphere3 GetColliderWorldSphere(Collider collider,Matrix4x4 Transform)
+	{
+		//	grab local one
+		var LocalSphere = GetColliderSphere(collider);
+
+		var EdgePos = LocalSphere.center + new Vector3(0, 0, LocalSphere.radius);
 
 		//	transform
-		var ct = collider.transform;
-		LocalSphere.center = ct.TransformPoint (LocalSphere.center);
-		var WorldEdgePos = ct.TransformPoint (EdgePos );
+		LocalSphere.center = Transform.MultiplyPoint(LocalSphere.center);
+		var WorldEdgePos = Transform.MultiplyPoint(EdgePos);
 
-		LocalSphere.radius = Vector3.Distance (WorldEdgePos, LocalSphere.center);
+		LocalSphere.radius = Vector3.Distance(WorldEdgePos, LocalSphere.center);
 
 		return LocalSphere;
 	}
