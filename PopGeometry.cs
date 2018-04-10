@@ -204,7 +204,65 @@ namespace PopX
 				AssetDatabase.SaveAssets ();
 			}
 		}
-		#endif
+#endif
+
+
+#if UNITY_EDITOR
+		[MenuItem("CONTEXT/MeshFilter/Set mesh bounds to Box Collider")]
+		public static void SetMeshBoundsToBoxCollider(MenuCommand menuCommand)
+		{
+			var mf = menuCommand.context as MeshFilter;
+			var m = mf.sharedMesh;
+			var bc = mf.GetComponent<BoxCollider>();
+
+			m.bounds = bc.bounds;
+
+			//	save the asset, if this is not asset-backed, it will prompt to create a new asset and return that
+			m = AssetWriter.SaveAsset(m);
+			mf.sharedMesh = m;
+		}
+#endif
+
+#if UNITY_EDITOR
+		[MenuItem("CONTEXT/MeshFilter/Set Box Collider to Mesh Bounds", true)]
+		public static bool SetBoxColliderToMeshBounds_Verify(MenuCommand menuCommand)
+		{
+			var mf = menuCommand.context as MeshFilter;
+			var bc = mf.GetComponent<BoxCollider>();
+			return bc != null;
+		}
+
+		[MenuItem("CONTEXT/MeshFilter/Set Box Collider to Mesh Bounds")]
+		public static void SetBoxColliderToMeshBounds(MenuCommand menuCommand)
+		{
+			var mf = menuCommand.context as MeshFilter;
+			var m = mf.sharedMesh;
+			var bc = mf.GetComponent<BoxCollider>();
+
+			bc.size = m.bounds.size;
+			bc.center = m.bounds.center;
+		}
+#endif
+
+#if UNITY_EDITOR
+		[MenuItem("CONTEXT/BoxCollider/Set Box Collider to Mesh Bounds",true)]
+		public static bool SetBoxColliderToMeshBounds2_Verify(MenuCommand menuCommand)
+		{
+			var bc = menuCommand.context as BoxCollider;
+			var mf = bc.GetComponent<MeshFilter>();
+			return mf != null;
+		}
+		[MenuItem("CONTEXT/BoxCollider/Set Box Collider to Mesh Bounds")]
+		public static void SetBoxColliderToMeshBounds2(MenuCommand menuCommand)
+		{
+			var bc = menuCommand.context as BoxCollider;
+			var mf = bc.GetComponent<MeshFilter>();
+			var m = mf.sharedMesh;
+
+			bc.size = m.bounds.size;
+			bc.center = m.bounds.center;
+		}
+#endif
 
 		class Vertex
 		{
