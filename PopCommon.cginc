@@ -34,10 +34,10 @@ float min4(float a,float b,float c,float d)
 	return min( a, min( b, min(c,d) ) );
 }
 
-float Clamp01(float x) 
-{ 
-  return clamp( x, 0.0, 1.0 ); 
-} 
+float Clamp01(float x)
+{
+	return clamp( x, 0.0, 1.0 ); 
+}
 
 float Range(float Min,float Max,float Time)
 {
