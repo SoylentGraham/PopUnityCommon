@@ -28,5 +28,27 @@ namespace PopX
 			UnityEngine.Gizmos.DrawWireSphere(End, ArrowHeadSize);
 		}
 
+		//	todo: better plane selection
+		static public void DrawCircleXZ(Vector3 Center,float Radius,int Segments=30)
+		{
+			Segments = Mathf.Max(3, Segments);
+			System.Func<float,Vector3> GetCirclePosition = (Time) =>
+			{
+				var Pos = Center;
+				Pos.x += Mathf.Sin(Mathf.Deg2Rad * 360.0f * Time) * Radius;
+				Pos.z += Mathf.Cos(Mathf.Deg2Rad * 360.0f * Time) * Radius;
+				return Pos;
+			};
+
+			for (int i = 0; i < Segments; i++)
+			{
+				float t0 = (i + 0) / ((float)Segments - 1);
+				float t1 = (i + 1) / ((float)Segments - 1);
+				var Pos0 = GetCirclePosition(t0);
+				var Pos1 = GetCirclePosition(t1);
+				UnityEngine.Gizmos.DrawLine(Pos0, Pos1);
+			}
+
+		}
 	}
 }
