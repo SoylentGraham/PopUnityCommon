@@ -18,5 +18,15 @@ namespace PopX
 			UnityEngine.Gizmos.DrawLine(Position + Left, Position - Left);
 			UnityEngine.Gizmos.DrawLine(Position + Forward, Position - Forward);
 		}
+
+		static public void DrawWireArrow(Vector3 Start,Vector3 End,float ArrowHeadSize)
+		{
+			//	draw a line
+			UnityEngine.Gizmos.DrawLine(Start, End);
+
+			//	todo: draw a cone instead of a sphere :)
+			UnityEngine.Gizmos.DrawWireSphere(End, ArrowHeadSize);
+		}
+
 	}
 }
