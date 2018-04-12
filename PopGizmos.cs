@@ -50,5 +50,27 @@ namespace PopX
 			}
 
 		}
+
+		static public void DrawWireRingSphere(Vector3 Center,float Radius,int Segments=30)
+		{
+			//	gr: the vertical lines are nice too, this also verifies use of radius
+			UnityEngine.Gizmos.DrawWireSphere (Center, Radius);
+
+			for (var Ring = 0; Ring < Segments;	Ring++ )
+			{
+				var t = Ring / (float)Segments;
+				var RadiusTheta = Mathf.Lerp(0 * Mathf.Deg2Rad, 180 * Mathf.Deg2Rad,t);
+				var RingRadius = Mathf.Sin(RadiusTheta);
+				var RingPos = Center;
+
+				var YTheta = Mathf.Lerp(0 * Mathf.Deg2Rad, 180 * Mathf.Deg2Rad,t);
+				var YOffset = Mathf.Cos(YTheta);
+
+				RingPos.y = Center.y + (YOffset*Radius);
+
+				DrawCircleXZ(RingPos, RingRadius * Radius, Segments);
+			}
+			
+		}
 	}
 }
