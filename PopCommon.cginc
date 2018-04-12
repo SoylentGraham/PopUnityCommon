@@ -1,21 +1,12 @@
-// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
-
-//	nicer matrix space names
+//	nicer matrix space names/funcs that are missing
 #define unity_WorldToClip	UNITY_MATRIX_VP
-#define unity_ObjectToWorld	unity_ObjectToWorld
-
 
 float3 UnityObjectToWorldPos(float3 LocalPos)
 {
 	return mul( unity_ObjectToWorld, float4( LocalPos, 1 ) ).xyz;
 }
 
-/*	gr: this DOES exist?
-float4 UnityWorldToClipPos(float3 WorldPos)
-{
-	return mul( unity_WorldToClip, float4( WorldPos, 1 ) );
-}
-*/
+
 #define hypotenuse(o,a)	sqrt( (a*a)+(o*o) )
 #define lengthsq(x)	( dot(x,x) )
 
