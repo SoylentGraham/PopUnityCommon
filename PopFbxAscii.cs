@@ -240,6 +240,11 @@ namespace PopX
 			var NormalLayer = Model.Add("LayerElementNormal", LayerNumber);
 			NormalLayer.Add("Version", 101);
 			NormalLayer.Add("Name", "");
+			//	ByPolygon	It means that there is a normal for every polygon of the model.
+			//	ByPolygonVertex	It means that there is a normal for every vertex of every polygon of the model.
+			//	ByVertex	It means that there is a normal for every vertex of the model.
+			//	gr: ByVertex "Unsupported wedge mapping mode type.Please report this bug."
+			//		even though I think that's the right one to use.. as ByPolygonVertex looks wrong
 			NormalLayer.Add("MappingInformationType", "ByPolygonVertex");
 			NormalLayer.Add("ReferenceInformationType", "Direct");
 			NormalLayer.Add("Normals",new FbxValue_Floats(mesh.normals));
