@@ -117,7 +117,7 @@ namespace PopX
 
 		public FbxValue_Floats(Vector3 v) { Numbers = null;	Append(v); }
 		public FbxValue_Floats(Vector3[] vs) { Numbers = null; foreach (var v in vs) Append(v); }
-		public FbxValue_Floats(Vector3[] vs,Matrix4x4 transform) { Numbers = null; foreach (var v in vs) Append(transform.MultiplyPoint(v)); }
+		public FbxValue_Floats(Vector3[] vs,System.Func<Vector3,Vector3> transform) { Numbers = null; foreach (var v in vs) Append(transform(v)); }
 
 		void Append(Vector3 v)
 		{
@@ -168,6 +168,29 @@ namespace PopX
 		}
 	};
 
+	public class AnimationCurve
+	{
+		
+	}
+	public class AnimationCurveNode
+	{
+		//	connect to property in other node
+	}
+	public class AnimationLayer
+	{
+		public List<AnimationCurveNode> AnimationCurveNodes;
+	}
+	public class AnimationStack
+	{
+		public string Name;
+		public List<AnimationLayer> AnimationLayers;
+
+
+	}
+	// FBXTree.Objects.subNodes.AnimationCurve(connected to AnimationCurveNode )
+	// FBXTree.Objects.subNodes.AnimationCurveNode ( connected to AnimationLayer and an animated property in some other node )
+	// FBXTree.Objects.subNodes.AnimationLayer ( connected to AnimationStack )
+	// FBXTree.Objects.subNodes.AnimationStack
 
 	public static class FbxAscii
 	{
@@ -182,6 +205,7 @@ namespace PopX
 		public const int VersionRelease = 0;
 		public const bool ReversePolygonOrder = true;
 
+		public const long KTime_Second = 46186158000;
 
 		static FbxProperty GetHeaderProperty(string Creator="Pop FbxAscii Exporter")
 		{
@@ -230,7 +254,7 @@ namespace PopX
 			Model.Add(FbxValues.Create("Mesh"));
 
 			Model.Add("Version", 232);
-			Model.Add("Vertices", new FbxValue_Floats(mesh.vertices,transform));
+			Model.Add("Vertices", new FbxValue_Floats(mesh.vertices, (n) => { return transform.MultiplyPoint(n); }));
 			//	indexes start at 1, and last in poly is negative
 			var FbxIndexes = GetMeshIndexes(mesh.GetIndices(0), mesh.GetTopology(0));
 			Model.Add("PolygonVertexIndex", new FbxValue_Ints(FbxIndexes));
@@ -247,7 +271,7 @@ namespace PopX
 			//		even though I think that's the right one to use.. as ByPolygonVertex looks wrong
 			NormalLayer.Add("MappingInformationType", "ByPolygonVertex");
 			NormalLayer.Add("ReferenceInformationType", "Direct");
-			NormalLayer.Add("Normals",new FbxValue_Floats(mesh.normals));
+			NormalLayer.Add("Normals",new FbxValue_Floats(mesh.normals, (n) => { return transform.MultiplyVector(n); }));
 
 			var Layer = Model.Add("Layer", LayerNumber);
 			Layer.Add("Version", 100);
