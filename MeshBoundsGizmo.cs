@@ -30,9 +30,16 @@ public class MeshBoundsGizmo : MonoBehaviour {
 		return b.max;
 	}
 
+	//	to enable the enable checkbox
+	void Update()
+	{
+		
+	}
 
 	void OnDrawGizmos()
 	{
+		if (!this.enabled)
+			return;
 		var mf = GetComponent<MeshFilter>();
 		var m = mf.sharedMesh;
 		var b = m.bounds;
