@@ -62,19 +62,23 @@ namespace PopX
 		}
 #endif
 
-
+#if UNITY_EDITOR
 		[MenuItem("NewChromantics/Editor/Enable Gizmos in all game views")]
 		public static void EnableGizmos_Menu()
 		{
 			EnableGizmos(true);
 		}
+#endif
 
+#if UNITY_EDITOR
 		[MenuItem("NewChromantics/Editor/Disable Gizmos in all game views")]
 		public static void DisableGizmos_Menu()
 		{
 			EnableGizmos(false);
 		}
+#endif
 
+#if UNITY_EDITOR
 		public static List<EditorWindow> GetAllEditorWindows(System.Type FilterType=null)
 		{
 			if (FilterType == null)
@@ -89,6 +93,7 @@ namespace PopX
 			}
 			return EditorWindows;
 		}
+#endif
 
 		//	from https://answers.unity.com/questions/851470/how-to-hide-gizmos-by-script.html
 		//	^^ outdated, but still might be useful reference.
