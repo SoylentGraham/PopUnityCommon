@@ -52,7 +52,8 @@ namespace PopX
 		public static System.Action<string> GetFileWriteLineFunction(out string Filename,string FileDescription, string DefaultFilename, string FileExtension)
 		{
 			//	get filename
-			Filename = UnityEditor.EditorUtility.SaveFilePanel(FileDescription, null, DefaultFilename, FileExtension);
+			var InitialDir = "Assets/";
+			Filename = UnityEditor.EditorUtility.SaveFilePanel(FileDescription, InitialDir, DefaultFilename, FileExtension);
 			if (string.IsNullOrEmpty(Filename))
 				throw new System.Exception("Cancelled file save");
 
