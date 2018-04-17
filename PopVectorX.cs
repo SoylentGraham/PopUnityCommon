@@ -7,7 +7,48 @@ using System.Collections.Generic;
 //	this is kind of like a swizzle... 
 public static class PopColor
 {
-	public static Color WithAlpha(this Color rgba, float Alpha) { return new Color(rgba.r, rgba.g, rgba.b, Alpha); }
+	public static Color WithAlpha(this Color rgba, float Alpha) 
+	{
+		return new Color(rgba.r, rgba.g, rgba.b, Alpha); 
+	}
+
+	//	converts a normalised float from red(0) to green(1). Blue if OOB
+
+	public static Color NormalToRedGreenClamped(float Normal)
+	{
+		return NormalToRedGreen(Normal, null);
+	}
+
+	public static Color NormalToRedGreen(float Normal)
+	{
+		return NormalToRedGreen(Normal, Color.blue);
+	}
+
+	public static Color NormalToRedGreen(float Normal, Color? OOBColour)
+	{
+		if ( Normal < 0.0f && OOBColour.HasValue )
+		{
+			return OOBColour.Value;
+		}
+		else if ( Normal < 0.5f )
+		{
+			Normal = Mathf.Max(Normal, 0);
+			Normal /= 0.5f;
+			return new Color( 1, Normal, 0);
+		}
+		else if ( Normal > 1 && OOBColour.HasValue )
+		{
+			return OOBColour.Value;
+		}
+		else // >= 0.5f
+		{
+			Normal = Mathf.Min(Normal, 1);
+
+			float Yellow = PopMath.Range(1.0f, 0.5f, Normal);
+			return new Color(Yellow, 1, 0);
+		}
+	}
+
 }
 
 

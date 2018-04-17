@@ -276,6 +276,62 @@ namespace PopX
 		}
 #endif
 
+
+
+#if UNITY_EDITOR
+		[MenuItem("Assets/Mesh/Center mesh on bounds", true)]
+		public static bool MeshCenterPivotViaBounds_Verify()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			return Meshes.Length > 0;
+		}
+		[MenuItem("Assets/Mesh/Center pivot via bounds")]
+		public static void MeshCenterPivotViaBounds()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			foreach (var Mesh in Meshes)
+			{
+				Mesh.CenterOnBounds();
+				AssetWriter.SaveAsset(Mesh);
+			}
+		}
+		[MenuItem("CONTEXT/MeshFilter/Center mesh pivot via bounds")]
+		public static void MeshCenterPivotViaBounds(MenuCommand menuCommand)
+		{
+			var mf = menuCommand.context as MeshFilter;
+			var m = mf.sharedMesh;
+			m.CenterOnBounds();
+			AssetWriter.SaveAsset(m);
+		}
+#endif
+
+		#if UNITY_EDITOR
+		[MenuItem("Assets/Mesh/Recalculate bounds", true)]
+		public static bool MeshRecalculateBounds_Verify()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			return Meshes.Length > 0;
+		}
+		[MenuItem("Assets/Mesh/Recalculate bounds")]
+		public static void MeshRecalculateBounds()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			foreach (var Mesh in Meshes)
+			{
+				Mesh.RecalculateBounds();
+				AssetWriter.SaveAsset(Mesh);
+			}
+		}
+		[MenuItem("CONTEXT/MeshFilter/Recalculate mesh bounds")]
+		public static void MeshRecalculateBounds(MenuCommand menuCommand)
+		{
+			var mf = menuCommand.context as MeshFilter;
+			var m = mf.sharedMesh;
+			m.RecalculateBounds();
+			AssetWriter.SaveAsset(m);
+		}
+#endif
+
 		class Vertex
 		{
 			public Vector3	position;
@@ -306,7 +362,20 @@ namespace PopX
 			return Array;
 		}
 
-
+		//	center the mesh so the center of the bounds is 0,0,0 (for when your mesh bounds may be specifically offset!)
+		public static void CenterOnBounds(this Mesh mesh)
+		{
+			//	get delta to center it
+			var MeshBounds = mesh.bounds;
+			var Delta = -MeshBounds.center;
+			var Positions = mesh.vertices;
+			for (int i = 0; i < Positions.Length; i++)
+				Positions[i] += Delta;
+			mesh.vertices = Positions;
+			//	this should be 000 now
+			MeshBounds.center += Delta;
+			mesh.bounds = MeshBounds;
+		}
 
 		public static Mesh CopyMesh(Mesh OldMesh)
 		{
