@@ -1,11 +1,11 @@
-﻿// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
 
 Shader "New Chromantics/Stereo360"
 {
 	Properties
 	{
 		_MainTex ("Texture", 2D) = "white" {}
-
+		[Toggle(ENABLE_STEREO)] _Stereo("Enable Stereo", Float) = 0
 	}
 	SubShader
 	{
@@ -39,6 +39,7 @@ Shader "New Chromantics/Stereo360"
 			};
 
 			sampler2D _MainTex;
+			half4 _Stereo;
 			float4 _MainTex_ST;
 
 
@@ -49,6 +50,7 @@ Shader "New Chromantics/Stereo360"
 
 			float2 MonoUvToStereoUv(float2 uv)
 			{
+#ifdef ENABLE_STERE0
 				bool Left = IsStereoLeftEye();
 				float minu = Left ? 0 : 0.5f;
 				float maxu = Left ? 0.5f : 1.0f;
@@ -56,6 +58,9 @@ Shader "New Chromantics/Stereo360"
 				float maxv = Left ? 1 : 1;
 
 				return float2( lerp(minu,maxu,uv.x), lerp(minv,maxv,uv.y) );
+#else
+				return uv;
+#endif
 			}
 
 
