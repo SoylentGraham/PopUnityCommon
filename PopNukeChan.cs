@@ -21,7 +21,7 @@ namespace PopX
 		public struct Frame
 		{
 			public Vector3 Position;
-			public Quaternion Rotation;
+			public Vector3 RotationEular;
 			public float? CameraFov;
 		};
 
@@ -60,7 +60,7 @@ namespace PopX
 				var Format = Frame.CameraFov.HasValue ? FormatCamera : FormatNull;
 
 				//	gr: can't find documentation on whether the format is expecting radians or degrees :/
-				var RotationAngles = Frame.Rotation.eulerAngles;
+				var RotationAngles = Frame.RotationEular;
 
 				var fn = i + 1;
 				var x = Frame.Position.x;
