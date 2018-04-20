@@ -1,11 +1,11 @@
-// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
-
 Shader "New Chromantics/Stereo360"
 {
 	Properties
 	{
 		_MainTex ("Texture", 2D) = "white" {}
 		[Toggle(ENABLE_STEREO)] _Stereo("Enable Stereo", Float) = 0
+
+		[KeywordEnum(IsCamera,IsLocalOrigin)]EyePosition("EyePosition",float) = 0
 	}
 	SubShader
 	{
@@ -22,7 +22,25 @@ Shader "New Chromantics/Stereo360"
 			#include "UnityCG.cginc"
 			#include "PopCommon.cginc"
 
+			//	gr: I got these by looking at the debug view of the material inspector. Hence the odd _
+			#pragma multi_compile EYEPOSITION_ISCAMERA EYEPOSITION_ISLOCALORIGIN
 
+			float3 GetEyePosition()
+			{
+				#if defined(EYEPOSITION_ISCAMERA)
+				{
+					return _WorldSpaceCameraPos;
+				}
+				#elif defined(EYEPOSITION_ISLOCALORIGIN)
+				{
+					float4 WorldOrigin = mul( unity_ObjectToWorld, float4(0,0,0,1) );
+					return (WorldOrigin.xyz / WorldOrigin.w);
+				}
+				#else
+				#error Eye origin not specified
+				#endif
+			}
+		
 			//	global toggle
 			int LeftEye = 0;
 
@@ -41,7 +59,6 @@ Shader "New Chromantics/Stereo360"
 			sampler2D _MainTex;
 			half4 _Stereo;
 			float4 _MainTex_ST;
-
 
 			bool IsStereoLeftEye()
 			{
@@ -71,10 +88,12 @@ Shader "New Chromantics/Stereo360"
 				o.ScreenPos = UnityObjectToClipPos(v.LocalPos);
 				return o;
 			}
-			
+
+
 			fixed4 frag (v2f i) : SV_Target
 			{
-				float3 ViewDir = _WorldSpaceCameraPos.xyz - i.WorldPos;
+				
+				float3 ViewDir = GetEyePosition() - i.WorldPos;
 				float2 EquirectUv = ViewToEquirect( ViewDir );
 
 				//	gr: why upside down?
