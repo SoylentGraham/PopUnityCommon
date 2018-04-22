@@ -13,9 +13,12 @@ namespace PopX
 {
 	public static class WavefrontObj 
 	{
-		public const string FileExtension = "obj";
+		public const string MeshFileExtension = "obj";
+		public const string MaterialFileExtension = "mtl";
 
 		public const string Tag_Comment = "#";
+		public const string Tag_MaterialLibraryFilename = "mtllib";
+		public const string Tag_UseMaterial = "usemtl";
 		public const string Tag_Object = "o";
 		public const string Tag_Group = "g";
 		public const string Tag_VertexPosition = "v";
@@ -23,6 +26,10 @@ namespace PopX
 		public const string Tag_VertexTexturecoord = "vt";
 		public const string Tag_VertexParameter = "vp";	//	arbritry vertex data
 		public const string Tag_Face = "f";
+
+		//	mtl files
+		public const string Tag_NewMaterial = "newmtl";
+		public const string Tag_SetTextureDiffuse = "map_Kd";
 
 		public static Matrix4x4 UnityToMayaTransform
 		{
@@ -53,20 +60,82 @@ namespace PopX
 		}
 
 
-		public static void Export(System.Action<string> WriteLine,Mesh Mesh,Matrix4x4 Transform,List<string> Comments=null)
+		public class ObjMaterial
 		{
-			Transform = UnityToMayaTransform * Transform;
+			public string	Name;
 
+			public string	DiffuseTextureFilename;
+
+			public ObjMaterial(string Name,string DiffuseTextureFilename)
+			{
+				this.Name = Name;
+				this.DiffuseTextureFilename = System.IO.Path.GetFileName(DiffuseTextureFilename);
+			}
+
+			public void Export(System.Action<string> WriteLine)
+			{
+				WriteLine( Tag_NewMaterial + " " + Name );
+				/*
+				 * Ka 1.000 0.000 0.000
+Kd 0.000 1.000 0.000
+Ks 0.000 0.000 0.000
+d 1.0
+illum 1
+map_Ka Mesh.jpg
+map_Kd Mesh.jpg
+*/
+				if ( !string.IsNullOrEmpty(DiffuseTextureFilename) )
+					WriteLine( Tag_SetTextureDiffuse + " " + DiffuseTextureFilename );
+			}
+		};
+
+
+		static void InitComments(ref List<string> Comments)
+		{
 			if (Comments == null)
 				Comments = new List<string>();
 			Comments.Insert(0, "PopX.WavefrontObj");
 			Comments.Add(System.DateTime.Now.ToLongDateString());
 			Comments.Add(System.DateTime.Now.ToLongTimeString());
+		}
+
+		public static void Export(System.Action<string> WriteLine,ObjMaterial Material,List<string> Comments=null)
+		{
+			var Materials = new List<ObjMaterial>();
+			Materials.Add( Material );
+
+			Export( WriteLine, Materials, Comments );
+		}
+
+		public static void Export(System.Action<string> WriteLine,List<ObjMaterial> Materials,List<string> Comments=null)
+		{
+			InitComments( ref Comments );
+	
+			WriteLine(null);
+
+			foreach ( var Mat in Materials )
+				{
+				WriteLine(null);
+				Mat.Export( WriteLine );
+			}
+		}
+
+		public static void Export(System.Action<string> WriteLine,Mesh Mesh,Matrix4x4 Transform,ObjMaterial Material,string MaterialFilename,List<string> Comments=null)
+		{
+			Transform = UnityToMayaTransform * Transform;
+
+			InitComments( ref Comments );
 
 			foreach (var Comment in Comments)
 				WriteLine("# " + Comment);
 			WriteLine(null);
 			WriteLine(null);
+
+			if ( !string.IsNullOrEmpty(MaterialFilename) )
+			{
+				MaterialFilename = System.IO.Path.GetFileName(MaterialFilename);
+				WriteLine( Tag_MaterialLibraryFilename + " " +  MaterialFilename );
+			}
 
 			//	note: to handle multiple meshes, we need to keep track of vertex count per mesh
 			//	http://wiki.unity3d.com/index.php?title=ExportOBJ
@@ -78,8 +147,11 @@ namespace PopX
 				if (string.IsNullOrEmpty(MeshName))
 					MeshName = "Unnamed mesh";
 
-				WriteLine(Tag_Object +" " + MeshName);
+				if ( Material != null )
+					WriteLine(Tag_UseMaterial +" " + Material.Name);
 
+				WriteLine(Tag_Object +" " + MeshName);
+					
 				var Positions = Mesh.vertices;
 				foreach (var Position in Positions)
 				{
@@ -196,7 +268,7 @@ namespace PopX
 				var Path = AssetDatabase.GUIDToAssetPath(Guid);
 				//	skip .
 				var Ext = System.IO.Path.GetExtension(Path).Substring(1).ToLower();
-				if (Ext != FileExtension)
+				if (Ext != MeshFileExtension)
 					continue;
 
 				Filenames.Add(Path);
@@ -265,6 +337,7 @@ namespace PopX
 				return Mesh;
 			}
 		}
+
 
 
 	}
