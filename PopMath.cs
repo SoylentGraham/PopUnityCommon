@@ -92,10 +92,27 @@ public static class PopMath {
 		return rect;
 	}
 
-	public static float Range(float Min,float Max,float Value)
+	public static float Range(float Min, float Max, float Value)
 	{
-		Value -= Min;
-		return Value / ( Max - Min);
+		return (Value-Min) / (Max - Min);
+	}
+
+	public static Vector2 Range(Vector2 Min, Vector2 Max, Vector2 Value)
+	{
+		var Out = new Vector2();
+		Out.x = Range(Min.x, Max.x, Value.x);
+		Out.y = Range(Min.y, Max.y, Value.y);
+		Out.z = Range(Min.z, Max.z, Value.z);
+		return Out;
+	}
+
+	public static Vector3 Range(Vector3 Min, Vector3 Max, Vector3 Value)
+	{
+		var Out = new Vector3();
+		Out.x = Range(Min.x, Max.x, Value.x);
+		Out.y = Range(Min.y, Max.y, Value.y);
+		Out.z = Range(Min.z, Max.z, Value.z);
+		return Out;
 	}
 
 	public static Rect GetTextureRect(Texture Tex)
