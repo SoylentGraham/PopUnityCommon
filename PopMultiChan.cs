@@ -18,14 +18,21 @@ namespace PopX
 		public struct Frame
 		{
 			public List<ObjectFrame> Objects;
+			public List<string> Comments;
 
-			public void	AddObject(Vector3 ObjectPosition,string ObjectName)
+			public void AddObject(Vector3 ObjectPosition, string ObjectName)
 			{
-				Pop.AllocIfNull( ref Objects );
-				var ObjFrame = new ObjectFrame(ObjectPosition,ObjectName);
+				Pop.AllocIfNull(ref Objects);
+				var ObjFrame = new ObjectFrame(ObjectPosition, ObjectName);
 				Objects.Add(ObjFrame);
 			}
-		};
+
+			public void AddComment(string Comment)
+			{
+				Pop.AllocIfNull(ref Comments);
+				Comments.Add(Comment);
+			}
+		}
 
 		public struct ObjectFrame
 		{
@@ -85,6 +92,11 @@ namespace PopX
 
 					var Line = string.Format(Format, fn, on, x, y, z, Name);
 					WriteLine(Line);
+					/*
+					if ( Frame.Comments != null )
+						foreach ( var Comment in Frame.Comments )
+							WriteLine( Tag)
+							*/
 				}
 			}
 		}
