@@ -129,15 +129,29 @@ namespace PopX
 		}
 		#endif
 
+
 		#if UNITY_EDITOR
-		[MenuItem("CONTEXT/MeshFilter/Set mesh UV0 to triangle index")]
+		[MenuItem("CONTEXT/MeshFilter/Set mesh UV[3] to vertex index")]
+		public static void _SetMeshUV5ToVertexIndex(MenuCommand menuCommand)
+		{
+			var mf = menuCommand.context as MeshFilter;
+			var mesh = mf.sharedMesh;
+
+			Undo.RecordObject(mesh, "Set mesh UV3 to vertex index of " + mesh.name);
+			SetMeshUVToVertexIndex(mesh, 3);
+			Undo.FlushUndoRecordObjects();
+		}
+		#endif
+
+		#if UNITY_EDITOR
+		[MenuItem("CONTEXT/MeshFilter/Set mesh UV[0] to triangle index")]
 		public static void _SetMeshUV0ToTriangleIndex (MenuCommand menuCommand) 
 		{
 			var mf = menuCommand.context as MeshFilter;
 			var mesh = mf.sharedMesh;
 
 			Undo.RecordObject(mesh, "Set mesh UV0 to triangle index of " + mesh.name);
-			SetMeshUV0ToTriangleIndex (mesh);
+			SetMeshUVToTriangleIndex (mesh,0);
 			Undo.FlushUndoRecordObjects ();
 		}
 		#endif
@@ -594,7 +608,7 @@ namespace PopX
 		}
 
 
-		public static void SetMeshUV0ToTriangleIndex (Mesh mesh) 
+		public static void SetMeshUVToTriangleIndex (Mesh mesh,int UvChannel) 
 		{
 			var m = mesh;
 
@@ -624,11 +638,39 @@ namespace PopX
 						}
 					}
 				}
-				m.uv = Uvs;
-				m.UploadMeshData (true);
+				m.SetUVs(UvChannel, new List<Vector2>(Uvs));
+				m.UploadMeshData (false);
 				#if UNTIY_EDITOR
 				AssetDatabase.SaveAssets ();
 				#endif
+			}
+		}
+
+
+		public static void SetMeshUVToVertexIndex(Mesh mesh, int UvChannel)
+		{
+			var m = mesh;
+
+			using (var Progress = new ScopedProgressBar("Setting UVs"))
+			{
+				var Uvs = new Vector2[m.vertexCount];
+				{
+					var v2 = new Vector2(); //	avoid allocs
+					for (int v = 0; v < m.vertexCount; v++)
+					{
+						if (v % 100 == 0)
+							Progress.SetProgress("Setting UV of triangle", v, m.vertexCount);
+
+						v2.x = v;
+						v2.y = 0;
+						Uvs[v] = v2;
+					}
+				}
+				m.SetUVs(UvChannel, new List<Vector2>(Uvs));
+				m.UploadMeshData(false);
+#if UNTIY_EDITOR
+				AssetDatabase.SaveAssets ();
+#endif
 			}
 		}
 
