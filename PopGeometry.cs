@@ -279,6 +279,31 @@ namespace PopX
 
 
 #if UNITY_EDITOR
+		[MenuItem("Assets/Mesh/Save as new asset...", true)]
+		public static bool MeshSaveAsNewAsset_Verify()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			return Meshes.Length > 0;
+		}
+		[MenuItem("Assets/Mesh/Save as new asset...")]
+		public static void MeshSaveAsNewAsset()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			foreach (var Mesh in Meshes)
+			{
+				AssetWriter.SaveAsNewAsset(Mesh);
+			}
+		}
+		[MenuItem("CONTEXT/MeshFilter/Save as new asset...")]
+		public static void MeshSaveAsNewAsset(MenuCommand menuCommand)
+		{
+			var mf = menuCommand.context as MeshFilter;
+			var m = mf.sharedMesh;
+			AssetWriter.SaveAsNewAsset(m);
+		}
+#endif
+
+#if UNITY_EDITOR
 		[MenuItem("Assets/Mesh/Center mesh on bounds", true)]
 		public static bool MeshCenterPivotViaBounds_Verify()
 		{
