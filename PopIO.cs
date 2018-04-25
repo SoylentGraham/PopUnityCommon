@@ -10,12 +10,15 @@ namespace PopX
 	{
 		//	file types we can write/export
 		//	gr: value used as extension (todo; support multiple extensions per type, eg. jpeg and jpg)
+		//	gr: allow jpeg quality settings... these may need to turn into a TYPE with options.
 		public enum ImageFileType
 		{
 			png,
 			jpg,
 			exr
 		};
+
+		static public string GetImageFormatExtension(ImageFileType FileType) { return FileType.ToString(); 	}
 
 		static public string Application_ProjectPath { get { return Application.dataPath.Split(new string[] { "/Assets" }, System.StringSplitOptions.None)[0]; } }
 
@@ -52,7 +55,8 @@ namespace PopX
 		public static System.Action<string> GetFileWriteLineFunction(out string Filename,string FileDescription, string DefaultFilename, string FileExtension)
 		{
 			//	get filename
-			Filename = UnityEditor.EditorUtility.SaveFilePanel(FileDescription, null, DefaultFilename, FileExtension);
+			var InitialDir = "Assets/";
+			Filename = UnityEditor.EditorUtility.SaveFilePanel(FileDescription, InitialDir, DefaultFilename, FileExtension);
 			if (string.IsNullOrEmpty(Filename))
 				throw new System.Exception("Cancelled file save");
 
@@ -79,7 +83,7 @@ namespace PopX
 		}
 
 #if UNITY_EDITOR
-		public static void SaveFile(string DefaultName, ImageFileType Extension, System.Action<string, ImageFileType> DoSave)
+		public static void SaveFile(string DefaultName, ImageFileType Extension, System.Action<ImageFileType,string> DoSave)
 		{
 			var ExtensionsString = Extension.ToString();
 			var DefaultDirectory = Application.dataPath;
@@ -99,7 +103,7 @@ namespace PopX
 				throw new System.Exception("Couldn't determine file extension selected by user");
 			*/
 
-			DoSave(Filename, Extension);
+			DoSave(Extension,Filename);
 		}
 		#endif
 
@@ -119,6 +123,27 @@ namespace PopX
 			return FullPath;
 		}
 
+		public static System.Func<Texture2D,byte[]> GetEncodeImageFunction(ImageFileType Filetype)
+		{
+			switch ( Filetype )
+			{
+				case ImageFileType.exr: return (t) => { return t.EncodeToEXR(); };
+				case ImageFileType.jpg: return (t) => { return t.EncodeToJPG(); };
+				case ImageFileType.png: return (t) => { return t.EncodeToPNG(); };
+				default:	throw new System.Exception("Unhandled file type " + Filetype);
+			}
+		}
+
+		public static System.Action<string, Texture2D> GetFileWriteImageFunction(ImageFileType Filetype)
+		{
+			var EncodeFunc = GetEncodeImageFunction(Filetype);
+			System.Action<string, Texture2D> WriteFunc = (Filename, Texture) =>
+			{
+				var Bytes = EncodeFunc(Texture);
+				System.IO.File.WriteAllBytes( Filename, Bytes );
+			};
+			return WriteFunc;
+		}
 	}
 }
 

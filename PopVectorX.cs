@@ -12,6 +12,11 @@ public static class PopColor
 		return new Color(rgba.r, rgba.g, rgba.b, Alpha); 
 	}
 
+	public static Vector4 GetVector4(this Color rgba) 
+	{
+		return new Vector4(rgba.r, rgba.g, rgba.b, rgba.a); 
+	}
+
 	//	converts a normalised float from red(0) to green(1). Blue if OOB
 
 	public static Color NormalToRedGreenClamped(float Normal)
@@ -93,6 +98,8 @@ public static class PopVector2
 {
 	public static Vector2 yx(this Vector2 two) { return new Vector2(two.y, two.x); }
 	public static Vector3 xy0(this Vector2 two) { return new Vector3(two.x, two.y, 0); }
+	public static Vector4 xy00(this Vector2 two) { return new Vector4(two.x, two.y, 0,0); }
+	public static Vector4 xy01(this Vector2 two) { return new Vector4(two.x, two.y, 0,1); }
 	public static Vector3 xyz(this Vector2 two, float z) { return new Vector3(two.x, two.y, z); }
 	public static Vector4 xyzw(this Vector2 two, float z, float w) { return new Vector4(two.x, two.y, z, w); }
 

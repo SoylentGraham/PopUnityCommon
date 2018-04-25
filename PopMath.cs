@@ -92,10 +92,26 @@ public static class PopMath {
 		return rect;
 	}
 
-	public static float Range(float Min,float Max,float Value)
+	public static float Range(float Min, float Max, float Value)
 	{
-		Value -= Min;
-		return Value / ( Max - Min);
+		return (Value-Min) / (Max - Min);
+	}
+
+	public static Vector2 Range(Vector2 Min, Vector2 Max, Vector2 Value)
+	{
+		var Out = new Vector2();
+		Out.x = Range(Min.x, Max.x, Value.x);
+		Out.y = Range(Min.y, Max.y, Value.y);
+		return Out;
+	}
+
+	public static Vector3 Range(Vector3 Min, Vector3 Max, Vector3 Value)
+	{
+		var Out = new Vector3();
+		Out.x = Range(Min.x, Max.x, Value.x);
+		Out.y = Range(Min.y, Max.y, Value.y);
+		Out.z = Range(Min.z, Max.z, Value.z);
+		return Out;
 	}
 
 	public static Rect GetTextureRect(Texture Tex)
@@ -345,15 +361,45 @@ public static class PopMath {
 		return new Ray (LocalOrigin, LocalDir);
 	}	
 
-	//	get minimum values from a set
-	public static Vector3 MinComponentsOf(Vector3 a,Vector3 b)
+	public static float Min(float a,float b,float c)
 	{
-		return new Vector3 (Mathf.Min (a.x, b.x), Mathf.Min (a.y, b.y), Mathf.Min (a.z, b.z));
+		return Mathf.Min(a, Mathf.Min(b, c));
 	}
 
-	public static Vector3 MaxComponentsOf(Vector3 a,Vector3 b)
+	public static float Max(float a,float b,float c)
 	{
-		return new Vector3 (Mathf.Max (a.x, b.x), Mathf.Max (a.y, b.y), Mathf.Max (a.z, b.z));
+		return Mathf.Max(a, Mathf.Max(b, c));
+	}
+
+	//	shader-style swizzle min() where x is min x, y is min y, z is min z
+	public static Vector2 Min(Vector2 a, Vector2 b)
+	{
+		return new Vector2(Mathf.Min(a.x, b.x), Mathf.Min(a.y, b.y));
+	}
+
+	public static Vector2 Min(Vector2 a, Vector2 b, Vector2 c)
+	{
+		return new Vector2(Min(a.x, b.x, c.x), Min(a.y, b.y, c.y) );
+	}
+
+	public static Vector3 Min(Vector3 a, Vector3 b)
+	{
+		return new Vector3(Mathf.Min(a.x, b.x), Mathf.Min(a.y, b.y), Mathf.Min(a.z, b.z));
+	}
+
+	public static Vector3 Min(Vector3 a, Vector3 b, Vector3 c)
+	{
+		return new Vector3(Min(a.x, b.x, c.x), Min(a.y, b.y, c.y), Min(a.z, b.z,c.z));
+	}
+
+	public static Vector3 Max(Vector3 a, Vector3 b)
+	{
+		return new Vector3(Mathf.Max(a.x, b.x), Mathf.Max(a.y, b.y), Mathf.Max(a.z, b.z));
+	}
+
+	public static Vector3 Max(Vector3 a, Vector3 b, Vector3 c)
+	{
+		return new Vector3(Max(a.x, b.x,c.x), Max(a.y, b.y,c.y), Max(a.z, b.z,c.z));
 	}
 
 }

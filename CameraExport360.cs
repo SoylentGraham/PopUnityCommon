@@ -44,7 +44,7 @@ public class CameraExport360 {
 		var Texture = Capture360ToTexture(cam);
 
 		var DefaultName = cam.name + "_360";
-		System.Action<string, PopX.IO.ImageFileType> SaveTextureToFile = (Filename, Extension) =>
+		System.Action<PopX.IO.ImageFileType,string> SaveTextureToFile = (Extension,Filename) =>
 		{
 			byte[] Bytes = null;
 
@@ -102,7 +102,7 @@ public class CameraExport360 {
 		try
 		{
 			Capture360ToRenderTexture(cam, rt);
-			var Output = SaveTextureToPng.GetTexture2D(rt, false);
+			var Output = PopX.Textures.GetTexture2D(rt, false);
 			RenderTexture.ReleaseTemporary(rt);
 			return Output;
 		}
