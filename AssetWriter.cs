@@ -70,4 +70,28 @@ public class AssetWriter : MonoBehaviour {
 		return UnityEditor.AssetDatabase.LoadAssetAtPath<T>(Path);
 	}
 	#endif
+
+
+
+	#if UNITY_EDITOR
+	public static T SaveAsNewAsset<T>(T ExistingAsset) where T : Object, new()
+	{
+		if (ExistingAsset == null)
+			return null;
+
+		//	duplicate this way; https://github.com/pharan/Unity-MeshSaver/blob/master/MeshSaver/Editor/MeshSaverEditor.cs
+		//	copyserialised was creating a garbage mesh (same number of points, but messed up)
+		var NewAsset = Object.Instantiate(ExistingAsset) as Mesh;
+		NewAsset.name = ExistingAsset.name + "_copy";
+
+		var Path = UnityEditor.EditorUtility.SaveFilePanelInProject("Save new asset...", NewAsset.name, "asset", "Save asset");
+		if (string.IsNullOrEmpty(Path))
+			throw new System.Exception("Save aborted");
+
+		UnityEditor.AssetDatabase.CreateAsset(NewAsset, Path);
+		UnityEditor.AssetDatabase.SaveAssets();
+
+		return UnityEditor.AssetDatabase.LoadAssetAtPath<T>(Path);
+	}
+#endif
 }
