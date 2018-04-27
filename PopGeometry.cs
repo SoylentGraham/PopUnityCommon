@@ -117,6 +117,31 @@ namespace PopX
 		#endif
 
 		#if UNITY_EDITOR
+		[MenuItem("CONTEXT/MeshFilter/Weld vertexes of mesh")]
+		public static void _WeldVertexesOfMesh(MenuCommand menuCommand)
+		{
+			var mf = menuCommand.context as MeshFilter;
+			var mesh = mf.sharedMesh;
+
+			Undo.RecordObject(mesh, "Unshare Triangles Of Mesh " + mesh.name);
+			WeldVertexesOfMesh(ref mesh);
+			Undo.FlushUndoRecordObjects();
+		}
+#endif
+
+#if UNITY_EDITOR
+		[MenuItem("CONTEXT/MeshFilter/Weld vertexes to new mesh...")]
+		public static void _WeldVertexesOfNewMesh(MenuCommand menuCommand)
+		{
+			var mf = menuCommand.context as MeshFilter;
+			var m = CopyMesh(mf.sharedMesh);
+			m.name = mf.sharedMesh.name + " welded";
+			WeldVertexesOfMesh(ref m);
+			SaveMesh(m, m.name, true);
+		}
+#endif
+
+		#if UNITY_EDITOR
 		[MenuItem("CONTEXT/MeshFilter/Randomise triangle order")]
 		public static void _RandomiseTriangleOrder (MenuCommand menuCommand) 
 		{
@@ -431,6 +456,98 @@ namespace PopX
 			NewMesh.bounds = OldMesh.bounds;
 			return NewMesh;
 		}
+
+
+
+		public static void WeldVertexesOfMesh(ref Mesh mesh)
+		{
+			//	get a tolerance relative to the size of the bounds
+			//	todo: prompt user for variables!
+			float DistanceTolerance = 0.0001f;
+			var BoundsMin = Mathf.Min(mesh.bounds.size.x, Mathf.Min(mesh.bounds.size.y, mesh.bounds.size.z));
+			DistanceTolerance *= BoundsMin;
+
+			var TriangleIndexes = mesh.triangles;
+			var Positions = new List<Vector3>(mesh.vertices);
+			var Normals = mesh.normals!=null ? new List<Vector3>(mesh.normals) : null;
+
+			//	gr: this is vector2... need to handle bigger vector sizes some how!
+			var Uv_ = mesh.uv!= null && mesh.uv.Length > 0 ? new List<Vector2>(mesh.uv) : null;
+			var Uv2 = mesh.uv2!= null && mesh.uv2.Length>0 ? new List<Vector2>(mesh.uv2) : null;
+			var Uv3 = mesh.uv3!= null && mesh.uv3.Length > 0 ? new List<Vector2>(mesh.uv3) : null;
+			var Uv4 = mesh.uv4!= null && mesh.uv4.Length > 0 ? new List<Vector2>(mesh.uv4) : null;
+
+			System.Action<int> RemoveVertex = (VertexIndex) =>
+			{
+				Positions.RemoveAt(VertexIndex);
+				if (Normals != null) Normals.RemoveAt(VertexIndex);
+				if (Uv_ != null) Uv_.RemoveAt(VertexIndex);
+				if (Uv2 != null) Uv2.RemoveAt(VertexIndex);
+				if (Uv3 != null) Uv3.RemoveAt(VertexIndex);
+				if (Uv4 != null) Uv4.RemoveAt(VertexIndex);
+				if (Normals != null) Normals.RemoveAt(VertexIndex);
+			};
+
+			System.Func<Vector3,int, int?> FindMatchingVertexIgnoring = (Position,IgnoreIndex) =>
+			{
+				for (int i = 0; i < Positions.Count; i++)
+				{
+					if (i == IgnoreIndex)
+						continue;
+					var Distance = Vector3.Distance(Positions[i], Position);
+
+					//	match with ANY, or match with best? lets say any and just increase tolerance if we need to
+					if (Distance <= DistanceTolerance)
+						return i;
+				}
+				return null;
+			};
+
+			using (var Progress = new ScopedProgressBar("Welding vertexes", true))
+			{
+				var WeldCount = 0;
+				var OrigCount = Positions.Count;
+
+				//	merge vertexes downwards to make index changes easy
+				for (int v = Positions.Count - 1; v >= 1; v--)
+				{
+					{
+						var p = Positions.Count - v;
+						var Name = "Welding " + p + "/" + OrigCount + " (" + WeldCount + " welded)";
+						Progress.SetProgress(Name, p, OrigCount, 100);
+					}				
+
+					//	find one to merge with
+					var MergeIndex = FindMatchingVertexIgnoring(Positions[v], v);
+					if (!MergeIndex.HasValue)
+						continue;
+						WeldCount++;
+
+					var m = MergeIndex.Value;
+					//	remove all references to v, change all references to v to m, and drop index of anything further down the array
+					RemoveVertex(v);
+					for (int t = 0; t < TriangleIndexes.Length; t++)
+					{
+						if (TriangleIndexes[t] == v)
+							TriangleIndexes[t] = m;
+						else if (TriangleIndexes[t] > v)
+							TriangleIndexes[t]--;
+					}
+				}
+			}
+
+			//	all done!
+			mesh.vertices = Positions.ToArray();
+			mesh.triangles = TriangleIndexes;
+			mesh.normals = Normals.ToArray();
+			mesh.uv = Uv_.ToArray();
+			mesh.uv2 = Uv2.ToArray();
+			mesh.uv3 = Uv3.ToArray();
+			mesh.uv4 = Uv4.ToArray();
+
+			mesh.UploadMeshData(false);
+		}
+
 
 		public static void UnshareTrianglesOfMesh(ref Mesh mesh)
 		{
