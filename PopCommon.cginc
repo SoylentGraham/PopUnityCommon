@@ -1,21 +1,12 @@
-// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
-
-//	nicer matrix space names
+//	nicer matrix space names/funcs that are missing
 #define unity_WorldToClip	UNITY_MATRIX_VP
-#define unity_ObjectToWorld	unity_ObjectToWorld
-
 
 float3 UnityObjectToWorldPos(float3 LocalPos)
 {
 	return mul( unity_ObjectToWorld, float4( LocalPos, 1 ) ).xyz;
 }
 
-/*	gr: this DOES exist?
-float4 UnityWorldToClipPos(float3 WorldPos)
-{
-	return mul( unity_WorldToClip, float4( WorldPos, 1 ) );
-}
-*/
+
 #define hypotenuse(o,a)	sqrt( (a*a)+(o*o) )
 #define lengthsq(x)	( dot(x,x) )
 
@@ -34,10 +25,15 @@ float min4(float a,float b,float c,float d)
 	return min( a, min( b, min(c,d) ) );
 }
 
-float Clamp01(float x) 
-{ 
-  return clamp( x, 0.0, 1.0 ); 
-} 
+float Clamp01(float x)
+{
+	return clamp( x, 0.0, 1.0 ); 
+}
+
+float Range01(float Min,float Max,float Time)
+{
+	return Clamp01( (Time-Min) / (Max-Min) );
+}
 
 float Range(float Min,float Max,float Time)
 {
@@ -141,9 +137,16 @@ float hue2rgb(float p,float q,float t)
     return p;
 }
 
-
 float3 HslToRgb(float3 Hsl)
 {
+/*
+	//	https://github.com/hughsk/glsl-hsv2rgb/blob/master/index.glsl
+	//	better version!
+	float4 K = float4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+	float3 p = abs(fract(Hsl.xxx + K.xyz) * 6.0 - K.www);
+	return Hsl.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), Hsl.y);
+
+*/
 	float h = Hsl.x;
 	float s = Hsl.y;
 	float l = Hsl.z;
@@ -159,6 +162,7 @@ float3 HslToRgb(float3 Hsl)
 		Rgb.z = hue2rgb(p, q, h - 1.f/3.f);
 		return Rgb;
 	}
+
 }
 
 
@@ -172,6 +176,17 @@ float4 LerpRgba(float4 a,float4 b,float Time)
 	float3 hsl_lerp = lerp( hsla, hslb, Time );
 	float3 rgb_lerped = HslToRgb( hsl_lerp );
 	return float4( rgb_lerped.x, rgb_lerped.y, rgb_lerped.z, lerp( a.w, b.w, Time ) );
+}
+
+
+float3 LerpRgb(float3 a,float3 b,float Time)
+{
+	float3 hsla = RgbToHsl( a.xyz );
+	float3 hslb = RgbToHsl( b.xyz );
+
+	float3 hsl_lerp = lerp( hsla, hslb, Time );
+	float3 rgb_lerped = HslToRgb( hsl_lerp );
+	return rgb_lerped;
 }
 
 

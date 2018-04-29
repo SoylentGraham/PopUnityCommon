@@ -10,12 +10,15 @@ namespace PopX
 	{
 		//	file types we can write/export
 		//	gr: value used as extension (todo; support multiple extensions per type, eg. jpeg and jpg)
+		//	gr: allow jpeg quality settings... these may need to turn into a TYPE with options.
 		public enum ImageFileType
 		{
 			png,
 			jpg,
 			exr
 		};
+
+		static public string GetImageFormatExtension(ImageFileType FileType) { return FileType.ToString(); 	}
 
 		static public string Application_ProjectPath { get { return Application.dataPath.Split(new string[] { "/Assets" }, System.StringSplitOptions.None)[0]; } }
 
@@ -26,6 +29,40 @@ namespace PopX
 			FileHandle.Close();
 		}
 
+		public static System.Action<string> GetFileWriteLineFunction(string Filename)
+		{
+			var Stream = new System.IO.StreamWriter(Filename);
+
+			//	gr: as we're holding onto the stream, it won't flush/close automatically (are we leaking a handle?)
+			//	unless we add another func to close/dispose the stream, we can auto flush and it'll just write immediately out
+			Stream.AutoFlush = true;
+
+			System.Action<string> WriteLine = (Line) =>
+			{
+				//	add line feed if it's not there
+				//	todo: or clip line feed and use WriteLine?
+				var LineFeed = "\n";
+				if (Line == null)
+					Line = "";
+				if (!Line.EndsWith(LineFeed))
+					Line += LineFeed;
+				Stream.Write(Line);
+			};
+			return WriteLine;
+		}
+
+#if UNITY_EDITOR
+		public static System.Action<string> GetFileWriteLineFunction(out string Filename,string FileDescription, string DefaultFilename, string FileExtension)
+		{
+			//	get filename
+			var InitialDir = "Assets/";
+			Filename = UnityEditor.EditorUtility.SaveFilePanel(FileDescription, InitialDir, DefaultFilename, FileExtension);
+			if (string.IsNullOrEmpty(Filename))
+				throw new System.Exception("Cancelled file save");
+
+			return GetFileWriteLineFunction(Filename);
+		}
+#endif
 
 		//	throw if not project relative
 		public static string GetProjectRelativePath(string Path)
@@ -46,7 +83,7 @@ namespace PopX
 		}
 
 #if UNITY_EDITOR
-		public static void SaveFile(string DefaultName, ImageFileType Extension, System.Action<string, ImageFileType> DoSave)
+		public static void SaveFile(string DefaultName, ImageFileType Extension, System.Action<ImageFileType,string> DoSave)
 		{
 			var ExtensionsString = Extension.ToString();
 			var DefaultDirectory = Application.dataPath;
@@ -66,7 +103,7 @@ namespace PopX
 				throw new System.Exception("Couldn't determine file extension selected by user");
 			*/
 
-			DoSave(Filename, Extension);
+			DoSave(Extension,Filename);
 		}
 		#endif
 
@@ -86,6 +123,27 @@ namespace PopX
 			return FullPath;
 		}
 
+		public static System.Func<Texture2D,byte[]> GetEncodeImageFunction(ImageFileType Filetype)
+		{
+			switch ( Filetype )
+			{
+				case ImageFileType.exr: return (t) => { return t.EncodeToEXR(); };
+				case ImageFileType.jpg: return (t) => { return t.EncodeToJPG(); };
+				case ImageFileType.png: return (t) => { return t.EncodeToPNG(); };
+				default:	throw new System.Exception("Unhandled file type " + Filetype);
+			}
+		}
+
+		public static System.Action<string, Texture2D> GetFileWriteImageFunction(ImageFileType Filetype)
+		{
+			var EncodeFunc = GetEncodeImageFunction(Filetype);
+			System.Action<string, Texture2D> WriteFunc = (Filename, Texture) =>
+			{
+				var Bytes = EncodeFunc(Texture);
+				System.IO.File.WriteAllBytes( Filename, Bytes );
+			};
+			return WriteFunc;
+		}
 	}
 }
 

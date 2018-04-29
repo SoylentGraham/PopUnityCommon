@@ -74,6 +74,18 @@ namespace PopX
 			return Dist;
 		}
 
+		public void Transform(Matrix4x4 Transform)
+		{
+			var EdgePos = center + new Vector3(0, 0, radius);
+
+			//	transform
+			center = Transform.MultiplyPoint(center);
+
+			//	find new edge
+			var WorldEdgePos = Transform.MultiplyPoint(EdgePos);
+
+			radius = Vector3.Distance(WorldEdgePos, center);
+		}
 	};
 
 
@@ -204,7 +216,121 @@ namespace PopX
 				AssetDatabase.SaveAssets ();
 			}
 		}
-		#endif
+#endif
+
+
+#if UNITY_EDITOR
+		[MenuItem("CONTEXT/MeshFilter/Set mesh bounds to Box Collider")]
+		public static void SetMeshBoundsToBoxCollider(MenuCommand menuCommand)
+		{
+			var mf = menuCommand.context as MeshFilter;
+			var m = mf.sharedMesh;
+			var bc = mf.GetComponent<BoxCollider>();
+
+			m.bounds = bc.bounds;
+
+			//	save the asset, if this is not asset-backed, it will prompt to create a new asset and return that
+			m = AssetWriter.SaveAsset(m);
+			mf.sharedMesh = m;
+		}
+#endif
+
+#if UNITY_EDITOR
+		[MenuItem("CONTEXT/MeshFilter/Set Box Collider to Mesh Bounds", true)]
+		public static bool SetBoxColliderToMeshBounds_Verify(MenuCommand menuCommand)
+		{
+			var mf = menuCommand.context as MeshFilter;
+			var bc = mf.GetComponent<BoxCollider>();
+			return bc != null;
+		}
+
+		[MenuItem("CONTEXT/MeshFilter/Set Box Collider to Mesh Bounds")]
+		public static void SetBoxColliderToMeshBounds(MenuCommand menuCommand)
+		{
+			var mf = menuCommand.context as MeshFilter;
+			var m = mf.sharedMesh;
+			var bc = mf.GetComponent<BoxCollider>();
+
+			bc.size = m.bounds.size;
+			bc.center = m.bounds.center;
+		}
+#endif
+
+#if UNITY_EDITOR
+		[MenuItem("CONTEXT/BoxCollider/Set Box Collider to Mesh Bounds",true)]
+		public static bool SetBoxColliderToMeshBounds2_Verify(MenuCommand menuCommand)
+		{
+			var bc = menuCommand.context as BoxCollider;
+			var mf = bc.GetComponent<MeshFilter>();
+			return mf != null;
+		}
+		[MenuItem("CONTEXT/BoxCollider/Set Box Collider to Mesh Bounds")]
+		public static void SetBoxColliderToMeshBounds2(MenuCommand menuCommand)
+		{
+			var bc = menuCommand.context as BoxCollider;
+			var mf = bc.GetComponent<MeshFilter>();
+			var m = mf.sharedMesh;
+
+			bc.size = m.bounds.size;
+			bc.center = m.bounds.center;
+		}
+#endif
+
+
+
+#if UNITY_EDITOR
+		[MenuItem("Assets/Mesh/Center mesh on bounds", true)]
+		public static bool MeshCenterPivotViaBounds_Verify()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			return Meshes.Length > 0;
+		}
+		[MenuItem("Assets/Mesh/Center pivot via bounds")]
+		public static void MeshCenterPivotViaBounds()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			foreach (var Mesh in Meshes)
+			{
+				Mesh.CenterOnBounds();
+				AssetWriter.SaveAsset(Mesh);
+			}
+		}
+		[MenuItem("CONTEXT/MeshFilter/Center mesh pivot via bounds")]
+		public static void MeshCenterPivotViaBounds(MenuCommand menuCommand)
+		{
+			var mf = menuCommand.context as MeshFilter;
+			var m = mf.sharedMesh;
+			m.CenterOnBounds();
+			AssetWriter.SaveAsset(m);
+		}
+#endif
+
+		#if UNITY_EDITOR
+		[MenuItem("Assets/Mesh/Recalculate bounds", true)]
+		public static bool MeshRecalculateBounds_Verify()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			return Meshes.Length > 0;
+		}
+		[MenuItem("Assets/Mesh/Recalculate bounds")]
+		public static void MeshRecalculateBounds()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			foreach (var Mesh in Meshes)
+			{
+				Mesh.RecalculateBounds();
+				AssetWriter.SaveAsset(Mesh);
+			}
+		}
+		[MenuItem("CONTEXT/MeshFilter/Recalculate mesh bounds")]
+		public static void MeshRecalculateBounds(MenuCommand menuCommand)
+		{
+			var mf = menuCommand.context as MeshFilter;
+			var m = mf.sharedMesh;
+			m.RecalculateBounds();
+			AssetWriter.SaveAsset(m);
+		}
+#endif
 
 		class Vertex
 		{
@@ -236,7 +362,20 @@ namespace PopX
 			return Array;
 		}
 
-
+		//	center the mesh so the center of the bounds is 0,0,0 (for when your mesh bounds may be specifically offset!)
+		public static void CenterOnBounds(this Mesh mesh)
+		{
+			//	get delta to center it
+			var MeshBounds = mesh.bounds;
+			var Delta = -MeshBounds.center;
+			var Positions = mesh.vertices;
+			for (int i = 0; i < Positions.Length; i++)
+				Positions[i] += Delta;
+			mesh.vertices = Positions;
+			//	this should be 000 now
+			MeshBounds.center += Delta;
+			mesh.bounds = MeshBounds;
+		}
 
 		public static Mesh CopyMesh(Mesh OldMesh)
 		{

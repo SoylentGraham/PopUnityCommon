@@ -29,6 +29,28 @@ public class int3
 };
 
 
+//	move to this please!
+namespace PopX
+{
+	public static class Math
+	{
+		//	if the rotation is invalid, return identity
+		//	catch invalid quaternions :/
+		//	annoyingly even if we turn assertions into exceptions, we still get the message printed out and clogs up the console.
+		//UnityEngine.Assertions.Assert.raiseExceptions = true;
+		static public Quaternion GetSafeRotation(Quaternion Rotation)
+		{
+			var Rot4 = new Vector4(Rotation.x, Rotation.y, Rotation.z, Rotation.w);
+
+			if (Rot4.sqrMagnitude < float.Epsilon)
+				return Quaternion.identity;
+
+			return Rotation;
+		}
+
+	}
+}
+
 public static class PopMath {
 
 	//	Rect(struct) is pass by value, must return.
@@ -70,10 +92,26 @@ public static class PopMath {
 		return rect;
 	}
 
-	public static float Range(float Min,float Max,float Value)
+	public static float Range(float Min, float Max, float Value)
 	{
-		Value -= Min;
-		return Value / ( Max - Min);
+		return (Value-Min) / (Max - Min);
+	}
+
+	public static Vector2 Range(Vector2 Min, Vector2 Max, Vector2 Value)
+	{
+		var Out = new Vector2();
+		Out.x = Range(Min.x, Max.x, Value.x);
+		Out.y = Range(Min.y, Max.y, Value.y);
+		return Out;
+	}
+
+	public static Vector3 Range(Vector3 Min, Vector3 Max, Vector3 Value)
+	{
+		var Out = new Vector3();
+		Out.x = Range(Min.x, Max.x, Value.x);
+		Out.y = Range(Min.y, Max.y, Value.y);
+		Out.z = Range(Min.z, Max.z, Value.z);
+		return Out;
 	}
 
 	public static Rect GetTextureRect(Texture Tex)
@@ -293,20 +331,25 @@ public static class PopMath {
 		throw new System.Exception ("Unhandled " + collider.GetType() + " -> SphereCollider conversion");
 	}
 
-	//	gr: this doesn't work for the radius properly, use WorldRayToLocalRay instead
 	public static PopX.Sphere3 GetColliderWorldSphere(Collider collider)
 	{
-		//	grab local one
-		var LocalSphere = GetColliderSphere( collider );
+		var ct = collider.transform;
+		var Transform = ct.localToWorldMatrix;
+		return GetColliderWorldSphere(collider, Transform);
+	}
 
-		var EdgePos = LocalSphere.center + new Vector3 (0, 0, LocalSphere.radius);
+	public static PopX.Sphere3 GetColliderWorldSphere(Collider collider,Matrix4x4 Transform)
+	{
+		//	grab local one
+		var LocalSphere = GetColliderSphere(collider);
+
+		var EdgePos = LocalSphere.center + new Vector3(0, 0, LocalSphere.radius);
 
 		//	transform
-		var ct = collider.transform;
-		LocalSphere.center = ct.TransformPoint (LocalSphere.center);
-		var WorldEdgePos = ct.TransformPoint (EdgePos );
+		LocalSphere.center = Transform.MultiplyPoint(LocalSphere.center);
+		var WorldEdgePos = Transform.MultiplyPoint(EdgePos);
 
-		LocalSphere.radius = Vector3.Distance (WorldEdgePos, LocalSphere.center);
+		LocalSphere.radius = Vector3.Distance(WorldEdgePos, LocalSphere.center);
 
 		return LocalSphere;
 	}
@@ -318,15 +361,45 @@ public static class PopMath {
 		return new Ray (LocalOrigin, LocalDir);
 	}	
 
-	//	get minimum values from a set
-	public static Vector3 MinComponentsOf(Vector3 a,Vector3 b)
+	public static float Min(float a,float b,float c)
 	{
-		return new Vector3 (Mathf.Min (a.x, b.x), Mathf.Min (a.y, b.y), Mathf.Min (a.z, b.z));
+		return Mathf.Min(a, Mathf.Min(b, c));
 	}
 
-	public static Vector3 MaxComponentsOf(Vector3 a,Vector3 b)
+	public static float Max(float a,float b,float c)
 	{
-		return new Vector3 (Mathf.Max (a.x, b.x), Mathf.Max (a.y, b.y), Mathf.Max (a.z, b.z));
+		return Mathf.Max(a, Mathf.Max(b, c));
+	}
+
+	//	shader-style swizzle min() where x is min x, y is min y, z is min z
+	public static Vector2 Min(Vector2 a, Vector2 b)
+	{
+		return new Vector2(Mathf.Min(a.x, b.x), Mathf.Min(a.y, b.y));
+	}
+
+	public static Vector2 Min(Vector2 a, Vector2 b, Vector2 c)
+	{
+		return new Vector2(Min(a.x, b.x, c.x), Min(a.y, b.y, c.y) );
+	}
+
+	public static Vector3 Min(Vector3 a, Vector3 b)
+	{
+		return new Vector3(Mathf.Min(a.x, b.x), Mathf.Min(a.y, b.y), Mathf.Min(a.z, b.z));
+	}
+
+	public static Vector3 Min(Vector3 a, Vector3 b, Vector3 c)
+	{
+		return new Vector3(Min(a.x, b.x, c.x), Min(a.y, b.y, c.y), Min(a.z, b.z,c.z));
+	}
+
+	public static Vector3 Max(Vector3 a, Vector3 b)
+	{
+		return new Vector3(Mathf.Max(a.x, b.x), Mathf.Max(a.y, b.y), Mathf.Max(a.z, b.z));
+	}
+
+	public static Vector3 Max(Vector3 a, Vector3 b, Vector3 c)
+	{
+		return new Vector3(Max(a.x, b.x,c.x), Max(a.y, b.y,c.y), Max(a.z, b.z,c.z));
 	}
 
 }
