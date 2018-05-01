@@ -6,6 +6,13 @@ namespace PopX
 {
 	public static class Data
 	{
+		static public byte[] SubArray(this System.Array ParentArray, long Start, long Count)
+		{
+			var ChildArray = new byte[Count];
+			System.Array.Copy(ParentArray, Start, ChildArray, 0, Count);
+			return ChildArray;
+		}
+
 		public class NotFound : System.Exception
 		{
 			public NotFound()
