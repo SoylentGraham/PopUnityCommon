@@ -18,7 +18,7 @@ namespace PopX
 			return false;
 		}
 
-		public static Material GetInstancedMaterial(Material mat)
+		public static Material GetInstancedMaterial(Material mat,string ExtraNameSuffix=null)
 		{
 			//	don't make instances in edit mode
 			if (Application.isEditor && !Application.isPlaying)
@@ -30,11 +30,21 @@ namespace PopX
 			if (IsInstanceName(mat.name))
 				return mat;
 
+			if (ExtraNameSuffix == null)
+				ExtraNameSuffix = "";
+
 			//	make instance
 			mat = new Material(mat);
-			mat.name += " " + InstanceSuffix;
+			mat.name += " " + ExtraNameSuffix + " " + InstanceSuffix;
 			if (!IsInstanceName(mat.name))
 				throw new System.Exception("New name " + mat.name + " isn't an instance");
+			return mat;
+		}
+
+
+		public static Material GetInstancedMaterial(ref Material mat,string ExtraNameSuffix=null)
+		{
+			mat = GetInstancedMaterial(mat,ExtraNameSuffix);
 			return mat;
 		}
 
