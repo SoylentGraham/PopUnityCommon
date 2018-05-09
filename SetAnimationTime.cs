@@ -6,13 +6,56 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-[RequireComponent(typeof(Animator))]
 public class SetAnimationTime : MonoBehaviour {
 
 	#if !PAUSE_VIA_ENABLE
 	float?	PausedNormTime = null;
 	int?	PausedState = null;
 	#endif
+
+	Animator Anim 
+	{
+		get
+		{
+			var Comp = GetComponent<Animator>();
+			if (Comp != null)
+				return Comp;
+
+			return GetComponentInChildren<Animator>();
+		}
+	}
+
+
+	public void SetNormalisedTime(float TimeNorm)
+	{
+		try
+		{
+			//	gr: if we were "paused", the state is probably garbage.
+			Resume();
+		}
+		catch(System.Exception)
+		{
+		}
+
+		var State = Anim.GetCurrentAnimatorStateInfo(0);
+		var StateHash = State.shortNameHash;
+
+		var TimeSecs = TimeNorm * State.length;
+
+		Debug.Log("Setting animator time " + TimeSecs + "/" + State.length + " -> Play(" + TimeNorm + ")");
+
+		Anim.speed = 1;
+		Anim.Play(StateHash, 0, TimeNorm);
+
+#if !PAUSE_VIA_ENABLE
+		{
+			//	"unpause"
+			PausedNormTime = null;
+			PausedState = null;
+		}
+#endif
+	}
+
 
 	public void SetTime(float TimeSecs)
 	{
@@ -21,31 +64,19 @@ public class SetAnimationTime : MonoBehaviour {
 			//	gr: if we were "paused", the state is probably garbage.
 			Resume();
 		}
-		catch {
+		catch (System.Exception){
 		}
 
-		var Anim = GetComponent<Animator> ();
+		var Anim = this.Anim;
 		var State = Anim.GetCurrentAnimatorStateInfo (0);
 		var TimeNorm = TimeSecs / State.length;
-		var StateHash = State.shortNameHash;
 
-		Debug.Log ("Setting animator time " + TimeSecs + "/" + State.length + " -> Play(" + TimeNorm + ")");
-
-		Anim.speed = 1;
-		Anim.Play ( StateHash, 0, TimeNorm);
-
-		#if !PAUSE_VIA_ENABLE
-		{
-			//	"unpause"
-			PausedNormTime = null;
-			PausedState = null;
-		}
-		#endif
+		SetNormalisedTime(TimeNorm);
 	}
 
 	public void Resume()
 	{
-		var Anim = GetComponent<Animator> ();
+		var Anim = this.Anim;
 
 		#if PAUSE_VIA_ENABLE
 		{
@@ -56,7 +87,7 @@ public class SetAnimationTime : MonoBehaviour {
 			if (!PausedNormTime.HasValue || !PausedState.HasValue)
 				throw new System.Exception ("Trying to resume Animator which wasn't paused");
 
-			//var Anim = GetComponent<Animator> ();
+			//var Anim = this.Anim;
 
 			var TimeNorm = PausedNormTime.Value;
 			var StateHash = PausedState.Value;
@@ -75,7 +106,7 @@ public class SetAnimationTime : MonoBehaviour {
 
 	public void Pause()
 	{
-		var Anim = GetComponent<Animator> ();
+		var Anim = this.Anim;
 	
 		#if PAUSE_VIA_ENABLE
 		{
