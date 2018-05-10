@@ -6,6 +6,13 @@ float3 UnityObjectToWorldPos(float3 LocalPos)
 	return mul( unity_ObjectToWorld, float4( LocalPos, 1 ) ).xyz;
 }
 
+float3 GetCameraWorldForward()
+{
+	// float4x4 _CameraToWorld;	//	<--- now unity_CameraToWorld
+	float4 Forward = float4(0,0,1,0);
+	Forward = mul( unity_CameraToWorld, Forward );
+	return Forward.xyz;
+}
 
 #define hypotenuse(o,a)	sqrt( (a*a)+(o*o) )
 #define lengthsq(x)	( dot(x,x) )
