@@ -8,6 +8,7 @@ using UnityEngine;
 
 public class SetAnimationTime : MonoBehaviour {
 
+	public bool ShowDebug = false;
 	#if !PAUSE_VIA_ENABLE
 	float?	PausedNormTime = null;
 	int?	PausedState = null;
@@ -42,7 +43,8 @@ public class SetAnimationTime : MonoBehaviour {
 
 		var TimeSecs = TimeNorm * State.length;
 
-		Debug.Log("Setting animator time " + TimeSecs + "/" + State.length + " -> Play(" + TimeNorm + ")");
+		if ( ShowDebug )
+			Debug.Log("Setting animator time " + TimeSecs + "/" + State.length + " -> Play(" + TimeNorm + ")");
 
 		Anim.speed = 1;
 		Anim.Play(StateHash, 0, TimeNorm);
