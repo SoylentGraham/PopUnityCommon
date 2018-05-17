@@ -108,6 +108,33 @@ namespace PopX
 		#endif
 
 
+#if UNITY_EDITOR
+		public static void SaveFile(string DefaultName, Texture2D texture,ImageFileType Extension)
+		{
+			var DoSave = PopX.IO.GetFileWriteImageFunction(Extension);
+
+			var ExtensionsString = Extension.ToString();
+			var DefaultDirectory = Application.dataPath;
+
+			var Filename = UnityEditor.EditorUtility.SaveFilePanel("Save as...", DefaultDirectory, DefaultName, ExtensionsString);
+			if (string.IsNullOrEmpty(Filename))
+				throw new System.Exception("Save cancelled");
+
+			/*	gr: might still want this on windows if the user can choose a different extension. osx won't allow it
+			//	get the full path
+			//	work out the extension used
+			ImageFileType? Extension = null;
+			foreach (var Ext in Extensions)
+				if (Filename.EndsWith(Ext.ToString()))
+					Extension = Ext;
+			if (!Extension.HasValue)
+				throw new System.Exception("Couldn't determine file extension selected by user");
+			*/
+
+			DoSave(Filename,texture);
+		}
+#endif
+
 		//	cannot extend System.IO.Path
 		public static string Path_Combine(IEnumerable<string> Paths)
 		{
