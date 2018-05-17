@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 //	gr: PopX being renamed to Pop later
 namespace PopX
@@ -171,6 +173,89 @@ namespace PopX
 			};
 			return WriteFunc;
 		}
+
+
+
+		#if UNITY_EDITOR
+		static public string GetSelectedPath(out string Filename)
+		{
+			//	https://answers.unity.com/questions/472808/how-to-get-the-current-selected-folder-of-project.html
+			//	selection may be null, an object, or the current folder that was right clicked in
+			var Selected = Selection.activeObject;
+			var SelectedPath = Selected ? AssetDatabase.GetAssetPath(Selected.GetInstanceID()) : null;
+			if (string.IsNullOrEmpty(SelectedPath))
+			{
+				Filename = null;
+				return "Assets";
+			}
+
+			//	just a directory
+			if (System.IO.Directory.Exists(SelectedPath))
+			{
+				Filename = null;
+				return SelectedPath;
+			}
+
+			//	file, split filename and folder
+			var Folder = System.IO.Path.GetPathRoot(SelectedPath);
+			Filename = System.IO.Path.GetFileName(SelectedPath);
+			return Folder;
+		}
+#endif
+
+		static public string Path_MakePath(string Folder,string Filename,string Extension)
+		{
+			if (Extension[0] != '.')
+				Extension = "." + Extension;
+			
+			var Path = System.IO.Path.Combine(Folder, Filename) + Extension;
+			return Path;
+		}
+
+		//	compliment System.IO.Path.ChangeExtension
+		//	named to System.IO.Path.GetFileNameWithoutExtension
+		static public string Path_ChangeFilenameWithoutExtension(string Path,string NewFilename)
+		{
+			var OldFilename = System.IO.Path.GetFileNameWithoutExtension(Path);
+			var Extension = System.IO.Path.GetExtension(Path);
+			var Folder = System.IO.Path.GetDirectoryName(Path);
+
+			//	unit/sanity test!
+			var OldPath = Path_MakePath(Folder, OldFilename, Extension );
+			if (OldPath != Path)
+				throw new System.Exception("Error with Path_ChangeFilenameWithoutExtension could not recreate OLD path before creating new");
+			var NewPath = Path_MakePath(Folder, NewFilename, Extension);
+			return NewPath;
+		}
+
+#if UNITY_EDITOR
+		//	from the current selected/right click place, get a new path & filename
+		static public string GetAssetFolderUnusedFilename(string DefaultFilename, string Extension)
+		{
+			string Filename;
+			var Folder = GetSelectedPath(out Filename);
+
+			if (Filename == null)
+				Filename = DefaultFilename + "." + Extension;
+
+			//	if filename's extension is different (eg. Cow.png, not Cow.asset) then change it
+			Filename = System.IO.Path.ChangeExtension(Filename, Extension);
+
+			var Path = System.IO.Path.Combine(Folder, Filename);
+
+			//	don't overwrite existing filename
+			int Count = 1;
+			while (System.IO.File.Exists(Path))
+			{
+				var NewFilename = System.IO.Path.GetFileNameWithoutExtension(Filename);
+				Count++;
+				NewFilename += " " + Count;
+				Path = Path_ChangeFilenameWithoutExtension(Path, NewFilename);
+			}
+
+			return Path;
+		}
+#endif
 	}
 }
 
