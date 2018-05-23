@@ -95,6 +95,24 @@ namespace PopX
 		}
 #endif
 
+
+#if UNITY_EDITOR
+		public static List<EditorWindow> GetAllInspectorWindows()
+		{
+			return GetAllEditorWindows("UnityEditor.InspectorWindow");
+		}
+#endif
+
+#if UNITY_EDITOR
+		public static List<EditorWindow> GetAllEditorWindows(string EditorWindowTypeName)
+		{
+			var EditorAsm = typeof(Editor).Assembly;
+			var WindowType = EditorAsm.GetType(EditorWindowTypeName);
+
+			return GetAllEditorWindows(WindowType);
+		}
+#endif
+
 		//	from https://answers.unity.com/questions/851470/how-to-hide-gizmos-by-script.html
 		//	^^ outdated, but still might be useful reference.
 		public static void EnableGizmos(bool Enable)
