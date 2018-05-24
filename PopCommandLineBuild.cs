@@ -6,7 +6,11 @@ using System.Linq;
 using System;
 
 
-public class PopBuild : MonoBehaviour {
+/*
+ * gr: this is being deprecated, for "PopBuild" a more complete build solution, but keeping this here temporarily until all funcitonality is replaced.
+ * so PopBuild has been renamed to PopCommandLineBuild
+ */
+public class PopCommandLineBuild : MonoBehaviour {
 
 	private static string	BuildPathArg = "-BuildPath=";
 	//private static string 	PathSuffixIos = "/";
