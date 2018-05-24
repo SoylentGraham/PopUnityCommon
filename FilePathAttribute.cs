@@ -18,10 +18,17 @@ public class FilePathAttribute : PropertyAttribute
 	{
 		File,
 		FileInProject,
+		FileInStreamingAssets,
 		Folder
+	};
+	public enum DialogType
+	{
+		Open,
+		Save,
 	};
 	PathType	pathType;
 #if UNITY_EDITOR
+	DialogType	dialogType = DialogType.Save;
 	string		fileType = "";
 #endif
 
@@ -29,12 +36,13 @@ public class FilePathAttribute : PropertyAttribute
 	{
 		this.pathType = _pathType;
 	}
-	public FilePathAttribute(string _fileType,PathType _pathType=PathType.File)
+	public FilePathAttribute(string _fileType, PathType _pathType = PathType.File, DialogType dialogType = DialogType.Save)
 	{
 #if UNITY_EDITOR
 		this.fileType = _fileType;
 #endif
 		this.pathType = _pathType;
+		this.dialogType = dialogType;
 	}
 
 	public bool PathExists(string CurrentFilename)
@@ -47,6 +55,7 @@ public class FilePathAttribute : PropertyAttribute
 			{
 			case PathType.File:
 			case PathType.FileInProject:
+			case PathType.FileInStreamingAssets:
 				return System.IO.File.Exists(Path);
 
 			case PathType.Folder:
@@ -78,19 +87,48 @@ public class FilePathAttribute : PropertyAttribute
 		catch{
 		}
 
+		System.Func<string, string, string> OpenFilePanelInProject = (Title, FileType) =>
+		{
+			if (string.IsNullOrEmpty(Dir))
+				Dir = PopX.IO.Application_ProjectPath;
+			var Path = EditorUtility.OpenFilePanel(Title, Dir, FileType);
+			return PopX.IO.GetProjectRelativePath(Path);
+		};
+
+		System.Func<string, string, string> OpenFilePanelInStreamingAssets = (Title, FileType) =>
+		{
+			if (string.IsNullOrEmpty(Dir))
+				Dir = Application.streamingAssetsPath;
+			var Path = EditorUtility.OpenFilePanel(Title, Dir, FileType);
+			return PopX.IO.GetStreamingAssetsRelativePath(Path);
+		};
+
+
 		if (string.IsNullOrEmpty (Filename))
 			Filename = "Filename";
 
-		if ( pathType == PathType.File )
+		if (pathType == PathType.File && dialogType == DialogType.Save)
 			return EditorUtility.SaveFilePanel(PanelTitle, Dir, Filename, fileType);
 
-		if ( pathType == PathType.FileInProject )
-			return EditorUtility.SaveFilePanelInProject(PanelTitle, Filename, fileType, "" );
+		if (pathType == PathType.File && dialogType == DialogType.Open)
+			return EditorUtility.OpenFilePanel(PanelTitle, Dir, fileType);
 
-		if (pathType == PathType.Folder)
-			return EditorUtility.SaveFolderPanel (PanelTitle, Dir, Filename);
+		if (pathType == PathType.FileInProject && dialogType == DialogType.Save)
+			return EditorUtility.SaveFilePanelInProject(PanelTitle, Filename, fileType, "");
+		
+		if (pathType == PathType.FileInProject && dialogType == DialogType.Open)
+			return OpenFilePanelInProject(PanelTitle, fileType);
+
+		if (pathType == PathType.FileInStreamingAssets && dialogType == DialogType.Open)
+			return OpenFilePanelInStreamingAssets(PanelTitle, fileType);
+
+		if (pathType == PathType.Folder && dialogType == DialogType.Save)
+			return EditorUtility.SaveFolderPanel(PanelTitle, Dir, Filename);
+
+		if (pathType == PathType.Folder && dialogType == DialogType.Open)
+			return EditorUtility.OpenFolderPanel(PanelTitle, Dir, Filename);
 #endif
-		throw new System.Exception ("Unhandled path type " + pathType);
+		throw new System.Exception ("Unhandled path/dialog type " + pathType + "/" + dialogType);
 	}
 }
 

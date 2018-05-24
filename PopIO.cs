@@ -72,15 +72,31 @@ namespace PopX
 			//	gr: this seems to always return an empty string...
 			//UnityEditor.FileUtil.GetProjectRelativePath (Path);
 
+			var PrefixPath = Application_ProjectPath;
 			if (string.IsNullOrEmpty(Path))
 				return Path;
 
-			var ProjectPath = Application_ProjectPath;
+			if (!Path.StartsWith(PrefixPath))
+				throw new System.Exception("Path " + Path + " is not project relative (" + PrefixPath + ")");
 
-			if (!Path.StartsWith(ProjectPath))
-				throw new System.Exception("Path " + Path + " is not project relative (" + ProjectPath + ")");
+			Path = Path.Remove(0, PrefixPath.Length);
+			return Path;
+		}
 
-			Path = Path.Remove(0, ProjectPath.Length);
+		//	throw if not project relative
+		public static string GetStreamingAssetsRelativePath(string Path)
+		{
+			var PrefixPath = Application.streamingAssetsPath;
+			if ( !PrefixPath.EndsWith( ""+System.IO.Path.DirectorySeparatorChar))
+				PrefixPath += System.IO.Path.DirectorySeparatorChar;
+
+			if (string.IsNullOrEmpty(Path))
+				return Path;
+
+			if (!Path.StartsWith(PrefixPath))
+				throw new System.Exception("Path " + Path + " is not project relative (" + PrefixPath + ")");
+
+			Path = Path.Remove(0, PrefixPath.Length);
 			return Path;
 		}
 
