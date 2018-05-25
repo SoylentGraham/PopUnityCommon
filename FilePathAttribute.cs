@@ -26,25 +26,28 @@ public class FilePathAttribute : PropertyAttribute
 		Open,
 		Save,
 	};
-	PathType	pathType;
 #if UNITY_EDITOR
+	PathType	pathType;
 	DialogType	dialogType = DialogType.Save;
 	string		fileType = "";
 #endif
 
 	public FilePathAttribute(PathType _pathType)
 	{
+		#if UNITY_EDITOR
 		this.pathType = _pathType;
+		#endif
 	}
 	public FilePathAttribute(string _fileType, PathType _pathType = PathType.File, DialogType dialogType = DialogType.Save)
 	{
-#if UNITY_EDITOR
+		#if UNITY_EDITOR
 		this.fileType = _fileType;
-#endif
-		this.pathType = _pathType;
 		this.dialogType = dialogType;
+		this.pathType = _pathType;
+		#endif
 	}
 
+	#if UNITY_EDITOR
 	public bool PathExists(string CurrentFilename)
 	{
 		try
@@ -67,10 +70,11 @@ public class FilePathAttribute : PropertyAttribute
 		}
 		return false;
 	}
+#endif
 
+	#if UNITY_EDITOR
 	public string BrowseForPath(string PanelTitle,string CurrentFilename)
 	{
-#if UNITY_EDITOR
 		var Dir = "";
 		try
 		{
@@ -127,9 +131,10 @@ public class FilePathAttribute : PropertyAttribute
 
 		if (pathType == PathType.Folder && dialogType == DialogType.Open)
 			return EditorUtility.OpenFolderPanel(PanelTitle, Dir, Filename);
-#endif
+
 		throw new System.Exception ("Unhandled path/dialog type " + pathType + "/" + dialogType);
 	}
+	#endif
 }
 
 
