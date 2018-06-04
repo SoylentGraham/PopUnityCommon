@@ -66,38 +66,43 @@ namespace PopX
 		}
 #endif
 
-		//	throw if not project relative
-		public static string GetProjectRelativePath(string Path)
+        //  throws if prefix is missing
+        public static string StripPathPrefix(string Path,string PrefixPath)
+        {
+            //  gr: expected windows to provide \ in paths, but they're / so lets convert all
+            Path = Path.Replace('\\', '/');
+            PrefixPath = PrefixPath.Replace('\\', '/');
+            if (!PrefixPath.EndsWith("/"))
+                PrefixPath += "/";
+
+            if (!Path.StartsWith(PrefixPath))
+                throw new System.Exception("Path " + Path + " does not start with (" + PrefixPath + ")");
+
+            Path = Path.Remove(0, PrefixPath.Length);
+            return Path;
+
+        }
+
+        //	throw if not project relative
+        public static string GetProjectRelativePath(string Path)
 		{
 			//	gr: this seems to always return an empty string...
 			//UnityEditor.FileUtil.GetProjectRelativePath (Path);
+            var PrefixPath = Application_ProjectPath;
+            if (string.IsNullOrEmpty(Path))
+                return Path;
 
-			var PrefixPath = Application_ProjectPath;
-			if (string.IsNullOrEmpty(Path))
-				return Path;
-
-			if (!Path.StartsWith(PrefixPath))
-				throw new System.Exception("Path " + Path + " is not project relative (" + PrefixPath + ")");
-
-			Path = Path.Remove(0, PrefixPath.Length);
-			return Path;
+            return StripPathPrefix(Path, PrefixPath);
 		}
 
 		//	throw if not project relative
 		public static string GetStreamingAssetsRelativePath(string Path)
 		{
 			var PrefixPath = Application.streamingAssetsPath;
-			if ( !PrefixPath.EndsWith( ""+System.IO.Path.DirectorySeparatorChar))
-				PrefixPath += System.IO.Path.DirectorySeparatorChar;
+            if (string.IsNullOrEmpty(Path))
+                return Path;
 
-			if (string.IsNullOrEmpty(Path))
-				return Path;
-
-			if (!Path.StartsWith(PrefixPath))
-				throw new System.Exception("Path " + Path + " is not project relative (" + PrefixPath + ")");
-
-			Path = Path.Remove(0, PrefixPath.Length);
-			return Path;
+            return StripPathPrefix(Path, PrefixPath);
 		}
 
 #if UNITY_EDITOR
