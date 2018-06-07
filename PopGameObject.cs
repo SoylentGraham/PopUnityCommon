@@ -105,22 +105,33 @@ public static class PopGameObject
 				break;
 		}
 	}
-
-
+		
+	public static T GetChildMatching<T>(this GameObject go,System.Func<T,bool> Match) where T : Object
+	{
+		var t = go.transform;
+		for (var c = 0; c < t.childCount; c++)
+		{
+			var Child = t.GetChild(c);
+			var ChildComp = Child.GetComponent<T>();
+			if ( !ChildComp )
+				continue;
+			if ( Match( ChildComp) )
+				return ChildComp;
+		}
+		return null;
+	}
 
 	public static GameObject GetChildWithName(this GameObject go,string Name)
 	{
-		GameObject FoundChild = null;
 		System.Func<GameObject,bool> Match = (Child) =>
 		{
 			if (Child.name != Name)
-				return true;
-			
-			FoundChild = Child;
-			return false;
+				return false;
+			return true;
 		};
-		ForEachChild(go,Match);
-		return FoundChild;
+
+		return go.GetChildMatching<GameObject>( Match );
+
 	}
 }
 
