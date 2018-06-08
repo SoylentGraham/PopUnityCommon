@@ -112,7 +112,7 @@ public static class PopGameObject
 		for (var c = 0; c < t.childCount; c++)
 		{
 			var Child = t.GetChild(c);
-			var ChildComp = Child.GetComponent<T>();
+			var ChildComp = (typeof(T) == typeof(GameObject)) ? (Child as T) : Child.GetComponent<T>();
 			if ( !ChildComp )
 				continue;
 			if ( Match( ChildComp) )
