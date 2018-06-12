@@ -92,6 +92,7 @@ public class RangeMinMaxAttributeDrawer : PropertyDrawer
 
 //	add to material property like
 //	[RangeMinMax(0,1)]MyRange("MyRange", VECTOR) = (0,0,0,0)
+#if UNITY_EDITOR
 public class RangeMinMaxDrawer : MaterialPropertyDrawer
 {
 	float ValueMin = 0;
@@ -118,4 +119,4 @@ public class RangeMinMaxDrawer : MaterialPropertyDrawer
 
 	}
 }
-
+#endif
