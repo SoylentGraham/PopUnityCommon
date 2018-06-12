@@ -94,7 +94,12 @@ public static class PopMath {
 
 	public static float Range(float Min, float Max, float Value)
 	{
-		return (Value-Min) / (Max - Min);
+		return (Value - Min) / (Max - Min);
+	}
+
+	public static float Range01Clamped(float Min, float Max, float Value)
+	{
+		return Mathf.Clamp01((Value - Min) / (Max - Min));
 	}
 
 	public static Vector2 Range(Vector2 Min, Vector2 Max, Vector2 Value)
