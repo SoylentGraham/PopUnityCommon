@@ -29,6 +29,12 @@ public class SetAnimationTime : MonoBehaviour {
 
 	public void SetNormalisedTime(float TimeNorm)
 	{
+		//	gr: we get errors with Play() below if this isn't enabled
+		//	Animator is not playing an AnimatorController
+		//	and while it might be nicer to just make it work, unity is throwing out this error we can't suppress
+		if (!this.isActiveAndEnabled)
+			return;
+		
 		try
 		{
 			//	gr: if we were "paused", the state is probably garbage.
