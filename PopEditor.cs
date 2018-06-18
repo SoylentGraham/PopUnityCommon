@@ -147,6 +147,16 @@ namespace PopX
 #endif
 		}
 
+
+#if UNITY_EDITOR
+		[MenuItem("NewChromantics/Editor/Reset Player Prefs")]
+		public static void ResetPlayerPrefs()
+		{
+			PlayerPrefs.DeleteAll();
+		}
+#endif
+
+
 	}
 
 }
