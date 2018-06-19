@@ -91,11 +91,11 @@ namespace PopX
 
 	public static class Geometry 
 	{
-		#if UNITY_EDITOR
 		//	gr: this value is NOT uInt16.MaxValue/65535 as we'd expect. I can't remember why, but it's something deep inside unity. maybe it uses some magic numbers for other things
 		//		so just impose a vaguely similar limit
 		const int Max16BitTriangleIndexes = 65000;
 		
+		#if UNITY_EDITOR
 		[MenuItem("CONTEXT/MeshFilter/Unshare triangle indexes of mesh")]
 		public static void UnshareTrianglesOfMesh (MenuCommand menuCommand) 
 		{
