@@ -618,6 +618,8 @@ namespace PopX
 					}
 				}
 
+				if ( NewPositons != null )
+				{
 					NewPositons.Add (a.position);
 					NewPositons.Add (b.position);
 					NewPositons.Add (c.position);
