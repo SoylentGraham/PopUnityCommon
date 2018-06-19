@@ -92,6 +92,10 @@ namespace PopX
 	public static class Geometry 
 	{
 		#if UNITY_EDITOR
+		//	gr: this value is NOT uInt16.MaxValue/65535 as we'd expect. I can't remember why, but it's something deep inside unity. maybe it uses some magic numbers for other things
+		//		so just impose a vaguely similar limit
+		const int Max16BitTriangleIndexes = 65000;
+		
 		[MenuItem("CONTEXT/MeshFilter/Unshare triangle indexes of mesh")]
 		public static void UnshareTrianglesOfMesh (MenuCommand menuCommand) 
 		{
@@ -189,10 +193,11 @@ namespace PopX
 			var m = mf.sharedMesh;
 
 			var TriangleIndexes = m.triangles;
-			if (TriangleIndexes.Length != m.vertexCount) {
-				var DialogResult = EditorUtility.DisplayDialog ("Error", "Assigning triangle indexes to attributes probably won't work as expected for meshes sharing vertexes.", "Continue", "Cancel");
+			if (TriangleIndexes.Length != m.vertexCount)
+			{
+				var DialogResult = EditorUtility.DisplayDialog("Error", "Assigning triangle indexes to attributes probably won't work as expected for meshes sharing vertexes.", "Continue", "Cancel");
 				if (!DialogResult)
-					throw new System.Exception ("Aborted assignment of UV triangle indexes");
+					throw new System.Exception("Aborted assignment of UV triangle indexes");
 			}
 
 			using (var Progress = new ScopedProgressBar ("Setting UVs")) {
@@ -548,10 +553,20 @@ namespace PopX
 			mesh.UploadMeshData(false);
 		}
 
-
-		public static void UnshareTrianglesOfMesh(ref Mesh mesh)
+		public static void UnshareTrianglesOfMesh(Mesh mesh, System.Action<MeshContents> MakeNewMesh, bool Allow32BitIndexes)
 		{
-			var OldTriangles = mesh.triangles;
+			for (int sm = 0; sm < mesh.subMeshCount;	sm++ )
+			{
+				UnshareTrianglesOfMesh(mesh, sm, MakeNewMesh, Allow32BitIndexes);
+			}
+		}
+			
+		public static void UnshareTrianglesOfMesh(Mesh mesh, int Submesh, System.Action<MeshContents> MakeNewMesh, bool Allow32BitIndexes)
+		{
+#if !UNITY_2017_3_OR_NEWER
+			Allow32BitIndexes = false;
+#endif
+			var OldTriangles = mesh.GetTriangles(Submesh);
 			var OldPositions = mesh.vertices;
 			var OldNormals = mesh.normals;
 			var OldUv1s = mesh.uv;
@@ -572,27 +587,37 @@ namespace PopX
 			bool PromptShown = false;
 			System.Func<Vertex,Vertex,Vertex,bool> PushTriangle = (a, b, c) => {
 
-				//	hit limits
-				if (TriangleIndexes.Count >= 65000 && !PromptShown) {
-					#if UNITY_EDITOR
-					var DialogResult = EditorUtility.DisplayDialogComplex ("Error", "Hit vertex limit with " + (TriangleIndexes.Count / 3) + " triangles (" + TriangleIndexes.Count + " vertexes.", "Stop Here", "Abort", "Overflow");
-					#else
+				if (!Allow32BitIndexes)
+				{
+					//	hit limits
+					if (TriangleIndexes.Count >= Max16BitTriangleIndexes && !PromptShown)
+					{
+#if UNITY_EDITOR
+						var DialogResult = EditorUtility.DisplayDialogComplex("Error", "Hit vertex limit with " + (TriangleIndexes.Count / 3) + " triangles (" + TriangleIndexes.Count + " vertexes.", "Stop Here", "Abort", "Overflow");
+#else
 					var DialogResult = 1;
-					#endif
-					PromptShown = true;
+#endif
+						PromptShown = true;
 
-					//	stop
-					if (DialogResult == 0) {
-						return false;
-					} else if (DialogResult == 2) {	//	continue/overflow
-					} else if (DialogResult == 1) {	//	abort
-						throw new System.Exception ("Aborted export");
-					} else {
-						throw new System.Exception ("unknown dialog result " + DialogResult);
+						//	stop
+						if (DialogResult == 0)
+						{
+							return false;
+						}
+						else if (DialogResult == 2)
+						{   //	continue/overflow
+						}
+						else if (DialogResult == 1)
+						{   //	abort
+							throw new System.Exception("Aborted export");
+						}
+						else
+						{
+							throw new System.Exception("unknown dialog result " + DialogResult);
+						}
 					}
 				}
 
-				if (NewPositons != null) {
 					NewPositons.Add (a.position);
 					NewPositons.Add (b.position);
 					NewPositons.Add (c.position);
@@ -684,18 +709,53 @@ namespace PopX
 
 			var OldBounds = mesh.bounds;
 
-			mesh.Clear ();
-			if ( NewPositons != null )	mesh.SetVertices (NewPositons);
-			if ( NewNormals != null )	mesh.SetNormals (NewNormals);
-			if ( NewUv1s != null )	mesh.SetUVs (0,NewUv1s);
-			if ( NewUv2s != null )	mesh.SetUVs (1,NewUv2s);
-			if ( NewUv3s != null )	mesh.SetUVs (1,NewUv3s);
-			if ( NewColourfs != null )	mesh.SetColors (NewColourfs);
-			if ( NewColour32s != null )	mesh.SetColors (NewColour32s);
-			if ( TriangleIndexes != null )	mesh.SetIndices(TriangleIndexes.ToArray(), MeshTopology.Triangles, 0);
-			mesh.bounds = OldBounds;
-			mesh.UploadMeshData (false);
+			var NewMeshContents = new MeshContents();
+			NewMeshContents.NewPositons = NewPositons;
+			NewMeshContents.NewNormals = NewNormals;
+			NewMeshContents.NewUv1s = NewUv1s;
+			NewMeshContents.NewUv2s = NewUv2s;
+			NewMeshContents.NewUv3s = NewUv3s;
+			NewMeshContents.NewColourfs = NewColourfs;
+			NewMeshContents.NewColour32s = NewColour32s;
+			NewMeshContents.TriangleIndexes = TriangleIndexes;
+			NewMeshContents.OldBounds = OldBounds;
+
+			MakeNewMesh.Invoke(NewMeshContents);
 		}
+
+		public static void UnshareTrianglesOfMesh(ref Mesh mesh)
+		{
+			var Allow32BitIndexes = true;
+			MeshContents NewContents = null;
+			UnshareTrianglesOfMesh(mesh, (contents) =>
+			{
+				NewContents = contents;
+			}, Allow32BitIndexes);
+
+			mesh.Clear();
+
+			if (NewContents.TriangleIndexes.Count >= Max16BitTriangleIndexes)
+			{
+#if UNITY_2017_3_OR_NEWER
+				mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+#else
+				Debug.LogWarning("New mesh has >16bit triangle indexes ("+NewContents.TriangleIndexes.Count+" >= " + Max16BitTriangleIndexes + " ), won't render correctly");
+#endif
+			}
+
+			if (NewContents.NewPositons != null) mesh.SetVertices(NewContents.NewPositons);
+			if (NewContents.NewNormals != null) mesh.SetNormals(NewContents.NewNormals);
+			if (NewContents.NewUv1s != null) mesh.SetUVs(0, NewContents.NewUv1s);
+			if (NewContents.NewUv2s != null) mesh.SetUVs(1, NewContents.NewUv2s);
+			if (NewContents.NewUv3s != null) mesh.SetUVs(1, NewContents.NewUv3s);
+			if (NewContents.NewColourfs != null) mesh.SetColors(NewContents.NewColourfs);
+			if (NewContents.NewColour32s != null) mesh.SetColors(NewContents.NewColour32s);
+			if (NewContents.TriangleIndexes != null) mesh.SetIndices(NewContents.TriangleIndexes.ToArray(), MeshTopology.Triangles, 0);
+			mesh.bounds = NewContents.OldBounds;
+			mesh.UploadMeshData(false);
+
+		}
+
 
 
 		public static void RandomiseTriangleOrder(Mesh mesh)
