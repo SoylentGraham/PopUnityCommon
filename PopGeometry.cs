@@ -374,7 +374,7 @@ namespace PopX
 		}
 #endif
 
-		#if UNITY_EDITOR
+#if UNITY_EDITOR
 		[MenuItem("Assets/Mesh/Recalculate bounds", true)]
 		public static bool MeshRecalculateBounds_Verify()
 		{
@@ -400,6 +400,192 @@ namespace PopX
 			AssetWriter.SaveAsset(m);
 		}
 #endif
+
+#if UNITY_EDITOR
+		const string MergeSubmeshMenuLabel = "Merge Submeshes, uv[1].x=index";
+		[MenuItem("Assets/Mesh/"+MergeSubmeshMenuLabel, true)]
+		public static bool MergeSubmeshMenu_Verify()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			return Meshes.Length > 0;
+		}
+		[MenuItem("Assets/Mesh/"+MergeSubmeshMenuLabel)]
+		public static void MergeSubmeshMenu()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			foreach (var mesh in Meshes)
+			{
+				//	gr: undo is nice, but SOOO slow on meshes
+				//Undo.RecordObject(mesh, MergeSubmeshMenuLabel + " of " + mesh.name);
+				MergeSubmeshes(mesh, 1);
+				//Undo.FlushUndoRecordObjects();
+				AssetWriter.SaveAsset(mesh);
+			}
+		}
+		[MenuItem("CONTEXT/MeshFilter/"+MergeSubmeshMenuLabel)]
+		public static void MergeSubmeshMenu(MenuCommand menuCommand)
+		{
+			var mf = menuCommand.context as MeshFilter;
+			var mesh = mf.sharedMesh;
+
+			//	gr: undo is nice, but SOOO slow on meshes
+			//Undo.RecordObject(mesh, MergeSubmeshMenuLabel + " of " + mesh.name);
+			MergeSubmeshes(mesh, 1);
+			//Undo.FlushUndoRecordObjects();
+			AssetWriter.SaveAsset(mesh);
+		}
+
+
+		[MenuItem("Assets/Mesh/Merge Submeshes 0,1,2,3,4,5,12", true)]
+		public static bool MergeSubmesh_0_1_2_3_4_5_12_Menu_Verify()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			return Meshes.Length > 0;
+		}
+		[MenuItem("Assets/Mesh/Merge Submeshes 0,1,2,3,4,5,12")]
+		public static void MergeSubmesh_0_1_2_3_4_5_12_Menu()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			foreach (var mesh in Meshes)
+			{
+				var NewMesh = ExtractSubmeshesAsMesh(mesh, new int[] { 0, 1, 2, 3, 4, 5, 12 });
+				AssetWriter.SaveAsset(NewMesh);
+			}
+		}
+
+		[MenuItem("Assets/Mesh/Merge Submeshes 6,7,8,9,10,11", true)]
+		public static bool MergeSubmesh_6_7_8_9_10_11_Menu_Verify()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			return Meshes.Length > 0;
+		}
+		[MenuItem("Assets/Mesh/Merge Submeshes 6,7,8,9,10,11")]
+		public static void MergeSubmesh_6_7_8_9_10_11_Menu()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			foreach (var mesh in Meshes)
+			{
+				var NewMesh = ExtractSubmeshesAsMesh(mesh, new int[] { 6, 7, 8, 9, 10, 11 });
+				AssetWriter.SaveAsset(NewMesh);
+			}
+		}
+
+
+		[MenuItem("Assets/Mesh/Merge Submeshes 2,12,10,5,7,11,4", true)]
+		public static bool MergeSubmesh_2_12_10_5_7_11_4_Menu_Verify()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			return Meshes.Length > 0;
+		}
+		[MenuItem("Assets/Mesh/Merge Submeshes 2,12,10,5,7,11,4")]
+		public static void MergeSubmesh_2_12_10_5_7_11_4_Menu()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			foreach (var mesh in Meshes)
+			{
+				var NewMesh = ExtractSubmeshesAsMesh(mesh, new int[] { 2, 12, 10, 5, 7, 11, 4 });
+				AssetWriter.SaveAsset(NewMesh);
+			}
+		}
+
+
+		[MenuItem("Assets/Mesh/Merge Submeshes 8,6,9,3,0,1", true)]
+		public static bool MergeSubmesh_8_6_9_3_0_1_Menu_Verify()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			return Meshes.Length > 0;
+		}
+		[MenuItem("Assets/Mesh/Merge Submeshes 8,6,9,3,0,1")]
+		public static void MergeSubmesh_8_6_9_3_0_1_Menu()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			foreach (var mesh in Meshes)
+			{
+				var NewMesh = ExtractSubmeshesAsMesh(mesh, new int[] { 8, 6, 9, 3, 0, 1 });
+				AssetWriter.SaveAsset(NewMesh);
+			}
+		}
+
+
+
+		[MenuItem("Assets/Mesh/Split Submeshes...", true)]
+		public static bool SplitSubmeshes_Verify()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			return Meshes.Length > 0;
+		}
+		[MenuItem("Assets/Mesh/Split Submeshes...")]
+		public static void SplitSubmeshes()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			foreach (var mesh in Meshes)
+			{
+				for (int s = 0; s < mesh.subMeshCount; s++)
+				{
+					var NewMesh = ExtractSubmeshesAsMesh(mesh, new int[] { s });
+					AssetWriter.SaveAsset(NewMesh);
+				}
+			}
+		}
+#endif
+		public static void MergeSubmeshes(Mesh mesh,int IndexesUvChannel)
+		{
+			//	get a merged triangle list
+			var NewTriangles = new List<int>();
+			var SubmeshIndexes = new Vector2[mesh.vertexCount];
+
+			for (int sm = 0; sm < mesh.subMeshCount;	sm++ )
+			{
+				var OldTriangleCount = NewTriangles.Count;
+				var smtris = mesh.GetTriangles(sm, true);
+				NewTriangles.AddRange(smtris);
+
+				//	set the submesh index of the new batch
+				for (int t = OldTriangleCount; t < NewTriangles.Count; t++)
+				{
+					var vi = NewTriangles[t];
+					SubmeshIndexes[vi].x = sm;
+				}
+			}
+
+			//	remove old triangles
+			mesh.subMeshCount = 1;
+			mesh.SetUVs( IndexesUvChannel, new List<Vector2>(SubmeshIndexes) );
+			mesh.SetTriangles( NewTriangles, 0 );
+			mesh.UploadMeshData(false);
+		}
+
+		public static Mesh ExtractSubmeshesAsMesh(Mesh mesh,int[] SubmeshesToMerge)
+		{
+			//	copy verts, uvs etc, but not triangle sets
+			var MergedMesh = CopyMesh(mesh,false);
+
+			//	just in case we overflow, always set to 32bit format
+			MergedMesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+			/*
+			MergedMesh.subMeshCount = SubmeshesToMerge.Length;
+			for (int i = 0; i < SubmeshesToMerge.Length;	i++)
+			{
+				var sm = SubmeshesToMerge[i];
+				var smtriangles = mesh.GetTriangles(sm, true);
+				MergedMesh.name += "_" + sm;
+				MergedMesh.SetTriangles(smtriangles, i);
+			}
+			*/
+
+			var MergedTriangles = new List<int>();
+			foreach (var sm in SubmeshesToMerge)
+			{
+				var smtriangles = mesh.GetTriangles(sm,true);
+				MergedTriangles.AddRange(smtriangles);
+				MergedMesh.name += "_" + sm;
+			}
+			MergedMesh.subMeshCount = 1;
+			MergedMesh.SetTriangles(MergedTriangles, 0);
+
+			return MergedMesh;
+		}
+
 
 		class Vertex
 		{
@@ -446,12 +632,11 @@ namespace PopX
 			mesh.bounds = MeshBounds;
 		}
 
-		public static Mesh CopyMesh(Mesh OldMesh)
+		public static Mesh CopyMesh(Mesh OldMesh,bool CopyTriangles=true)
 		{
 			var NewMesh = new Mesh();
 			NewMesh.name = OldMesh.name;
 			NewMesh.vertices = NullIfEmpty (OldMesh.vertices);
-			NewMesh.triangles = NullIfEmpty (OldMesh.triangles);
 			NewMesh.uv = NullIfEmpty (OldMesh.uv);
 			NewMesh.uv2 = NullIfEmpty (OldMesh.uv2);
 			NewMesh.uv3 = NullIfEmpty (OldMesh.uv3);
@@ -459,6 +644,21 @@ namespace PopX
 			NewMesh.colors = NullIfEmpty (OldMesh.colors);
 			NewMesh.tangents = NullIfEmpty (OldMesh.tangents);
 			NewMesh.bounds = OldMesh.bounds;
+
+			//	gr: VERY important. submeshes with > 65k triangles causes my mac to reboot if the mesh gets uploaded without 32bit indexes set.
+			//	probably should set this in the right conditions irregardless of old mesh settings
+			NewMesh.indexFormat = OldMesh.indexFormat;
+
+			if (CopyTriangles)
+			{
+				NewMesh.subMeshCount = OldMesh.subMeshCount;
+				for (int sm = 0; sm < OldMesh.subMeshCount; sm++)
+				{
+					var smtriangles = OldMesh.GetTriangles(sm,true);
+					NewMesh.SetTriangles(smtriangles, sm);
+				}
+			}
+
 			return NewMesh;
 		}
 
