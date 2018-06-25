@@ -507,6 +507,40 @@ namespace PopX
 		}
 
 
+		[MenuItem("Assets/Mesh/Merge Submeshes 0,3,4,7,10,11,12", true)]
+		public static bool MergeSubmesh_0_3_4_7_10_11_12_Menu_Verify()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			return Meshes.Length > 0;
+		}
+		[MenuItem("Assets/Mesh/Merge Submeshes 0,3,4,7,10,11,12")]
+		public static void MergeSubmesh_0_3_4_7_10_11_12_Menu()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			foreach (var mesh in Meshes)
+			{
+				var NewMesh = ExtractSubmeshesAsMesh(mesh, new int[] { 0, 3, 4, 7, 10, 11, 12 });
+				AssetWriter.SaveAsset(NewMesh);
+			}
+		}
+
+
+		[MenuItem("Assets/Mesh/Merge Submeshes 1,2,5,6,8,9", true)]
+		public static bool MergeSubmesh_1_2_5_6_8_9_Menu_Verify()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			return Meshes.Length > 0;
+		}
+		[MenuItem("Assets/Mesh/Merge Submeshes 1,2,5,6,8,9")]
+		public static void MergeSubmesh_1_2_5_6_8_9_Menu()
+		{
+			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
+			foreach (var mesh in Meshes)
+			{
+				var NewMesh = ExtractSubmeshesAsMesh(mesh, new int[] { 1, 2, 5, 6, 8, 9 });
+				AssetWriter.SaveAsset(NewMesh);
+			}
+		}
 
 		[MenuItem("Assets/Mesh/Split Submeshes...", true)]
 		public static bool SplitSubmeshes_Verify()
