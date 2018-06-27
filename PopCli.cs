@@ -84,5 +84,14 @@ namespace PopX
 			SubProcess.Dispose();
 			return ExitCode;
 		}
+
+
+		public static bool HasArgument(string Argument)
+		{
+			var Args = System.Environment.GetCommandLineArgs();
+			if (System.Array.IndexOf(Args, Argument) == -1)
+				return false;
+			return true;
+		}
 	}
 }
