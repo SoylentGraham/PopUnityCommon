@@ -15,6 +15,182 @@ public class UnityEvent_ListOfLine3 : UnityEngine.Events.UnityEvent <List<PopX.L
 //	rename namespace to Pop in later refactor
 namespace PopX
 {
+	
+	public class MeshContents
+	{
+		public List<Vector3> NewPositons;
+		public List<Vector3> NewNormals;
+		public List<Vector2> NewUv1s;
+		public List<Vector2> NewUv2s;
+		public List<Vector2> NewUv3s;
+		public List<Color> NewColourfs;
+		public List<Color32> NewColour32s;
+		public List<int> TriangleIndexes;
+		public Bounds OldBounds;
+		public int TriangleCount	{ get { return (TriangleIndexes == null) ? 0 : TriangleIndexes.Count / 3; }}
+
+		void Append<T>(List<T> SourceArray, int[] SourceIndexes,ref List<T> DestArray)
+		{
+			if (SourceArray == null)
+				return;
+			if (DestArray == null)
+				DestArray = new List<T>();
+			DestArray.Add(SourceArray[SourceIndexes[0]]);
+			DestArray.Add(SourceArray[SourceIndexes[1]]);
+			DestArray.Add(SourceArray[SourceIndexes[2]]);
+		}
+
+		public void AddTriangle(MeshContents SourceMesh, int[] Triangle)
+		{
+			Append(SourceMesh.NewPositons, Triangle, ref this.NewPositons);
+			Append(SourceMesh.NewNormals, Triangle, ref this.NewNormals);
+			Append(SourceMesh.NewUv1s, Triangle, ref this.NewUv1s);
+			Append(SourceMesh.NewUv2s, Triangle, ref this.NewUv2s);
+			Append(SourceMesh.NewUv3s, Triangle, ref this.NewUv3s);
+			Append(SourceMesh.NewColourfs, Triangle, ref this.NewColourfs);
+			Append(SourceMesh.NewColour32s, Triangle, ref this.NewColour32s);
+		}
+
+		public void AutoFillTriangleIndexes()
+		{
+			if (this.TriangleIndexes != null)
+				throw new System.Exception("Expected null triangle indexes");
+			this.TriangleIndexes = new List<int>();
+			Pop.AllocIfNull( ref this.NewPositons);
+			for (var i = 0; i < this.NewPositons.Count; i++)
+				this.TriangleIndexes.Add(i);
+		}
+
+		void Remove<T>(List<T> AttributeArray,int[] Indexes)
+		{
+			try
+			{
+				AttributeArray.RemoveAt(Indexes[0]);
+				AttributeArray.RemoveAt(Indexes[1]);
+				AttributeArray.RemoveAt(Indexes[2]);
+			}
+			catch
+			{}
+		}
+
+		public void RemoveTriangles(List<int> RemoveTriangles)
+		{
+			RemoveTriangles.Sort();
+
+			for (int i = RemoveTriangles.Count - 1; i >= 0;	i-- )
+			{
+				var ta = (RemoveTriangles[i] * 3) + 0;
+				var tb = (RemoveTriangles[i] * 3) + 1;
+				var tc = (RemoveTriangles[i] * 3) + 2;
+				TriangleIndexes.RemoveAt(tc);
+				TriangleIndexes.RemoveAt(tb);
+				TriangleIndexes.RemoveAt(ta);
+			}
+			/*
+			Remove(NewPositons, Triangle);
+			Remove(NewNormals, Triangle);
+			Remove(NewUv1s, Triangle);
+			Remove(NewUv2s, Triangle);
+			Remove(NewUv3s, Triangle);
+			Remove(NewColourfs, Triangle);
+			Remove(NewColour32s, Triangle);
+			*/
+		}
+
+		public Mesh CreateMesh(string MeshName)
+		{
+			var m = new Mesh();
+			m.SetVertices( this.NewPositons );
+
+			//	fill optional mesh attribs
+			if (this.NewNormals != null) m.SetNormals(NewNormals);
+			if (this.NewUv1s != null) m.SetUVs(0,NewUv1s);
+			if (this.NewUv2s != null) m.SetUVs(1,NewUv2s);
+			if (this.NewUv3s != null) m.SetUVs(2,NewUv3s);
+			if (this.NewColourfs != null) m.SetColors(NewColourfs);
+			if (this.NewColour32s != null) m.SetColors(NewColour32s);
+
+			m.SetIndices( this.TriangleIndexes.ToArray(), MeshTopology.Triangles, 0);
+			m.bounds = this.OldBounds;
+			return m;
+		}
+
+		bool IsMatchingVertex<T>(List<T> AttributeArray,int IndexA,int IndexB,float MaxDistance,System.Func<T,T,float> GetDistance)
+		{
+			if (AttributeArray == null)
+				return true;
+
+			var AttribA = AttributeArray[IndexA];
+			var AttribB = AttributeArray[IndexB];
+			var Distance = GetDistance( AttribA, AttribB );
+			if (Distance >= MaxDistance)
+				return false;
+			return true;
+		}
+
+		/*
+		 * 
+		static void WeldMeshVertexes(List<Vector3> Positions,List<int> TriangleIndexes)
+		{
+			System.Func<int,int,bool> IsMatchingVertex = (First, Second) => {
+				//var Distance = PopMath.Vector3_DistanceSquared (Positions [First], Positions [Second]);
+				var Distance = Vector3.Distance(Positions [First], Positions [Second]);
+				if (Distance < Mathf.Epsilon)
+					return true;
+				return false;
+			};
+			
+			//	make a new list of "unique" verts
+			var UniqueVerts = new List<Vector3>();
+			//	make a table of the "lower matching index"
+			var NewVertexIndex = new int[Positions.Count];
+			for (int i = 0;	i < NewVertexIndex.Length;	i++)
+				NewVertexIndex [i] = -1;
+			for (int i = 0;	i < Positions.Count;	i++) {
+				for (int low = 0;	low < i;	low++) {
+					//	find a match
+					if ( IsMatchingVertex( i, low ) )
+					{
+						NewVertexIndex [i] = NewVertexIndex[low];
+						break;
+					}
+				}
+				//	im a unique vertex!
+				if (NewVertexIndex [i] == -1) {
+					NewVertexIndex [i] = UniqueVerts.Count;
+					UniqueVerts.Add (Positions [i]);
+				}
+			}
+			//	re-index triangles
+			for (int ti = 0;	ti < TriangleIndexes.Count;	ti++) {
+				if (NewVertexIndex [ti] == -1)
+					throw new System.Exception ("Unexpected un-matched vertex index");
+				TriangleIndexes [ti] = NewVertexIndex [ti];
+			}
+			Positions.Clear ();
+			Positions.AddRange (UniqueVerts);
+		}
+	*/
+
+		public void WeldVertexes()
+		{
+			System.Func<int,int,bool> CompareVertex = (IndexA,IndexB) =>
+			{
+				if (!IsMatchingVertex(this.NewPositons, IndexA, IndexB, Mathf.Epsilon, Vector3.Distance ) )
+					return false;
+				if (!IsMatchingVertex(this.NewUv1s, IndexA, IndexB, Mathf.Epsilon, Vector2.Distance))
+					return false;
+				if (!IsMatchingVertex(this.NewUv2s, IndexA, IndexB, Mathf.Epsilon, Vector2.Distance))
+					return false;
+				if (!IsMatchingVertex(this.NewUv3s, IndexA, IndexB, Mathf.Epsilon, Vector2.Distance))
+					return false;
+				return true;
+			};
+
+			throw new System.Exception("todo: WeldVertexes");
+		}
+	};
+
 
 	//	gr: should this be in Pop.Geometry.Line3 ?
 	[System.Serializable]
