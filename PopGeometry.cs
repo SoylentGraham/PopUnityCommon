@@ -1290,7 +1290,10 @@ namespace PopX
 
 		public static Mesh	GetPrimitiveMesh(PrimitiveType type)
 		{
-			return GameObject.CreatePrimitive( type ).GetComponent<MeshFilter>().sharedMesh;
+			var go = GameObject.CreatePrimitive(type);
+			var m = go.GetComponent<MeshFilter>().sharedMesh;
+			GameObject.DestroyImmediate(go);
+			return m;
 		}
 
 
