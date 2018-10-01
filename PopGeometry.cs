@@ -9,13 +9,13 @@ using UnityEditor;
 
 
 [System.Serializable]
-public class UnityEvent_ListOfLine3 : UnityEngine.Events.UnityEvent <List<PopX.Line3>> {}
+public class UnityEvent_ListOfLine3 : UnityEngine.Events.UnityEvent<List<PopX.Line3>> { }
 
 
 //	rename namespace to Pop in later refactor
 namespace PopX
 {
-	
+
 	public class MeshContents
 	{
 		public List<Vector3> NewPositons;
@@ -27,9 +27,9 @@ namespace PopX
 		public List<Color32> NewColour32s;
 		public List<int> TriangleIndexes;
 		public Bounds OldBounds;
-		public int TriangleCount	{ get { return (TriangleIndexes == null) ? 0 : TriangleIndexes.Count / 3; }}
+		public int TriangleCount { get { return (TriangleIndexes == null) ? 0 : TriangleIndexes.Count / 3; } }
 
-		void Append<T>(List<T> SourceArray, int[] SourceIndexes,ref List<T> DestArray)
+		void Append<T>(List<T> SourceArray, int[] SourceIndexes, ref List<T> DestArray)
 		{
 			if (SourceArray == null)
 				return;
@@ -56,12 +56,12 @@ namespace PopX
 			if (this.TriangleIndexes != null)
 				throw new System.Exception("Expected null triangle indexes");
 			this.TriangleIndexes = new List<int>();
-			Pop.AllocIfNull( ref this.NewPositons);
+			Pop.AllocIfNull(ref this.NewPositons);
 			for (var i = 0; i < this.NewPositons.Count; i++)
 				this.TriangleIndexes.Add(i);
 		}
 
-		void Remove<T>(List<T> AttributeArray,int[] Indexes)
+		void Remove<T>(List<T> AttributeArray, int[] Indexes)
 		{
 			try
 			{
@@ -70,14 +70,14 @@ namespace PopX
 				AttributeArray.RemoveAt(Indexes[2]);
 			}
 			catch
-			{}
+			{ }
 		}
 
 		public void RemoveTriangles(List<int> RemoveTriangles)
 		{
 			RemoveTriangles.Sort();
 
-			for (int i = RemoveTriangles.Count - 1; i >= 0;	i-- )
+			for (int i = RemoveTriangles.Count - 1; i >= 0; i--)
 			{
 				var ta = (RemoveTriangles[i] * 3) + 0;
 				var tb = (RemoveTriangles[i] * 3) + 1;
@@ -100,29 +100,29 @@ namespace PopX
 		public Mesh CreateMesh(string MeshName)
 		{
 			var m = new Mesh();
-			m.SetVertices( this.NewPositons );
+			m.SetVertices(this.NewPositons);
 
 			//	fill optional mesh attribs
 			if (this.NewNormals != null) m.SetNormals(NewNormals);
-			if (this.NewUv1s != null) m.SetUVs(0,NewUv1s);
-			if (this.NewUv2s != null) m.SetUVs(1,NewUv2s);
-			if (this.NewUv3s != null) m.SetUVs(2,NewUv3s);
+			if (this.NewUv1s != null) m.SetUVs(0, NewUv1s);
+			if (this.NewUv2s != null) m.SetUVs(1, NewUv2s);
+			if (this.NewUv3s != null) m.SetUVs(2, NewUv3s);
 			if (this.NewColourfs != null) m.SetColors(NewColourfs);
 			if (this.NewColour32s != null) m.SetColors(NewColour32s);
 
-			m.SetIndices( this.TriangleIndexes.ToArray(), MeshTopology.Triangles, 0);
+			m.SetIndices(this.TriangleIndexes.ToArray(), MeshTopology.Triangles, 0);
 			m.bounds = this.OldBounds;
 			return m;
 		}
 
-		bool IsMatchingVertex<T>(List<T> AttributeArray,int IndexA,int IndexB,float MaxDistance,System.Func<T,T,float> GetDistance)
+		bool IsMatchingVertex<T>(List<T> AttributeArray, int IndexA, int IndexB, float MaxDistance, System.Func<T, T, float> GetDistance)
 		{
 			if (AttributeArray == null)
 				return true;
 
 			var AttribA = AttributeArray[IndexA];
 			var AttribB = AttributeArray[IndexB];
-			var Distance = GetDistance( AttribA, AttribB );
+			var Distance = GetDistance(AttribA, AttribB);
 			if (Distance >= MaxDistance)
 				return false;
 			return true;
@@ -174,18 +174,18 @@ namespace PopX
 
 		public void WeldVertexes()
 		{
-			System.Func<int,int,bool> CompareVertex = (IndexA,IndexB) =>
-			{
-				if (!IsMatchingVertex(this.NewPositons, IndexA, IndexB, Mathf.Epsilon, Vector3.Distance ) )
-					return false;
-				if (!IsMatchingVertex(this.NewUv1s, IndexA, IndexB, Mathf.Epsilon, Vector2.Distance))
-					return false;
-				if (!IsMatchingVertex(this.NewUv2s, IndexA, IndexB, Mathf.Epsilon, Vector2.Distance))
-					return false;
-				if (!IsMatchingVertex(this.NewUv3s, IndexA, IndexB, Mathf.Epsilon, Vector2.Distance))
-					return false;
-				return true;
-			};
+			System.Func<int, int, bool> CompareVertex = (IndexA, IndexB) =>
+			  {
+				  if (!IsMatchingVertex(this.NewPositons, IndexA, IndexB, Mathf.Epsilon, Vector3.Distance))
+					  return false;
+				  if (!IsMatchingVertex(this.NewUv1s, IndexA, IndexB, Mathf.Epsilon, Vector2.Distance))
+					  return false;
+				  if (!IsMatchingVertex(this.NewUv2s, IndexA, IndexB, Mathf.Epsilon, Vector2.Distance))
+					  return false;
+				  if (!IsMatchingVertex(this.NewUv3s, IndexA, IndexB, Mathf.Epsilon, Vector2.Distance))
+					  return false;
+				  return true;
+			  };
 
 			throw new System.Exception("todo: WeldVertexes");
 		}
@@ -196,11 +196,11 @@ namespace PopX
 	[System.Serializable]
 	public struct Line3
 	{
-		public Vector3	Start;
-		public Vector3	End;
+		public Vector3 Start;
+		public Vector3 End;
 
 		public Line3(Vector3 _Start, Vector3 _End)
-		{ 
+		{
 			Start = _Start;
 			End = _End;
 		}
@@ -212,12 +212,12 @@ namespace PopX
 	[System.Serializable]
 	public struct Sphere3
 	{
-		public Vector3	center;
-		public float	radius;
-		public Vector3	radius3	{	get{	return new Vector3( radius, radius, radius );	}}
+		public Vector3 center;
+		public float radius;
+		public Vector3 radius3 { get { return new Vector3(radius, radius, radius); } }
 
 		public Sphere3(Vector3 _Center, float _Radius)
-		{ 
+		{
 			center = _Center;
 			radius = _Radius;
 		}
@@ -226,26 +226,26 @@ namespace PopX
 		public float Distance(Ray ray)
 		{
 			Vector3 Temp;
-			return Distance (ray, out Temp);
+			return Distance(ray, out Temp);
 		}
 
 		//	negative - inside sphere, positive, distance from sphere.
-		public float Distance(Ray ray,out Vector3 NearestPoint)
+		public float Distance(Ray ray, out Vector3 NearestPoint)
 		{
-			NearestPoint = PopMath.NearestToRay3 (this.center, ray);
-			var dist = Vector3.Distance (NearestPoint, this.center);
+			NearestPoint = PopMath.NearestToRay3(this.center, ray);
+			var dist = Vector3.Distance(NearestPoint, this.center);
 			dist -= this.radius;
 			return dist;
 		}
 
-		public bool	IsPointInside(Vector3 Position)
+		public bool IsPointInside(Vector3 Position)
 		{
-			return Distance (Position) <= 0;
+			return Distance(Position) <= 0;
 		}
 
 		public float Distance(Vector3 Position)
 		{
-			var Dist = Vector3.Distance (Position, this.center );
+			var Dist = Vector3.Distance(Position, this.center);
 			Dist -= this.radius;
 			return Dist;
 		}
@@ -265,38 +265,38 @@ namespace PopX
 	};
 
 
-	public static class Geometry 
+	public static class Geometry
 	{
 		//	gr: this value is NOT uInt16.MaxValue/65535 as we'd expect. I can't remember why, but it's something deep inside unity. maybe it uses some magic numbers for other things
 		//		so just impose a vaguely similar limit
 		const int Max16BitTriangleIndexes = 65000;
-		
-		#if UNITY_EDITOR
+
+#if UNITY_EDITOR
 		[MenuItem("CONTEXT/MeshFilter/Unshare triangle indexes of mesh")]
-		public static void UnshareTrianglesOfMesh (MenuCommand menuCommand) 
+		public static void UnshareTrianglesOfMesh(MenuCommand menuCommand)
 		{
 			var mf = menuCommand.context as MeshFilter;
 			var mesh = mf.sharedMesh;
 
 			Undo.RecordObject(mesh, "Unshare Triangles Of Mesh " + mesh.name);
-			UnshareTrianglesOfMesh (ref mesh);
-			Undo.FlushUndoRecordObjects ();
+			UnshareTrianglesOfMesh(ref mesh);
+			Undo.FlushUndoRecordObjects();
 		}
-		#endif
+#endif
 
-		#if UNITY_EDITOR
+#if UNITY_EDITOR
 		[MenuItem("CONTEXT/MeshFilter/Unshare triangle indexes to new mesh...")]
-		public static void UnshareTrianglesToMesh (MenuCommand menuCommand) 
+		public static void UnshareTrianglesToMesh(MenuCommand menuCommand)
 		{
 			var mf = menuCommand.context as MeshFilter;
 			var m = CopyMesh(mf.sharedMesh);
 			m.name = mf.sharedMesh.name + " unshared";
-			UnshareTrianglesOfMesh (ref m);
+			UnshareTrianglesOfMesh(ref m);
 			SaveMesh(m, m.name, true);
 		}
-		#endif
+#endif
 
-		#if UNITY_EDITOR
+#if UNITY_EDITOR
 		[MenuItem("CONTEXT/MeshFilter/Weld vertexes of mesh")]
 		public static void _WeldVertexesOfMesh(MenuCommand menuCommand)
 		{
@@ -321,21 +321,21 @@ namespace PopX
 		}
 #endif
 
-		#if UNITY_EDITOR
+#if UNITY_EDITOR
 		[MenuItem("CONTEXT/MeshFilter/Randomise triangle order")]
-		public static void _RandomiseTriangleOrder (MenuCommand menuCommand) 
+		public static void _RandomiseTriangleOrder(MenuCommand menuCommand)
 		{
 			var mf = menuCommand.context as MeshFilter;
 
 			var mesh = mf.sharedMesh;
 			Undo.RecordObject(mesh, "Randomised triangle order of " + mesh.name);
-			RandomiseTriangleOrder (mesh);
-			Undo.FlushUndoRecordObjects ();
+			RandomiseTriangleOrder(mesh);
+			Undo.FlushUndoRecordObjects();
 		}
-		#endif
+#endif
 
 
-		#if UNITY_EDITOR
+#if UNITY_EDITOR
 		[MenuItem("CONTEXT/MeshFilter/Set mesh UV[3] to vertex index")]
 		public static void _SetMeshUV5ToVertexIndex(MenuCommand menuCommand)
 		{
@@ -346,24 +346,24 @@ namespace PopX
 			SetMeshUVToVertexIndex(mesh, 3);
 			Undo.FlushUndoRecordObjects();
 		}
-		#endif
+#endif
 
-		#if UNITY_EDITOR
+#if UNITY_EDITOR
 		[MenuItem("CONTEXT/MeshFilter/Set mesh UV[0] to triangle index")]
-		public static void _SetMeshUV0ToTriangleIndex (MenuCommand menuCommand) 
+		public static void _SetMeshUV0ToTriangleIndex(MenuCommand menuCommand)
 		{
 			var mf = menuCommand.context as MeshFilter;
 			var mesh = mf.sharedMesh;
 
 			Undo.RecordObject(mesh, "Set mesh UV0 to triangle index of " + mesh.name);
-			SetMeshUVToTriangleIndex (mesh,0);
-			Undo.FlushUndoRecordObjects ();
+			SetMeshUVToTriangleIndex(mesh, 0);
+			Undo.FlushUndoRecordObjects();
 		}
-		#endif
+#endif
 
-		#if UNITY_EDITOR
+#if UNITY_EDITOR
 		[MenuItem("CONTEXT/MeshFilter/Set mesh UV1 to triangle barycentric coords")]
-		public static void SetMeshUV1ToTriangleBarycentricCoords (MenuCommand menuCommand) 
+		public static void SetMeshUV1ToTriangleBarycentricCoords(MenuCommand menuCommand)
 		{
 			var mf = menuCommand.context as MeshFilter;
 			var m = mf.sharedMesh;
@@ -376,64 +376,69 @@ namespace PopX
 					throw new System.Exception("Aborted assignment of UV triangle indexes");
 			}
 
-			using (var Progress = new ScopedProgressBar ("Setting UVs")) {
+			using (var Progress = new ScopedProgressBar("Setting UVs"))
+			{
 				var Uvs = new Vector3[m.vertexCount];
 				{
-					var barya = new Vector3 (1,0,0);
-					var baryb = new Vector3 (0,1,0);
-					var baryc = new Vector3 (0,0,1);
-					for (int t = 0;	t < TriangleIndexes.Length;	t += 3) {
+					var barya = new Vector3(1, 0, 0);
+					var baryb = new Vector3(0, 1, 0);
+					var baryc = new Vector3(0, 0, 1);
+					for (int t = 0; t < TriangleIndexes.Length; t += 3)
+					{
 
-						Progress.SetProgress ("Setting UV of triangle", t / 3, TriangleIndexes.Length / 3, 100);
+						Progress.SetProgress("Setting UV of triangle", t / 3, TriangleIndexes.Length / 3, 100);
 
-						Uvs [TriangleIndexes [t + 0]] = barya;
-						Uvs [TriangleIndexes [t + 1]] = baryb;
-						Uvs [TriangleIndexes [t + 2]] = baryc;
+						Uvs[TriangleIndexes[t + 0]] = barya;
+						Uvs[TriangleIndexes[t + 1]] = baryb;
+						Uvs[TriangleIndexes[t + 2]] = baryc;
 					}
 				}
-				m.SetUVs( 1, new List<Vector3>(Uvs) );
-				m.UploadMeshData (true);
-				AssetDatabase.SaveAssets ();
+				m.SetUVs(1, new List<Vector3>(Uvs));
+				m.UploadMeshData(true);
+				AssetDatabase.SaveAssets();
 			}
 		}
-		#endif
+#endif
 
 
-		#if UNITY_EDITOR
+#if UNITY_EDITOR
 		[MenuItem("CONTEXT/MeshFilter/Set mesh UV2 to random per-triangle")]
-		public static void SetMeshUV2ToRandomPerTriangle (MenuCommand menuCommand) 
+		public static void SetMeshUV2ToRandomPerTriangle(MenuCommand menuCommand)
 		{
 			var mf = menuCommand.context as MeshFilter;
 			var m = mf.sharedMesh;
 
 			var TriangleIndexes = m.triangles;
-			if (TriangleIndexes.Length != m.vertexCount) {
-				var DialogResult = EditorUtility.DisplayDialog ("Error", "Assigning triangle indexes to attributes probably won't work as expected for meshes sharing vertexes.", "Continue", "Cancel");
+			if (TriangleIndexes.Length != m.vertexCount)
+			{
+				var DialogResult = EditorUtility.DisplayDialog("Error", "Assigning triangle indexes to attributes probably won't work as expected for meshes sharing vertexes.", "Continue", "Cancel");
 				if (!DialogResult)
-					throw new System.Exception ("Aborted assignment of UV triangle indexes");
+					throw new System.Exception("Aborted assignment of UV triangle indexes");
 			}
 
-			using (var Progress = new ScopedProgressBar ("Setting UVs")) {
+			using (var Progress = new ScopedProgressBar("Setting UVs"))
+			{
 				var Uvs = new Vector3[m.vertexCount];
 				{
-					var random3 = new Vector3 (0,0,0);
-					for (int t = 0;	t < TriangleIndexes.Length;	t += 3) {
+					var random3 = new Vector3(0, 0, 0);
+					for (int t = 0; t < TriangleIndexes.Length; t += 3)
+					{
 
-						Progress.SetProgress ("Setting UV of triangle", t / 3, TriangleIndexes.Length / 3, 100);
+						Progress.SetProgress("Setting UV of triangle", t / 3, TriangleIndexes.Length / 3, 100);
 
 						float tTime = t / (float)TriangleIndexes.Length;
-						random3.x = Mathf.PerlinNoise (tTime, 0.0f);
-						random3.y = Mathf.PerlinNoise (0.0f, tTime);
-						random3.z = Random.Range (0.0f, 1.0f);
+						random3.x = Mathf.PerlinNoise(tTime, 0.0f);
+						random3.y = Mathf.PerlinNoise(0.0f, tTime);
+						random3.z = Random.Range(0.0f, 1.0f);
 
-						Uvs [TriangleIndexes [t + 0]] = random3;
-						Uvs [TriangleIndexes [t + 1]] = random3;
-						Uvs [TriangleIndexes [t + 2]] = random3;
+						Uvs[TriangleIndexes[t + 0]] = random3;
+						Uvs[TriangleIndexes[t + 1]] = random3;
+						Uvs[TriangleIndexes[t + 2]] = random3;
 					}
 				}
-				m.SetUVs( 2, new List<Vector3>(Uvs) );
-				m.UploadMeshData (true);
-				AssetDatabase.SaveAssets ();
+				m.SetUVs(2, new List<Vector3>(Uvs));
+				m.UploadMeshData(true);
+				AssetDatabase.SaveAssets();
 			}
 		}
 #endif
@@ -477,7 +482,7 @@ namespace PopX
 #endif
 
 #if UNITY_EDITOR
-		[MenuItem("CONTEXT/BoxCollider/Set Box Collider to Mesh Bounds",true)]
+		[MenuItem("CONTEXT/BoxCollider/Set Box Collider to Mesh Bounds", true)]
 		public static bool SetBoxColliderToMeshBounds2_Verify(MenuCommand menuCommand)
 		{
 			var bc = menuCommand.context as BoxCollider;
@@ -579,13 +584,13 @@ namespace PopX
 
 #if UNITY_EDITOR
 		const string MergeSubmeshMenuLabel = "Merge Submeshes, uv[1].x=index";
-		[MenuItem("Assets/Mesh/"+MergeSubmeshMenuLabel, true)]
+		[MenuItem("Assets/Mesh/" + MergeSubmeshMenuLabel, true)]
 		public static bool MergeSubmeshMenu_Verify()
 		{
 			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
 			return Meshes.Length > 0;
 		}
-		[MenuItem("Assets/Mesh/"+MergeSubmeshMenuLabel)]
+		[MenuItem("Assets/Mesh/" + MergeSubmeshMenuLabel)]
 		public static void MergeSubmeshMenu()
 		{
 			var Meshes = Selection.GetFiltered<Mesh>(SelectionMode.Assets);
@@ -598,7 +603,7 @@ namespace PopX
 				AssetWriter.SaveAsset(mesh);
 			}
 		}
-		[MenuItem("CONTEXT/MeshFilter/"+MergeSubmeshMenuLabel)]
+		[MenuItem("CONTEXT/MeshFilter/" + MergeSubmeshMenuLabel)]
 		public static void MergeSubmeshMenu(MenuCommand menuCommand)
 		{
 			var mf = menuCommand.context as MeshFilter;
@@ -738,16 +743,20 @@ namespace PopX
 			}
 		}
 #endif
-		public static void MergeSubmeshes(Mesh mesh,int IndexesUvChannel)
+		public static void MergeSubmeshes(Mesh mesh, int IndexesUvChannel)
 		{
 			//	get a merged triangle list
 			var NewTriangles = new List<int>();
 			var SubmeshIndexes = new Vector2[mesh.vertexCount];
 
-			for (int sm = 0; sm < mesh.subMeshCount;	sm++ )
+			for (int sm = 0; sm < mesh.subMeshCount; sm++)
 			{
 				var OldTriangleCount = NewTriangles.Count;
+#if UNITY_2018_0_OR_NEWER
 				var smtris = mesh.GetTriangles(sm, true);
+#else
+				var smtris = mesh.GetTriangles(sm);
+#endif
 				NewTriangles.AddRange(smtris);
 
 				//	set the submesh index of the new batch
@@ -760,18 +769,20 @@ namespace PopX
 
 			//	remove old triangles
 			mesh.subMeshCount = 1;
-			mesh.SetUVs( IndexesUvChannel, new List<Vector2>(SubmeshIndexes) );
-			mesh.SetTriangles( NewTriangles, 0 );
+			mesh.SetUVs(IndexesUvChannel, new List<Vector2>(SubmeshIndexes));
+			mesh.SetTriangles(NewTriangles, 0);
 			mesh.UploadMeshData(false);
 		}
 
-		public static Mesh ExtractSubmeshesAsMesh(Mesh mesh,int[] SubmeshesToMerge)
+		public static Mesh ExtractSubmeshesAsMesh(Mesh mesh, int[] SubmeshesToMerge)
 		{
 			//	copy verts, uvs etc, but not triangle sets
-			var MergedMesh = CopyMesh(mesh,false);
+			var MergedMesh = CopyMesh(mesh, false);
 
+#if UNITY_2018_OR_NEWER
 			//	just in case we overflow, always set to 32bit format
 			MergedMesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+#endif
 			/*
 			MergedMesh.subMeshCount = SubmeshesToMerge.Length;
 			for (int i = 0; i < SubmeshesToMerge.Length;	i++)
@@ -786,7 +797,11 @@ namespace PopX
 			var MergedTriangles = new List<int>();
 			foreach (var sm in SubmeshesToMerge)
 			{
+#if UNITY_2018_OR_NEWER
 				var smtriangles = mesh.GetTriangles(sm,true);
+#else
+				var smtriangles = mesh.GetTriangles(sm);
+#endif
 				MergedTriangles.AddRange(smtriangles);
 				MergedMesh.name += "_" + sm;
 			}
@@ -799,23 +814,23 @@ namespace PopX
 
 		class Vertex
 		{
-			public Vector3	position;
-			public Vector3	normal;
-			public Vector2	uv1;
-			public Vector2	uv2;
-			public Vector2	uv3;
-			public Color	colourf;
-			public Color32	colour32;
+			public Vector3 position;
+			public Vector3 normal;
+			public Vector2 uv1;
+			public Vector2 uv2;
+			public Vector2 uv3;
+			public Color colourf;
+			public Color32 colour32;
 		};
 
 
-		static void SafeSet<T>(ref T Value,T[] Array,int ArrayIndex)
+		static void SafeSet<T>(ref T Value, T[] Array, int ArrayIndex)
 		{
-			if ( Array == null )
+			if (Array == null)
 				return;
 			if (Array.Length == 0)
 				return;
-			Value = Array [ArrayIndex];
+			Value = Array[ArrayIndex];
 		}
 
 		static T[] NullIfEmpty<T>(T[] Array)
@@ -842,29 +857,34 @@ namespace PopX
 			mesh.bounds = MeshBounds;
 		}
 
-		public static Mesh CopyMesh(Mesh OldMesh,bool CopyTriangles=true)
+		public static Mesh CopyMesh(Mesh OldMesh, bool CopyTriangles = true)
 		{
 			var NewMesh = new Mesh();
 			NewMesh.name = OldMesh.name;
-			NewMesh.vertices = NullIfEmpty (OldMesh.vertices);
-			NewMesh.uv = NullIfEmpty (OldMesh.uv);
-			NewMesh.uv2 = NullIfEmpty (OldMesh.uv2);
-			NewMesh.uv3 = NullIfEmpty (OldMesh.uv3);
-			NewMesh.normals = NullIfEmpty (OldMesh.normals);
-			NewMesh.colors = NullIfEmpty (OldMesh.colors);
-			NewMesh.tangents = NullIfEmpty (OldMesh.tangents);
+			NewMesh.vertices = NullIfEmpty(OldMesh.vertices);
+			NewMesh.uv = NullIfEmpty(OldMesh.uv);
+			NewMesh.uv2 = NullIfEmpty(OldMesh.uv2);
+			NewMesh.uv3 = NullIfEmpty(OldMesh.uv3);
+			NewMesh.normals = NullIfEmpty(OldMesh.normals);
+			NewMesh.colors = NullIfEmpty(OldMesh.colors);
+			NewMesh.tangents = NullIfEmpty(OldMesh.tangents);
 			NewMesh.bounds = OldMesh.bounds;
 
 			//	gr: VERY important. submeshes with > 65k triangles causes my mac to reboot if the mesh gets uploaded without 32bit indexes set.
 			//	probably should set this in the right conditions irregardless of old mesh settings
+#if UNITY_2018_OR_NEWER
 			NewMesh.indexFormat = OldMesh.indexFormat;
-
+#endif
 			if (CopyTriangles)
 			{
 				NewMesh.subMeshCount = OldMesh.subMeshCount;
 				for (int sm = 0; sm < OldMesh.subMeshCount; sm++)
 				{
+#if UNITY_2018_OR_NEWER
 					var smtriangles = OldMesh.GetTriangles(sm,true);
+#else
+					var smtriangles = OldMesh.GetTriangles(sm);
+#endif
 					NewMesh.SetTriangles(smtriangles, sm);
 				}
 			}
@@ -1202,13 +1222,13 @@ namespace PopX
 			var m = mesh;
 
 			var TriangleIndexes = m.triangles;
-			#if UNITY_EDITOR
+#if UNITY_EDITOR
 			if (TriangleIndexes.Length != m.vertexCount) {
 				var DialogResult = EditorUtility.DisplayDialog ("Error", "Assigning triangle indexes to attributes probably won't work as expected for meshes sharing vertexes.", "Continue", "Cancel");
 				if (!DialogResult)
 					throw new System.Exception ("Aborted assignment of UV triangle indexes");
 			}
-			#endif
+#endif
 
 			using (var Progress = new ScopedProgressBar ("Setting UVs")) {
 				var Uvs = new Vector2[m.vertexCount];
@@ -1229,9 +1249,9 @@ namespace PopX
 				}
 				m.SetUVs(UvChannel, new List<Vector2>(Uvs));
 				m.UploadMeshData (false);
-				#if UNTIY_EDITOR
+#if UNTIY_EDITOR
 				AssetDatabase.SaveAssets ();
-				#endif
+#endif
 			}
 		}
 
@@ -1264,7 +1284,7 @@ namespace PopX
 		}
 
 
-		#if UNITY_EDITOR
+#if UNITY_EDITOR
 		public static void SaveMesh (Mesh mesh, string name, bool makeNewInstance)
 		{
 			string path = AssetDatabase.GetAssetPath (mesh);
@@ -1285,7 +1305,7 @@ namespace PopX
 			AssetDatabase.CreateAsset(meshToSave, path);
 			AssetDatabase.SaveAssets();
 		}
-		#endif
+#endif
 
 
 		public static Mesh	GetPrimitiveMesh(PrimitiveType type)
