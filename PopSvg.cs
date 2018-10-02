@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -28,7 +28,35 @@ namespace PopX
 
 		public Mesh CreateMesh()
 		{
-			throw new System.Exception("todo");
+			var Mesh = new PopX.MeshContents();
+
+			//	make a transform to swap x/y and scale to rect
+			//var TransformXyToXz = new Matrix4x4(new Vector4(1, 0, 0, 0), new Vector4(0, 0, 1, 0), new Vector4(0, 1, 0, 0), new Vector4(0, 0, 0, 1));
+			var TransformXyToXz = Matrix4x4.identity;
+			var TransformToRect = Matrix4x4.identity;
+
+			if ( ViewBox.HasValue )
+			{
+				var Transpose = new Vector3(-ViewBox.Value.x, -ViewBox.Value.y, 0);
+				var Scale = new Vector3( 1.0f / ViewBox.Value.width, 1.0f/ViewBox.Value.height, 0);
+				TransformToRect *= Matrix4x4.TRS(Transpose, Quaternion.identity, Scale);
+			}
+
+			var Transform = TransformToRect * TransformXyToXz;
+
+			System.Action<Vector2,Vector2,Vector2> AddTriangle2 = (a2,b2,c2) =>
+			{
+				var a3 = Transform * a2.xy01();
+				var b3 = Transform * b2.xy01();
+				var c3 = Transform * c2.xy01();
+				Mesh.AddTriangle(a3, b3, c3);
+			};
+			AddTriangle2( new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1) );
+
+			//	make triangles
+			var m = Mesh.CreateMesh(this.Title);
+			m.UploadMeshData(false);
+			return m;
 		}
 	}
 
