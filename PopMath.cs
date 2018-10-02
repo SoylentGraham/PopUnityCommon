@@ -48,6 +48,165 @@ namespace PopX
 			return Rotation;
 		}
 
+
+		//	fast alternative to parse.Floats
+		//	needs more error checking
+		static public float ParseFloat(string FloatStr)
+		{
+			if (FloatStr == null || FloatStr.Length == 0)
+				throw new System.Exception("Empty string");
+
+			float Major = 0;
+			float Minor = 0;
+			int Pos = 0;
+			float Modifier = 1.0f;
+
+			if (FloatStr[0] == '-')
+			{
+				Modifier = -1.0f;
+				Pos++;
+			}
+
+			//	parse major
+			while (Pos < FloatStr.Length)
+			{
+				if (FloatStr[Pos] == '.')
+				{
+					Pos++;
+					break;
+				}
+
+				//	throw if non-number
+				var CharNumber = FloatStr[Pos] - '0';
+				if (CharNumber < 0 || CharNumber > 9)
+					throw new System.Exception("Nan string");
+
+				Major *= 10;
+				Major += CharNumber;
+				Pos++;
+			}
+
+			//	parse minor
+			float MinorScale = 1.0f / 10.0f;
+			while (Pos < FloatStr.Length)
+			{
+				if (FloatStr[Pos] == 'f')
+				{
+					Pos++;
+					continue;
+				}
+
+				//	hacky handling of exponential
+				if (FloatStr[Pos] == 'e')
+					if (FloatStr[Pos + 1] == '-')
+						break;
+
+				//	throw if non-number
+				var CharNumber = FloatStr[Pos] - '0';
+				if (CharNumber < 0 || CharNumber > 9)
+					throw new System.Exception("Nan string");
+
+				Minor += CharNumber * MinorScale;
+				MinorScale /= 10.0f;
+				Pos++;
+			}
+
+			return Modifier * (Major + Minor);
+		}
+	
+		static public List<float> ParseFloats(string FloatString)
+		{
+			var Floats = new List<float>();
+			ParseFloats(FloatString, (f) => { Floats.Add(f); });
+			return Floats;
+		}
+
+		static public void ParseFloats(string FloatString,System.Action<float> Enum)
+		{
+			var FloatStrings = FloatString.Split(new char[] { ' ', ',' }, System.StringSplitOptions.RemoveEmptyEntries);
+			if (FloatStrings == null || FloatStrings.Length == 0)
+				FloatStrings = new string[1] { FloatString };
+
+			//	let errors throw
+			foreach (var s in FloatStrings)
+			{
+				var f = ParseFloat(s);
+				Enum(f);
+			}
+		}
+
+		static public Vector2 ParseVector2(string FloatString)
+		{
+			const int ExpectedFloats = 2;
+			var Floats = ParseFloats(FloatString);
+			if (Floats.Count != ExpectedFloats)
+				Debug.LogWarning("Parsed float string but got " + Floats.Count + " expected " + ExpectedFloats);
+			var Vector = new Vector2();
+			Vector.x = Floats[0];
+			Vector.y = Floats[1];
+			return Vector;
+		}
+
+
+		static public Vector3 ParseVector3(string FloatString)
+		{
+			const int ExpectedFloats = 3;
+			var Floats = ParseFloats(FloatString);
+			if (Floats.Count != ExpectedFloats)
+				Debug.LogWarning("Parsed float string but got " + Floats.Count + " expected " + ExpectedFloats);
+			var Vector = new Vector3();
+			Vector.x = Floats[0];
+			Vector.y = Floats[1];
+			Vector.z = Floats[2];
+			return Vector;
+
+		}
+
+		static public Vector4 ParseVector4(string FloatString)
+		{
+			const int ExpectedFloats = 4;
+			var Floats = ParseFloats(FloatString);
+			if (Floats.Count != ExpectedFloats)
+				Debug.LogWarning("Parsed float string but got " + Floats.Count + " expected " + ExpectedFloats);
+			var Vector = new Vector4();
+			Vector.x = Floats[0];
+			Vector.y = Floats[1];
+			Vector.z = Floats[2];
+			Vector.w = Floats[3];
+			return Vector;
+		}
+
+		//	expecting X, Y, Width, Height
+		static public Rect ParseRect_xywh(string FloatString)
+		{
+			const int ExpectedFloats = 4;
+			var Floats = ParseFloats(FloatString);
+			if (Floats.Count != ExpectedFloats)
+				Debug.LogWarning("Parsed float string but got " + Floats.Count + " expected " + ExpectedFloats);
+			var Vector = new Rect();
+			Vector.x = Floats[0];
+			Vector.y = Floats[1];
+			Vector.width = Floats[2];
+			Vector.height = Floats[3];
+			return Vector;
+		}
+
+		//	expecting MinX, MinY, MaxX, MaxY
+		static public Rect ParseRect_MinMax(string FloatString)
+		{
+			const int ExpectedFloats = 4;
+			var Floats = ParseFloats(FloatString);
+			if (Floats.Count != ExpectedFloats)
+				Debug.LogWarning("Parsed float string but got " + Floats.Count + " expected " + ExpectedFloats);
+			var Vector = new Rect();
+			Vector.xMin = Floats[0];
+			Vector.yMin = Floats[1];
+			Vector.xMax = Floats[2];
+			Vector.yMax = Floats[3];
+			return Vector;
+
+		}
+
 	}
 }
 
@@ -433,4 +592,3 @@ public class Pop
 
 
 }
-

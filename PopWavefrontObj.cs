@@ -215,7 +215,7 @@ map_Kd Mesh.jpg
 			{
 				try
 				{
-					var Positions = FastParse.Floats(PositionsString);
+					var Positions = PopX.Math.ParseFloats(PositionsString);
 					var xyz = new Vector3(Positions[0], Positions[1], Positions[2]);
 
 					//	todo: handle w
