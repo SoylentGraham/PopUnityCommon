@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -53,7 +53,7 @@ namespace PopX
 					var Contents = System.IO.File.ReadAllText(Filename);
 					var Importer = new SvgImporter(Contents);
 					var Mesh = Importer.Svg.CreateMesh();
-					AssetDatabase.CreateAsset(Mesh, Filename + ".mesh");
+					AssetDatabase.CreateAsset(Mesh, Filename + ".asset");
 					AssetDatabase.SaveAssets();
 				}
 				catch(System.Exception e)
