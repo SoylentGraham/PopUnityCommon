@@ -26,7 +26,7 @@ namespace PopX
 		public List<Color> NewColourfs;
 		public List<Color32> NewColour32s;
 		public List<int> TriangleIndexes;
-		public Bounds OldBounds;
+		public Bounds? OldBounds = null;
 		public int TriangleCount { get { return (TriangleIndexes == null) ? 0 : TriangleIndexes.Count / 3; } }
 
 		void Append<T>(List<T> SourceArray, int[] SourceIndexes, ref List<T> DestArray)
@@ -38,6 +38,14 @@ namespace PopX
 			DestArray.Add(SourceArray[SourceIndexes[0]]);
 			DestArray.Add(SourceArray[SourceIndexes[1]]);
 			DestArray.Add(SourceArray[SourceIndexes[2]]);
+		}
+
+		public void AddTriangle(Vector3 a,Vector3 b,Vector3 c)
+		{
+			Pop.AllocIfNull(ref NewPositons);
+			NewPositons.Add(a);
+			NewPositons.Add(b);
+			NewPositons.Add(c);
 		}
 
 		public void AddTriangle(MeshContents SourceMesh, int[] Triangle)
@@ -100,6 +108,7 @@ namespace PopX
 		public Mesh CreateMesh(string MeshName)
 		{
 			var m = new Mesh();
+			AutoFillTriangleIndexes();
 			m.SetVertices(this.NewPositons);
 
 			//	fill optional mesh attribs
@@ -111,7 +120,10 @@ namespace PopX
 			if (this.NewColour32s != null) m.SetColors(NewColour32s);
 
 			m.SetIndices(this.TriangleIndexes.ToArray(), MeshTopology.Triangles, 0);
-			m.bounds = this.OldBounds;
+			if (OldBounds.HasValue)
+				m.bounds = this.OldBounds.Value;
+			else
+				m.RecalculateBounds();
 			return m;
 		}
 
@@ -1183,7 +1195,9 @@ namespace PopX
 			if (NewContents.NewColourfs != null) mesh.SetColors(NewContents.NewColourfs);
 			if (NewContents.NewColour32s != null) mesh.SetColors(NewContents.NewColour32s);
 			if (NewContents.TriangleIndexes != null) mesh.SetIndices(NewContents.TriangleIndexes.ToArray(), MeshTopology.Triangles, 0);
-			mesh.bounds = NewContents.OldBounds;
+
+			if ( NewContents.OldBounds.HasValue )
+				mesh.bounds = NewContents.OldBounds.Value;
 			mesh.UploadMeshData(false);
 
 		}
