@@ -13,17 +13,18 @@ namespace PopX
 		public class Contour
 		{
 			//	todo: winding, style etc
-			public List<Vector2> Points;
+			public List<Vector2> Points = new List<Vector2>();
 		}
 
 		public class Group
 		{
-			public List<Contour> Polygons;
-			public List<Group> Children;
+			public List<Contour> Contours = new List<Contour>();
+			public List<Group> Children = new List<Group>();
 		};
 
 		public string Title;
 		public List<Group> Groups = new List<Group>();
+		public Rect? ViewBox = null;	//	the "page". Normalise coords to this
 
 		public Mesh CreateMesh()
 		{
@@ -64,16 +65,27 @@ namespace PopX
 
 		Svg Svg;
 		Dictionary<string, System.Action<Dictionary<string, string>, string,bool, bool>> TagToParserFunc;
+		List<Svg.Group> CurrentGroupStack;
+
+		//	magic strings
+		const string Tag_Svg = "svg";
+		const string Attrib_Svg_ViewBox = "viewBox";
+		const string Tag_Group = "g";
+		const string Tag_Definitions = "defs";
+		const string Tag_Style = "style";
+		const string Tag_Title = "title";
+		const string Tag_Polyline = "polyline";
+		const string Attrib_Polyline_Points = "points";
 
 		SvgImporter(string SvgContents)
 		{
 			Pop.AllocIfNull(ref TagToParserFunc);
-			TagToParserFunc["svg"] = ParseTag_Svg;
-			TagToParserFunc["g"] = ParseTag_Group;
-			TagToParserFunc["defs"] = ParseTag_Defs;
-			TagToParserFunc["style"] = ParseTag_Style;
-			TagToParserFunc["title"] = ParseTag_Title;
-			TagToParserFunc["polyline"] = ParseTag_Polyline;
+			TagToParserFunc[Tag_Svg] = ParseTag_Svg;
+			TagToParserFunc[Tag_Group] = ParseTag_Group;
+			TagToParserFunc[Tag_Definitions] = ParseTag_Defs;
+			TagToParserFunc[Tag_Style] = ParseTag_Style;
+			TagToParserFunc[Tag_Title] = ParseTag_Title;
+			TagToParserFunc[Tag_Polyline] = ParseTag_Polyline;
 
 			/*
 			< svg xmlns = "http://www.w3.org/2000/svg" viewBox = "0 0 14.25 22.84" >
@@ -108,15 +120,13 @@ namespace PopX
 				var EndTag = !string.IsNullOrEmpty(match.Groups[1].Captures[0].ToString());
 				var Name = match.Groups[2].Captures[0];
 				var Attribs = match.Groups[3].Captures[0].Value;
-				var LoneTag = Attribs.EndsWith("/");
+				var LoneTag = string.IsNullOrEmpty(Attribs) ? false : Attribs[Attribs.Length - 1] == '/';
 				Attribs = Attribs.TrimEnd(new char[]{'/'});
 				var Contents = match.Groups[4].Captures[0].ToString();
 
 				ParseTag(Name.ToString(), Attribs.ToString(), Contents, EndTag, LoneTag);
 			}
 			while (Iterations++ < 5000);
-
-			throw new System.Exception("todo");
 		}
 
 		Dictionary<string,string> ParseAttribs(string AttribsString)
@@ -172,6 +182,8 @@ namespace PopX
 			return Attribs;
 		}
 
+
+
 		void ParseTag_Svg(Dictionary<string, string> Attribs,string TagContents,bool EndTag, bool LoneTag)
 		{
 			if (EndTag)
@@ -179,12 +191,41 @@ namespace PopX
 			if (Svg != null)
 				throw new System.Exception("SVG already allocated (duplicate <svg> tag?)");
 			Svg = new Svg();
+
+			if (Attribs.ContainsKey(Attrib_Svg_ViewBox))
+			{
+				var ViewBoxStr = Attribs[Attrib_Svg_ViewBox];
+				Svg.ViewBox = PopX.Math.ParseRect_xywh(ViewBoxStr);
+			}
 		}
 
 		void ParseTag_Group(Dictionary<string, string> Attribs, string TagContents, bool EndTag, bool LoneTag)
 		{
-			if (EndTag)
+			Pop.AllocIfNull(ref CurrentGroupStack);
+			if (!EndTag)
+			{
+				var NewGroup = new Svg.Group();
+
+				//	add to tree
+				if (CurrentGroupStack.Count == 0)
+				{
+					this.Svg.Groups.Add(NewGroup);
+				}
+				else
+				{
+					var CurrentGroup = GetCurrentGroup();
+					CurrentGroup.Children.Add( NewGroup );
+				}
+
+				//	add to stack
+				CurrentGroupStack.Add(NewGroup);
+			}
+
+			if ( LoneTag || EndTag )
+			{
+				CurrentGroupStack.RemoveAt(CurrentGroupStack.Count - 1);
 				return;
+			}
 		}
 
 		void ParseTag_Defs(Dictionary<string, string> Attribs, string TagContents, bool EndTag, bool LoneTag)
@@ -197,22 +238,43 @@ namespace PopX
 		{
 			Svg.Title = TagContents;
 		}
+
 		void ParseTag_Polyline(Dictionary<string, string> Attribs, string TagContents, bool EndTag, bool LoneTag)
 		{
-			Debug.Log("Poly line!");
+			var PointsStr = Attribs[Attrib_Polyline_Points];
+			var Points = PointsStr.Split(' ');
+			if ((Points.Length % 2) != 0)
+				throw new System.Exception("PolyLine points has odd number of " + Attrib_Polyline_Points + "'s: " + PointsStr);
+			var Group = GetCurrentGroup();
+			var Contour = new Svg.Contour();
+			for (var i = 0; i < Points.Length; i += 2)
+			{
+				var x = float.Parse(Points[i + 0]);
+				var y = float.Parse(Points[i + 1]);
+				Contour.Points.Add(new Vector2(x, y));
+			}
+			Group.Contours.Add(Contour);
 		}
 
 		void ParseTag(string Tag,string AttribsString, string TagContents,bool EndTag,bool LoneTag)
 		{
 			var Attribs = ParseAttribs(AttribsString);
 
-			TagToParserFunc[Tag](Attribs, TagContents, EndTag, LoneTag);
-			/*
-			if (EndTag)
-				Debug.Log("ENDTAG/" + Tag);
-			else
-				Debug.Log(Tag + " -> " + Attribs + " " + (LoneTag ? " /ENDTAG" : ""));
-				*/
+			try
+			{
+				TagToParserFunc[Tag](Attribs, TagContents, EndTag, LoneTag);
+			}
+			catch(System.Exception e)
+			{
+				Debug.LogError("Exception parsing Svg/XML tag " + Tag + ": " + e.Message);
+				Debug.LogException(e);
+				throw e;
+			}
+		}
+
+		Svg.Group GetCurrentGroup()
+		{
+			return CurrentGroupStack[CurrentGroupStack.Count - 1];
 		}
 	}
 
