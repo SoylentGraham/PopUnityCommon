@@ -1,8 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
+#if UNITY_EDITOR
 using UnityEditor;
 using System.Text.RegularExpressions;
+#endif
 
 namespace PopX
 {
@@ -10,9 +13,15 @@ namespace PopX
 	{
 		public const string FileExtension = ".svg";
 
+		public enum PathType
+		{
+			Line,
+		};
+
 		public class Contour
 		{
 			//	todo: winding, style etc
+			public PathType Type;
 			public List<Vector2> Points = new List<Vector2>();
 		}
 
@@ -24,7 +33,51 @@ namespace PopX
 
 		public string Title;
 		public List<Group> Groups = new List<Group>();
-		public Rect? ViewBox = null;	//	the "page". Normalise coords to this
+		public Rect? ViewBox = null;    //	the "page". Normalise coords to this
+
+
+		static void WalkGroupTree(Group Root, System.Action<Group> EnumGroup)
+		{
+			foreach (var Group in Root.Children)
+			{
+				EnumGroup(Group);
+				WalkGroupTree(Group, EnumGroup);
+			}
+		}
+
+		void WalkGroupTree(System.Action<Group> EnumGroup)
+		{
+			//	we're recursing here, so if the tree is broken (child contains a parent), we're going to get stuck
+			//	add a "we've processed this group" hash list?
+			foreach (var Group in Groups)
+			{
+				EnumGroup(Group);
+				WalkGroupTree(Group, EnumGroup);
+			}
+		}
+
+		void CreateTriangles(MeshContents Mesh, Contour Contour, System.Action<Vector2, Vector2, Vector2> EnumTriangle)
+		{
+			//	not correct, but testing iteration
+			var Points = Contour.Points;
+			for (int p0 = 0; p0 < Points.Count; p0++)
+			{
+				var p1 = (p0 + 1) % Points.Count;
+				var p2 = (p0 + 2) % Points.Count;
+				EnumTriangle(Points[p0], Points[p1], Points[p2]);
+			}
+		}
+
+		void CreateTriangles(MeshContents Mesh, System.Action<Vector2, Vector2, Vector2> EnumTriangle)
+		{
+			System.Action<Group> OnGroup = (Group) =>
+			{
+				//	make triangles from each contour
+				foreach (var Contour in Group.Contours)
+					CreateTriangles(Mesh, Contour, EnumTriangle);
+			};
+			WalkGroupTree(OnGroup);
+		}
 
 		public Mesh CreateMesh()
 		{
@@ -35,23 +88,25 @@ namespace PopX
 			var TransformXyToXz = Matrix4x4.identity;
 			var TransformToRect = Matrix4x4.identity;
 
-			if ( ViewBox.HasValue )
+			if (ViewBox.HasValue)
 			{
 				var Transpose = new Vector3(-ViewBox.Value.x, -ViewBox.Value.y, 0);
-				var Scale = new Vector3( 1.0f / ViewBox.Value.width, 1.0f/ViewBox.Value.height, 0);
+				var Scale = new Vector3(1.0f / ViewBox.Value.width, 1.0f / ViewBox.Value.height, 0);
 				TransformToRect *= Matrix4x4.TRS(Transpose, Quaternion.identity, Scale);
 			}
 
 			var Transform = TransformToRect * TransformXyToXz;
 
-			System.Action<Vector2,Vector2,Vector2> AddTriangle2 = (a2,b2,c2) =>
-			{
-				var a3 = Transform * a2.xy01();
-				var b3 = Transform * b2.xy01();
-				var c3 = Transform * c2.xy01();
-				Mesh.AddTriangle(a3, b3, c3);
-			};
-			AddTriangle2( new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1) );
+			System.Action<Vector2, Vector2, Vector2> AddTriangle2 = (a2, b2, c2) =>
+			  {
+				  var a3 = Transform * a2.xy01();
+				  var b3 = Transform * b2.xy01();
+				  var c3 = Transform * c2.xy01();
+				  Mesh.AddTriangle(a3, b3, c3);
+			  };
+
+			CreateTriangles(Mesh, AddTriangle2);
+			//AddTriangle2( new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1) );
 
 			//	make triangles
 			var m = Mesh.CreateMesh(this.Title);
@@ -60,6 +115,7 @@ namespace PopX
 		}
 	}
 
+#if UNITY_EDITOR
 	class SvgImporter : AssetPostprocessor
 	{
 		public SvgImporter()
@@ -84,7 +140,7 @@ namespace PopX
 					AssetDatabase.CreateAsset(Mesh, Filename + ".asset");
 					AssetDatabase.SaveAssets();
 				}
-				catch(System.Exception e)
+				catch (System.Exception e)
 				{
 					Debug.LogException(e);
 				}
@@ -92,7 +148,7 @@ namespace PopX
 		}
 
 		Svg Svg;
-		Dictionary<string, System.Action<Dictionary<string, string>, string,bool, bool>> TagToParserFunc;
+		Dictionary<string, System.Action<Dictionary<string, string>, string, bool, bool>> TagToParserFunc;
 		List<Svg.Group> CurrentGroupStack;
 
 		//	magic strings
@@ -132,7 +188,6 @@ namespace PopX
 			//	parse xml tags
 			int Iterations = 0; //	stop infinite loops
 			int StringIndex = 0;
-			//var TagPattern = "<([/]?)([\\s]+)(.*)>";
 			var TagPattern = "<([/]?)([^>\\s]+)([^>]*)>([^<]*)";
 			var RegExpression = new Regex(TagPattern);
 			do
@@ -149,7 +204,7 @@ namespace PopX
 				var Name = match.Groups[2].Captures[0];
 				var Attribs = match.Groups[3].Captures[0].Value;
 				var LoneTag = string.IsNullOrEmpty(Attribs) ? false : Attribs[Attribs.Length - 1] == '/';
-				Attribs = Attribs.TrimEnd(new char[]{'/'});
+				Attribs = Attribs.TrimEnd(new char[] { '/' });
 				var Contents = match.Groups[4].Captures[0].ToString();
 
 				ParseTag(Name.ToString(), Attribs.ToString(), Contents, EndTag, LoneTag);
@@ -157,7 +212,7 @@ namespace PopX
 			while (Iterations++ < 5000);
 		}
 
-		Dictionary<string,string> ParseAttribs(string AttribsString)
+		Dictionary<string, string> ParseAttribs(string AttribsString)
 		{
 			//	split at space if we're not in a quote
 			bool InsideQuote = false;
@@ -169,20 +224,20 @@ namespace PopX
 			{
 				if (Key == null)
 					throw new System.Exception("Expecting a key here. Double space?");
-				Attribs.Add( Key, Value );
+				Attribs.Add(Key, Value);
 				Key = "";
 				Value = null;
 			};
 
-			foreach ( var Char in AttribsString )
+			foreach (var Char in AttribsString)
 			{
-				if ( InsideQuote && Char != '"')
+				if (InsideQuote && Char != '"')
 				{
 					Value += Char;
 					continue;
 				}
-				
-				switch( Char )
+
+				switch (Char)
 				{
 					case '"':
 						InsideQuote = !InsideQuote;
@@ -212,7 +267,7 @@ namespace PopX
 
 
 
-		void ParseTag_Svg(Dictionary<string, string> Attribs,string TagContents,bool EndTag, bool LoneTag)
+		void ParseTag_Svg(Dictionary<string, string> Attribs, string TagContents, bool EndTag, bool LoneTag)
 		{
 			if (EndTag)
 				return;
@@ -242,14 +297,14 @@ namespace PopX
 				else
 				{
 					var CurrentGroup = GetCurrentGroup();
-					CurrentGroup.Children.Add( NewGroup );
+					CurrentGroup.Children.Add(NewGroup);
 				}
 
 				//	add to stack
 				CurrentGroupStack.Add(NewGroup);
 			}
 
-			if ( LoneTag || EndTag )
+			if (LoneTag || EndTag)
 			{
 				CurrentGroupStack.RemoveAt(CurrentGroupStack.Count - 1);
 				return;
@@ -284,7 +339,7 @@ namespace PopX
 			Group.Contours.Add(Contour);
 		}
 
-		void ParseTag(string Tag,string AttribsString, string TagContents,bool EndTag,bool LoneTag)
+		void ParseTag(string Tag, string AttribsString, string TagContents, bool EndTag, bool LoneTag)
 		{
 			var Attribs = ParseAttribs(AttribsString);
 
@@ -292,7 +347,7 @@ namespace PopX
 			{
 				TagToParserFunc[Tag](Attribs, TagContents, EndTag, LoneTag);
 			}
-			catch(System.Exception e)
+			catch (System.Exception e)
 			{
 				Debug.LogError("Exception parsing Svg/XML tag " + Tag + ": " + e.Message);
 				Debug.LogException(e);
@@ -305,5 +360,6 @@ namespace PopX
 			return CurrentGroupStack[CurrentGroupStack.Count - 1];
 		}
 	}
+#endif
 
 }
