@@ -486,6 +486,111 @@ float DeltaToRay3(float3 Position,float3 Start,float3 Direction)
 	return Position - Nearest;
 }
 
+
+/*	//	 z is intersection=1 no_intersection=0
+float3 GetLineLineIntersection2(float2 StartA,float2 EndA,float2 StartB,float2 EndB)
+{
+	let CornerScore = (ScoreA+ScoreB)/2;
+	//return [0.5,0.5,1];
+	
+	//	https://stackoverflow.com/a/1968345
+	
+	// Returns 1 if the lines intersect, otherwise 0. In addition, if the lines
+	// intersect the intersection point may be stored in the floats i_x and i_y.
+	let p0_x = LineA[0];
+	let p0_y = LineA[1];
+	let p1_x = LineA[2];
+	let p1_y = LineA[3];
+	let p2_x = LineB[0];
+	let p2_y = LineB[1];
+	let p3_x = LineB[2];
+	let p3_y = LineB[3];
+	
+	let s1_x = p1_x - p0_x;
+	let s1_y = p1_y - p0_y;
+	let s2_x = p3_x - p2_x;
+	let s2_y = p3_y - p2_y;
+	
+	let s = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y)) / (-s2_x * s1_y + s1_x * s2_y);
+	let t = ( s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x)) / (-s2_x * s1_y + s1_x * s2_y);
+	
+	if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
+	{
+		let ix = p0_x + (t * s1_x);
+		let iy = p0_y + (t * s1_y);
+		if ( ScoreA===undefined )
+			return [ix,iy];
+		return [ix,iy,CornerScore];
+	}
+	return null;
+}
+*/
+
+bool GetLineLineIntersection3(float3 StartA,float3 EndA,float3 StartB,float3 EndB,out float IntersectionTimeA,out float IntersectionTimeB)
+{
+	float3 da = EndA - StartA; 
+	float3 db = EndB - StartB;
+	float3 dc = StartB - StartA;
+
+	/*
+	vec3f acrossb = da.cross(db);
+	// lines are not coplanar
+	if ( dc.dot( acrossb ) != 0.0 )
+	{
+		IntersectionAlongThis = 0.f;
+		IntersectionAlongLine = 0.f;
+		return false;
+	}
+
+	vec3f ccrossb = dc.cross(db);
+	IntersectionAlongLine = ccrossb.dot(acrossb) / acrossb.lengthSquared();
+	if ( IntersectionAlongLine < 0.f || IntersectionAlongLine > 1.f )
+	{
+		ofLimit( IntersectionAlongLine, 0.f, 1.f );
+		ofLimit( IntersectionAlongLine, 0.f, 1.f );
+		return false;
+	}
+	*/
+
+	float a = dot(da,da);         // always >= 0
+	float b = dot(da,db);
+	float c = dot(db,db);         // always >= 0
+	float d = dot(da,dc);
+	float e = dot(db,dc);
+	float D = a*c - b*b;        // always >= 0
+
+	// compute the line parameters of the two closest points
+	// the lines are almost parallel
+	#define EPSILON	0.000001f
+	if (D < EPSILON)
+	{
+		IntersectionTimeA = 0;
+		// use the largest denominator
+		IntersectionTimeB = (b>c ? d/b : e/c);
+		return false;
+	}
+	else 
+	{
+		IntersectionTimeA = (b*e - c*d) / D;
+		IntersectionTimeB = (a*e - b*d) / D;
+
+		//	nearest points are out of bounds of line
+		if ( IntersectionTimeA < 0.f || IntersectionTimeA > 1.f || IntersectionTimeB < 0.f || IntersectionTimeB > 1.f )
+		{
+			IntersectionTimeA = Clamp01(IntersectionTimeA);
+			IntersectionTimeB = Clamp01(IntersectionTimeB);
+			return false;
+		}
+	}
+
+	//	gr: to get nearest distance
+	// get the difference of the two closest points
+	//vec3f dP = dc + (sc * da) - (tc * db);  // =  L1(sc) - L2(tc)
+	//return dP.length();   // return the closest distance
+	return true;
+}
+
+
 //	same as PopMath
 float2 AngleRadianToVector2(float radian)
 {
