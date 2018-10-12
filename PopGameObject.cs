@@ -133,5 +133,24 @@ public static class PopGameObject
 		return go.GetChildMatching<GameObject>( Match );
 
 	}
+
+
+	public static int GetChildIndex(this Transform Parent, Transform ChildMatch)
+	{
+		var Count = Parent.childCount;
+		for (var c = 0; c < Count; c++)
+		{
+			var Child = Parent.GetChild(c);
+			if (Child == ChildMatch)
+				return c;
+		}
+		throw new System.Exception("Child " + ChildMatch.name + " not a child of " + Parent.name);
+	}
+
+	public static int GetChildIndex(this GameObject Parent, GameObject ChildMatch)
+	{
+		return Parent.transform.GetChildIndex(ChildMatch.transform);
+	}
+
 }
 
