@@ -566,6 +566,76 @@ public static class PopMath {
 		return new Vector3(Max(a.x, b.x,c.x), Max(a.y, b.y,c.y), Max(a.z, b.z,c.z));
 	}
 
+	public static void GetLineLineIntersection(Vector3 StartA, Vector3 EndA, Vector3 StartB, Vector3 EndB, out Vector3 IntersectionA, out Vector3 IntersectionB)
+	{
+		float TimeA, TimeB;
+		GetLineLineIntersection(StartA, EndA, StartB, EndB, out TimeA, out TimeB);
+		//	lerp, or use ray
+		IntersectionA = Vector3.Lerp(StartA, EndA, TimeA);
+		IntersectionB = Vector3.Lerp(StartB, EndB, TimeB);
+	}
+
+	public static void GetLineLineIntersection(Vector3 StartA, Vector3 EndA, Vector3 StartB, Vector3 EndB, out float IntersectionA, out float IntersectionB)
+	{
+		var LengthA = (EndA - StartA).magnitude;
+		var LengthB = (EndB - StartB).magnitude;
+		float TimeA, TimeB;
+		var RayA = new Ray(StartA, EndA - StartA);
+		var RayB = new Ray(StartB, EndB - StartB);
+		GetRayRayIntersection(RayA, RayB, out TimeA, out TimeB);
+
+		//	put in line space and clamp
+		TimeA /= LengthA;
+		TimeB /= LengthB;
+		TimeA = Mathf.Clamp01(TimeA);
+		TimeB = Mathf.Clamp01(TimeB);
+
+		IntersectionA = TimeA;
+		IntersectionB = TimeB;
+	}
+
+	public static void GetRayRayIntersection(Ray RayA, Ray RayB, out Vector3 IntersectionA, out Vector3 IntersectionB)
+	{
+		float TimeA, TimeB;
+		GetRayRayIntersection(RayA, RayB, out TimeA, out TimeB);
+		IntersectionA = RayA.GetPoint(TimeA);
+		IntersectionB = RayB.GetPoint(TimeB);
+	}
+
+	//	https://www.codefull.org/2015/06/intersection-of-a-ray-and-a-line-segment-in-3d/
+	public static void GetRayRayIntersection(Ray RayA,Ray RayB,out float IntersectionA, out float IntersectionB)
+	{
+		var ray_Origin = RayA.origin;
+		var ray_End = RayA.GetPoint(1);
+		var segment_Start = RayB.origin;
+		var segment_End = RayB.GetPoint(1);
+
+		//bool intersection(Ray ray, LineSegment segment)
+		Vector3 da = ray_End - ray_Origin;  // Unnormalized direction of the ray
+		Vector3 db = segment_End - segment_Start;
+
+		Vector3 dc = segment_Start - ray_Origin;
+
+		var dadb_cross = Vector3.Cross(da, db);
+		var dcdb_cross = Vector3.Cross(dc, db);
+		var dcda_cross = Vector3.Cross(dc, da);
+		/*
+		var Dot = Vector3.Dot(dc, dadb_cross);
+		if (Mathf.Abs(Dot) >= coPlanerThreshold) // Lines are not coplanar
+		{
+			IntersectionA = Vector3.zero;
+			IntersectionB = Vector3.zero;
+			return;
+		}
+*/
+		//	gr: total length sq?
+		float sa = Vector3.Dot(dcdb_cross, dadb_cross) / dadb_cross.sqrMagnitude;
+		float sb = Vector3.Dot(dcda_cross, dadb_cross) / dadb_cross.sqrMagnitude;
+
+		IntersectionA = sa;
+		IntersectionB = sb;
+	}
+
 }
 
 //	gr: move this to namespace and System or Alloc static class
