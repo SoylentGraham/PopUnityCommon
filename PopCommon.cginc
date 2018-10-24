@@ -526,70 +526,40 @@ float3 GetLineLineIntersection2(float2 StartA,float2 EndA,float2 StartB,float2 E
 }
 */
 
-bool GetLineLineIntersection3(float3 StartA,float3 EndA,float3 StartB,float3 EndB,out float IntersectionTimeA,out float IntersectionTimeB)
+void GetRayRayIntersection3(float3 StartA,float3 DirA,float3 StartB,float3 DirB,out float IntersectionTimeA,out float IntersectionTimeB)
 {
-	float3 da = EndA - StartA; 
-	float3 db = EndB - StartB;
+	float3 da = DirA;
+	float3 db = DirB;
+
 	float3 dc = StartB - StartA;
 
-	/*
-	vec3f acrossb = da.cross(db);
-	// lines are not coplanar
-	if ( dc.dot( acrossb ) != 0.0 )
-	{
-		IntersectionAlongThis = 0.f;
-		IntersectionAlongLine = 0.f;
-		return false;
-	}
+	float3 dadb_cross = cross(da, db);
+	float3 dcdb_cross = cross(dc, db);
+	float3 dcda_cross = cross(dc, da);
 
-	vec3f ccrossb = dc.cross(db);
-	IntersectionAlongLine = ccrossb.dot(acrossb) / acrossb.lengthSquared();
-	if ( IntersectionAlongLine < 0.f || IntersectionAlongLine > 1.f )
-	{
-		ofLimit( IntersectionAlongLine, 0.f, 1.f );
-		ofLimit( IntersectionAlongLine, 0.f, 1.f );
-		return false;
-	}
-	*/
+	float sa = dot(dcdb_cross, dadb_cross) / lengthsq(dadb_cross);
+	float sb = dot(dcda_cross, dadb_cross) / lengthsq(dadb_cross);
 
-	float a = dot(da,da);         // always >= 0
-	float b = dot(da,db);
-	float c = dot(db,db);         // always >= 0
-	float d = dot(da,dc);
-	float e = dot(db,dc);
-	float D = a*c - b*b;        // always >= 0
-
-	// compute the line parameters of the two closest points
-	// the lines are almost parallel
-	#define EPSILON	0.000001f
-	if (D < EPSILON)
-	{
-		IntersectionTimeA = 0;
-		// use the largest denominator
-		IntersectionTimeB = (b>c ? d/b : e/c);
-		return false;
-	}
-	else 
-	{
-		IntersectionTimeA = (b*e - c*d) / D;
-		IntersectionTimeB = (a*e - b*d) / D;
-
-		//	nearest points are out of bounds of line
-		if ( IntersectionTimeA < 0.f || IntersectionTimeA > 1.f || IntersectionTimeB < 0.f || IntersectionTimeB > 1.f )
-		{
-			IntersectionTimeA = Clamp01(IntersectionTimeA);
-			IntersectionTimeB = Clamp01(IntersectionTimeB);
-			return false;
-		}
-	}
-
-	//	gr: to get nearest distance
-	// get the difference of the two closest points
-	//vec3f dP = dc + (sc * da) - (tc * db);  // =  L1(sc) - L2(tc)
-	//return dP.length();   // return the closest distance
-	return true;
+	IntersectionTimeA = sa;
+	IntersectionTimeB = sb;
 }
 
+
+void GetLineLineIntersection3(float3 StartA,float3 EndA,float3 StartB,float3 EndB,out float IntersectionTimeA,out float IntersectionTimeB)
+{
+	float LengthA = length(EndA - StartA);
+	float LengthB = length(EndB - StartB);
+		
+	float3 DirA = normalize(EndA - StartA);
+	float3 DirB = normalize(EndB - StartB);
+	GetRayRayIntersection3( StartA, DirA, StartB, DirB, IntersectionTimeA, IntersectionTimeB );
+
+	//	put in line space and clamp
+	IntersectionTimeA /= LengthA;
+	IntersectionTimeB /= LengthB;
+	IntersectionTimeA = Clamp01(IntersectionTimeA);
+	IntersectionTimeB = Clamp01(IntersectionTimeB);
+}
 
 //	same as PopMath
 float2 AngleRadianToVector2(float radian)
