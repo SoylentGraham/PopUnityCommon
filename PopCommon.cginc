@@ -528,8 +528,9 @@ float3 GetLineLineIntersection2(float2 StartA,float2 EndA,float2 StartB,float2 E
 
 void GetRayRayIntersection3(float3 StartA,float3 DirA,float3 StartB,float3 DirB,out float IntersectionTimeA,out float IntersectionTimeB)
 {
-	float3 da = DirA;
-	float3 db = DirB;
+	//	must be normalised to match c# version
+	float3 da = normalize(DirA);
+	float3 db = normalize(DirB);
 
 	float3 dc = StartB - StartA;
 
@@ -550,16 +551,25 @@ void GetLineLineIntersection3(float3 StartA,float3 EndA,float3 StartB,float3 End
 	float LengthA = length(EndA - StartA);
 	float LengthB = length(EndB - StartB);
 		
-	float3 DirA = normalize(EndA - StartA);
-	float3 DirB = normalize(EndB - StartB);
+	float3 DirA = (EndA - StartA);
+	float3 DirB = (EndB - StartB);
 	GetRayRayIntersection3( StartA, DirA, StartB, DirB, IntersectionTimeA, IntersectionTimeB );
 
-	//	put in line space and clamp
+	//	Intersection time is along ray in world units, even though we normalised the dir. 
+	//	if they cross at ita=2 then thats still 2 in world space
+	//	so divide to get it relative to the line
 	IntersectionTimeA /= LengthA;
 	IntersectionTimeB /= LengthB;
+}
+
+
+void GetLineLineIntersection3Clamped(float3 StartA,float3 EndA,float3 StartB,float3 EndB,out float IntersectionTimeA,out float IntersectionTimeB)
+{
+	GetLineLineIntersection3( StartA, EndA, StartB, EndB, IntersectionTimeA, IntersectionTimeB);
 	IntersectionTimeA = Clamp01(IntersectionTimeA);
 	IntersectionTimeB = Clamp01(IntersectionTimeB);
 }
+
 
 //	same as PopMath
 float2 AngleRadianToVector2(float radian)
