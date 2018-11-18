@@ -802,7 +802,7 @@ namespace PopX
 			var SceneMesh = new Mesh();
 			SceneMesh.name = "Root";
 			var SceneMeshObject = CreateFbxObject(SceneMesh, Matrix4x4.identity, ObjectManager, FbxObjectManager.RootNodeIdent);
-			var MeshMaterialObject = CreateFbxObject_Material("DummyMaterial", ObjectManager);
+			//var MeshMaterialObject = CreateFbxObject_Material("DummyMaterial", ObjectManager);
 
 			//ConnectionManager.Add(new FbxConnection( MeshObject, SceneMeshObject, FbxRelationType.OO));
 			ConnectionManager.Add(new FbxConnection( CameraObject, SceneMeshObject, FbxRelationType.OO));

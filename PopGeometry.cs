@@ -186,19 +186,20 @@ namespace PopX
 
 		public void WeldVertexes()
 		{
+			/*
 			System.Func<int, int, bool> CompareVertex = (IndexA, IndexB) =>
-			  {
-				  if (!IsMatchingVertex(this.NewPositons, IndexA, IndexB, Mathf.Epsilon, Vector3.Distance))
-					  return false;
-				  if (!IsMatchingVertex(this.NewUv1s, IndexA, IndexB, Mathf.Epsilon, Vector2.Distance))
-					  return false;
-				  if (!IsMatchingVertex(this.NewUv2s, IndexA, IndexB, Mathf.Epsilon, Vector2.Distance))
-					  return false;
-				  if (!IsMatchingVertex(this.NewUv3s, IndexA, IndexB, Mathf.Epsilon, Vector2.Distance))
-					  return false;
-				  return true;
-			  };
-
+			{
+				if (!IsMatchingVertex(this.NewPositons, IndexA, IndexB, Mathf.Epsilon, Vector3.Distance))
+					return false;
+				if (!IsMatchingVertex(this.NewUv1s, IndexA, IndexB, Mathf.Epsilon, Vector2.Distance))
+					return false;
+				if (!IsMatchingVertex(this.NewUv2s, IndexA, IndexB, Mathf.Epsilon, Vector2.Distance))
+					return false;
+				if (!IsMatchingVertex(this.NewUv3s, IndexA, IndexB, Mathf.Epsilon, Vector2.Distance))
+					return false;
+				return true;
+			};
+			*/
 			throw new System.Exception("todo: WeldVertexes");
 		}
 	};
