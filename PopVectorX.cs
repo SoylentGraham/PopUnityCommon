@@ -102,6 +102,7 @@ public static class PopVector2
 	public static Vector4 xy01(this Vector2 two) { return new Vector4(two.x, two.y, 0,1); }
 	public static Vector3 xyz(this Vector2 two, float z) { return new Vector3(two.x, two.y, z); }
 	public static Vector4 xyzw(this Vector2 two, float z, float w) { return new Vector4(two.x, two.y, z, w); }
+	public static Vector3 xzy(this Vector2 two, float z) { return new Vector3(two.x, z, two.y); }
 
 	//	returns 0-1 for each component inside a min/mac
 	public static Vector2 Range(this Vector2 Value, Vector2 Min, Vector2 Max)
