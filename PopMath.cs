@@ -34,6 +34,13 @@ namespace PopX
 {
 	public static class Math
 	{
+		//	like square root, but yknow, for ^3
+		static public float CubeRoot(float Value)
+		{
+			//	inverse power is root!
+			return Mathf.Pow(Value, 1 / 3.0f);
+		}
+
 		//	if the rotation is invalid, return identity
 		//	catch invalid quaternions :/
 		//	annoyingly even if we turn assertions into exceptions, we still get the message printed out and clogs up the console.
