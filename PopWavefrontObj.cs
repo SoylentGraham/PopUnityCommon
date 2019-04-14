@@ -13,6 +13,40 @@ namespace PopX
 {
 	public static class WavefrontObj 
 	{
+#if UNITY_EDITOR
+		[MenuItem("CONTEXT/MeshFilter/Export Mesh as Wavefront Obj...")]
+		static void ExportObj_Mesh(MenuCommand menuCommand)
+		{
+			var mf = menuCommand.context as MeshFilter;
+			var m = mf.sharedMesh;
+			var Transform = mf.GetComponent<Transform>().localToWorldMatrix;
+
+			string Filename;
+			var WriteLine = IO.GetFileWriteLineFunction(out Filename, "Obj", m.name, MeshFileExtension);
+			Export(WriteLine, m, Transform, null, null);
+			EditorUtility.RevealInFinder(Filename);
+		}
+#endif
+
+#if UNITY_EDITOR
+		[MenuItem("CONTEXT/MeshFilter/Export Mesh as Wavefront Obj (Maya)...")]
+		static void ExportObj_Mesh_Maya(MenuCommand menuCommand)
+		{
+			var mf = menuCommand.context as MeshFilter;
+			var m = mf.sharedMesh;
+			var Transform = mf.GetComponent<Transform>().localToWorldMatrix;
+			var ScaleTransform = Matrix4x4.Scale(new Vector3(0.01f, 0.01f, 0.01f));
+			Transform = ScaleTransform * Transform;
+			Transform = UnityToMayaTransform * Transform;
+
+			string Filename;
+			var WriteLine = IO.GetFileWriteLineFunction(out Filename, "Obj", m.name, MeshFileExtension);
+			Export(WriteLine, m, Transform, null, null);
+			EditorUtility.RevealInFinder(Filename);
+		}
+#endif
+	
+
 		public const string MeshFileExtension = "obj";
 		public const string MaterialFileExtension = "mtl";
 
@@ -31,6 +65,7 @@ namespace PopX
 		public const string Tag_NewMaterial = "newmtl";
 		public const string Tag_SetTextureDiffuse = "map_Kd";
 
+		//	gr: this matrix messes up normals!
 		public static Matrix4x4 UnityToMayaTransform
 		{
 			get
@@ -122,8 +157,6 @@ map_Kd Mesh.jpg
 
 		public static void Export(System.Action<string> WriteLine,Mesh Mesh,Matrix4x4 Transform,ObjMaterial Material,string MaterialFilename,List<string> Comments=null)
 		{
-			Transform = UnityToMayaTransform * Transform;
-
 			InitComments( ref Comments );
 
 			foreach (var Comment in Comments)
