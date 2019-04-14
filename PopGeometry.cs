@@ -40,12 +40,25 @@ namespace PopX
 			DestArray.Add(SourceArray[SourceIndexes[2]]);
 		}
 
-		public void AddTriangle(Vector3 a,Vector3 b,Vector3 c)
+		public void AddTriangle(Vector3 a, Vector3 b, Vector3 c)
 		{
 			Pop.AllocIfNull(ref NewPositons);
 			NewPositons.Add(a);
 			NewPositons.Add(b);
 			NewPositons.Add(c);
+		}
+
+		public void AddTriangle(Vector3 Pos0, Vector3 Pos1, Vector3 Pos2, Vector3 Normal0, Vector3 Normal1, Vector3 Normal2)
+		{
+			Pop.AllocIfNull(ref NewPositons);
+			NewPositons.Add(Pos0);
+			NewPositons.Add(Pos1);
+			NewPositons.Add(Pos2);
+
+			Pop.AllocIfNull(ref NewNormals);
+			NewNormals.Add(Normal0);
+			NewNormals.Add(Normal1);
+			NewNormals.Add(Normal2);
 		}
 
 		public void AddTriangle(MeshContents SourceMesh, int[] Triangle)
@@ -202,6 +215,36 @@ namespace PopX
 			*/
 			throw new System.Exception("todo: WeldVertexes");
 		}
+
+		public void AddMesh(Mesh Mesh,Matrix4x4 Transform)
+		{
+			//	add each triangle
+			var Triangles = Mesh.GetTriangles(0);
+			var Positions = Mesh.vertices;
+			var Normals = Mesh.normals;
+
+			for (var t = 0; t < Triangles.Length;	t+=3)
+			{
+				var pa = Positions[Triangles[t + 0]];
+				var pb = Positions[Triangles[t + 1]];
+				var pc = Positions[Triangles[t + 2]];
+				pa = Transform.MultiplyPoint(pa);
+				pb = Transform.MultiplyPoint(pb);
+				pc = Transform.MultiplyPoint(pc);
+
+				var na = Normals[Triangles[t + 0]];
+				var nb = Normals[Triangles[t + 1]];
+				var nc = Normals[Triangles[t + 2]];
+				/*
+				na = Transform.MultiplyVector(na);
+				nb = Transform.MultiplyVector(nb);
+				nc = Transform.MultiplyVector(nc);
+*/
+
+				AddTriangle(pa, pb, pc, na, nb, nc);
+			}
+		}
+
 	};
 
 
@@ -756,6 +799,63 @@ namespace PopX
 			}
 		}
 #endif
+
+#if UNITY_EDITOR
+		//[MenuItem("CONTEXT/Transform/Merge GameObject Tree into one mesh...")]
+		[MenuItem("GameObject/Merge GameObject Tree into one mesh...",false,49)]
+		static void Menu_GameObjectTreeToNewMesh(MenuCommand menuCommand)
+		{
+			//var t = menuCommand.context as Transform;
+			var go = UnityEditor.Selection.activeGameObject;
+			if (!go)
+				throw new System.Exception("No object selected");
+			var t = go.transform;
+			var MergedMesh = MergeTransformTreeToNewMesh(t);
+			MergedMesh.name = t.name + " merged";
+			AssetWriter.SaveAsNewAsset(MergedMesh);
+
+		}
+#endif
+		public static Mesh MergeTransformTreeToNewMesh(Transform RootObject)
+		{
+			var Meshes = new List<Mesh>();
+			var Transforms = new List<Matrix4x4>();
+
+			//	Apply this transform to make 
+			//var GlobalTransform = RootObject.worldToLocalMatrix;
+			var GlobalTransform = Matrix4x4.identity;
+
+			System.Action<MeshFilter> AppendMesh = (MeshFilter Child) =>
+			{
+				var Object = Child.GetComponent<Transform>();
+				var mf = Object.GetComponent<MeshFilter>();
+				if (mf == null)
+					return;
+				var mesh = mf.sharedMesh;
+				var trans = GlobalTransform * Object.localToWorldMatrix;
+				Meshes.Add(mesh);
+				Transforms.Add(trans);
+			};
+
+			//	recurse the tree
+			var MeshFilterChildren = RootObject.GetComponentsInChildren<MeshFilter>();
+			foreach (var Child in MeshFilterChildren)
+				AppendMesh(Child);
+
+			//	make a new mesh
+			var MeshContents = new MeshContents();
+
+			for (var i = 0; i < Meshes.Count; i++)
+			{
+				var Mesh = Meshes[i];
+				var Transform = Transforms[i];
+				MeshContents.AddMesh(Mesh, Transform);
+			}
+
+			var MergedMesh = MeshContents.CreateMesh(RootObject.name + " Merged");
+			return MergedMesh;
+		}
+
 		public static void MergeSubmeshes(Mesh mesh, int IndexesUvChannel)
 		{
 			//	get a merged triangle list
