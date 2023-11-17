@@ -151,8 +151,8 @@ public class FilePathAttributePropertyDrawer : PropertyDrawer
 		bool ShowShowButton = Attrib.PathExists (property.stringValue);
 
 		//	calc sizes
-		float BrowseWidthPercent = 0.12f;
-		float ShowWidthPercent = ShowShowButton ? 0.10f : 0;
+		float BrowseWidthPercent = 0.16f;
+		float ShowWidthPercent = ShowShowButton ? 0.16f : 0;
 
 		var BrowseWidth = position.width * BrowseWidthPercent;
 		var ShowWidth = position.width * ShowWidthPercent;
@@ -163,24 +163,31 @@ public class FilePathAttributePropertyDrawer : PropertyDrawer
 		Rect BrowseRect = new Rect ( new Vector2(ShowRect.xMax,position.yMin), new Vector2 (BrowseWidth, position.height));
 
 		//	draw browse button
-		if (GUI.Button (BrowseRect, "Browse...")) 
+		if (GUI.Button (BrowseRect, "Browse..."))
 		{
 			var CurrentPath = property.stringValue;
 			var NewPath = Attrib.BrowseForPath ( TargetObject.name, CurrentPath );
 
 			//	empty = cancelled
-			if ( !string.IsNullOrEmpty(NewPath)) {
+			if ( !string.IsNullOrEmpty(NewPath))
+			{
 				property.stringValue = NewPath;
+				property.serializedObject.ApplyModifiedProperties();
 			}
+			GUIUtility.ExitGUI();
 		}
 
 		if (ShowShowButton) {
-			if (GUI.Button (ShowRect, "Show")) {
-				try {
+			if (GUI.Button (ShowRect, "Show"))
+			{
+				try
+				{
 					var CurrentPath = property.stringValue;
 					CurrentPath = System.IO.Path.GetFullPath (CurrentPath);
 					EditorUtility.RevealInFinder (CurrentPath);
-				} catch {
+				}
+				catch
+				{
 				}
 			}
 		}
