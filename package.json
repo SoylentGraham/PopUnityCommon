@@ -1,0 +1,12 @@
+{
+  "name": "com.newchromantics.popunitycommon",
+  "version": "0.0.1",
+  "displayName": "PopUnityCommon",
+  "description": "Graham's Old Unity Utils.",
+  "author":
+  {
+    "name" : "New Chromantics",
+    "url" : "http://newchromantics.com/"
+  },
+  "unity": "2019.4"
+}
